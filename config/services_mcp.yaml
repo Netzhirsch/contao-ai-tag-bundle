@@ -1,0 +1,15 @@
+# Wird nur geladen, wenn netzhirsch/contao-mcp-bundle installiert ist
+# (siehe NetzhirschContaoAiTagBundle::loadExtension).
+#
+# Das Tagging uebernimmt die Autoconfiguration des MCP-Bundles ueber
+# McpToolProviderInterface; erreichbar sind die Tools erst, wenn der Betreiber sie
+# in var/mcp/config.json bzw. im Backend unter MCP-Server -> Tools freischaltet.
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+
+    Netzhirsch\ContaoAiTagBundle\Mcp\AiTagTool:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $uploadPath: '%contao.upload_path%'

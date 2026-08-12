@@ -10,6 +10,9 @@ services:
             - '../src/ContaoManager/'
             - '../src/Image/AiTagOptions.php'
             - '../src/Security/ContaoAiTagPermissions.php'
+            - '../src/Audit/AuditActor.php'
+            # Optional, siehe services_mcp.yaml
+            - '../src/Mcp/'
 
     Netzhirsch\ContaoAiTagBundle\Image\FontLocator:
         arguments:
@@ -49,3 +52,12 @@ services:
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    # Der Kanal "contao" schreibt ueber den ContaoTableHandler nach tl_log
+    Netzhirsch\ContaoAiTagBundle\Audit\AiTagAuditLogger:
+        arguments:
+            $contaoLogger: '@monolog.logger.contao'
+
+    Netzhirsch\ContaoAiTagBundle\Cron\PurgeAiTagLogCron:
+        arguments:
+            $retentionDays: '%netzhirsch_contao_ai_tag.log_retention_days%'

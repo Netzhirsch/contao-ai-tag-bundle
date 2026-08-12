@@ -1,6 +1,10 @@
 # Contao AI Tag Bundle
 
-Kennzeichnet KI-generierte Bilder in Contao 5.7+ so, dass die Kennzeichnung **jede
+**Contao 5.3 (LTS) bis 5.7+, PHP 8.1+.** Alle genutzten Contao-APIs existieren
+unverändert in beiden Zweigen – es gibt keine Kompatibilitätsschicht und keine
+versionsabhängigen Codepfade.
+
+Kennzeichnet KI-generierte Bilder in Contao so, dass die Kennzeichnung **jede
 erzeugte Bildgröße überlebt**: Redaktion markiert eine Datei (oder einen ganzen
 Ordner) in der Dateiverwaltung, das Bundle brennt den Hinweis beim Erzeugen jeder
 Bildgröße ein – sprachsensitiv, am Bildrand und möglichst außerhalb des wichtigen
@@ -28,7 +32,8 @@ Bildbereichs.
 - **Barrierefreie Textalternative**: Der Hinweis wird an den `alt`-Text angehängt,
   weil eingebrannte Pixel für Screenreader unsichtbar sind.
 - **Nachweisprotokoll** unter *System → Protokoll KI-Kennzeichnung*: wer wann welche
-  Datei markiert hat. Nur lesbar, nicht editierbar.
+  Datei markiert hat. Nur lesbar, nicht editierbar; zusätzlich erscheint jede Änderung
+  im Contao-Systemprotokoll.
 - **Eigenes Recht** für das Setzen der Kennzeichnung (Voter + Contao-Feldrechte).
 
 ## Installation
@@ -59,6 +64,25 @@ netzhirsch_contao_ai_tag:
 | `max_box_width` | `0.65` | Maximaler Anteil der Bildbreite für das Label. |
 | `max_box_height` | `0.3` | Maximaler Anteil der Bildhöhe für das Label. |
 | `box_opacity` | `60` | Deckkraft der Label-Fläche in Prozent. |
+| `log_retention_days` | `1095` | Aufbewahrungsfrist des Protokolls in Tagen (3 Jahre). `0` bewahrt unbegrenzt auf. |
+
+## Protokoll und Aufbewahrung
+
+Jede Änderung landet an zwei Stellen:
+
+- **`tl_netzhirsch_ai_tag_log`** (*System → Protokoll KI-Kennzeichnung*) als belastbarer
+  Nachweis, mit filterbaren Spalten (Aktion, Datei/Ordner, Datei­pfad, Benutzer).
+- **Contao-Systemprotokoll** (`tl_log`, Aktion *FILES*) als Hinweis am gewohnten Ort.
+
+Warum eine eigene Tabelle, obwohl es das Systemprotokoll gibt: Contao räumt `tl_log`
+über `PurgeExpiredDataCron` nach der Systemeinstellung `logPeriod` ab – **Standard 7
+Tage**. Ein Nachweis, der sich nach einer Woche selbst löscht, ist keiner. Die eigene
+Tabelle hat stattdessen eine eigene Frist (`log_retention_days`, Standard 3 Jahre), die
+ein täglicher Cron-Job durchsetzt: lang genug für den Nachweis, ohne Benutzernamen
+dauerhaft vorzuhalten.
+
+Anlegen und Ändern sind über die Oberfläche für alle gesperrt, Löschen nur für
+Administratoren.
 
 ## Wortlaut
 
@@ -84,6 +108,36 @@ eingebrannt**, statt eine unlesbare Kennzeichnung zu erzeugen. Beim Markieren we
 Backend darauf hin, wenn das Bild selbst dafür zu klein ist. In diesen Fällen trägt nur
 die Textalternative im Markup die Information – eine sichtbare Kennzeichnung muss dann
 im Layout gelöst werden (z. B. größere Bildgröße oder Bildunterschrift).
+
+## MCP-Werkzeuge (optional)
+
+Ist `netzhirsch/contao-mcp-bundle` installiert, bringt das Bundle drei Werkzeuge für
+den MCP-Server mit. Ohne das MCP-Bundle wird der Service gar nicht registriert – es
+besteht keine harte Abhängigkeit.
+
+| Werkzeug | Zweck |
+|---|---|
+| `netzhirsch_ai_tag_get` | Liest den Kennzeichnungsstand einer Datei oder eines Ordners, inklusive Vererbung (`inherited_from`), wirksamem Text und ob das Format überhaupt einbrennbar ist. Nur lesend. |
+| `netzhirsch_ai_tag_list` | Listet die als KI-generiert markierten Dateien und Ordner, optional auf einen Ordner begrenzt. Nur lesend. |
+| `netzhirsch_ai_tag_set` | Setzt oder entfernt die Kennzeichnung, optional mit Position und Wortlaut. |
+
+Wichtig für den Betrieb:
+
+- **Standardmäßig aus.** Wie jedes Extension-Tool sind sie erst erreichbar, wenn der
+  Betreiber sie freischaltet – im Backend unter *MCP-Server → Tools* oder über
+  `extension_tools_enabled` in `var/mcp/config.json`.
+- **Entfernen ist geschützt.** `netzhirsch_ai_tag_set` mit `ai_generated=false`
+  verlangt `confirm_destructive=true` – eine Kennzeichnung zu entfernen kann eine
+  Rechtspflicht verletzen, das darf kein halluzinierter Aufruf nebenbei tun.
+- **Backend-Parität.** Die Werkzeuge sind für Benutzer mit Zugriff auf die
+  Dateiverwaltung freigegeben (wie die `file_*`-Werkzeuge des Cores); der schreibende
+  Aufruf prüft zusätzlich per `ensureCan()` gegen Contaos Voter, sodass das Recht
+  *KI-Kennzeichnung setzen* und die Feldrechte genauso greifen wie im Backend.
+- **Nachweis.** Jede Änderung landet im Kennzeichnungs-Protokoll und im
+  Systemprotokoll, attribuiert auf die aufrufende MCP-Identität statt auf `system`.
+
+Für die Entwicklung wird das MCP-Bundle als `require-dev` aus dem privaten
+GitHub-Repository geladen; die CI braucht dafür Zugangsdaten (`COMPOSER_AUTH`).
 
 ## Grenzen (bewusst)
 
@@ -134,11 +188,21 @@ Das Recht *KI-Kennzeichnung setzen und entfernen* (`netzhirsch_ai_tagp`) steuert
 Felder ändern darf – in `tl_user_group` und `tl_user`. Administratoren dürfen immer.
 Zusätzlich sind die Felder `exclude`, unterliegen also auch den Contao-Feldrechten.
 
-## Qualität
+## Qualität und Versionsabdeckung
 
 ```bash
 composer all   # ECS, PHPStan (Level 6), Rector, PHPUnit
 ```
+
+Die Entwicklungsumgebung ist über `config.platform.php = 8.1.0` bewusst auf den
+**untersten** unterstützten Stand festgenagelt: lokal wird damit dieselbe
+Abhängigkeitsauflösung getestet, die eine Contao-5.3-Installation bekommt (DBAL 3,
+Monolog 2, Symfony 6.4). PHPStan läuft zusätzlich mit `phpVersion: 80100`, damit die
+Verwendung neuerer Sprachfeatures hier auffällt und nicht erst auf der Zielinstallation.
+Deshalb kein `readonly class` (8.2) und keine typisierten Klassenkonstanten (8.3) im
+Code – Rector ist entsprechend auf das PHP-8.1-Set gestellt.
+
+Die CI prüft PHP 8.1 (`lowest` und `highest`) sowie PHP 8.4.
 
 ## Lizenz
 
