@@ -4,7 +4,12 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unveröffentlicht]
+## [0.1.0] - 2026-08-12
+
+Erste Fassung. Funktional vollständig und gegen Contao 5.7 (Laufzeit) sowie Contao 5.3
+(statische Analyse, aufgelöster Abhängigkeitssatz) geprüft, aber noch nicht im
+Kundeneinsatz erprobt: der Backend-Klickweg auf einer echten 5.3-Instanz und der
+Imagick-Pfad stehen aus.
 
 ### Geändert
 
