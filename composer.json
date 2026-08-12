@@ -1,0 +1,56 @@
+{
+    "name": "netzhirsch/contao-ai-tag-bundle",
+    "type": "contao-bundle",
+    "description": "AI-based tagging for Contao 5.7+.",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Netzhirsch GmbH",
+            "homepage": "https://www.netzhirsch.de"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "contao/core-bundle": "^5.7",
+        "symfony/config": "^7.0",
+        "symfony/dependency-injection": "^7.0",
+        "symfony/http-kernel": "^7.0"
+    },
+    "require-dev": {
+        "contao/easy-coding-standard": "^6.0",
+        "contao/manager-plugin": "^2.0",
+        "contao/test-case": "^5.7",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpunit": "^12.0",
+        "rector/rector": "^2.0"
+    },
+    "conflict": {
+        "contao/manager-plugin": "<2.0 || >=3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Netzhirsch\\ContaoAiTagBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Netzhirsch\\ContaoAiTagBundle\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "contao-manager-plugin": "Netzhirsch\\ContaoAiTagBundle\\ContaoManager\\Plugin"
+    },
+    "config": {
+        "allow-plugins": {
+            "contao/manager-plugin": true,
+            "contao-components/installer": true,
+            "phpstan/extension-installer": true,
+            "php-http/discovery": false,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}

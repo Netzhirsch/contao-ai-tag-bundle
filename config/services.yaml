@@ -1,0 +1,12 @@
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+
+    Netzhirsch\ContaoAiTagBundle\:
+        resource: '../src/'
+        exclude:
+            - '../src/NetzhirschContaoAiTagBundle.php'
+            - '../src/ContaoManager/'
+            - '../src/Model/'
+            - '../src/Entity/'
