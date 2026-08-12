@@ -28,11 +28,16 @@ jobs:
         steps:
             # Ohne diesen Vorabcheck scheitert der Lauf erst spaeter mit einem
             # unverstaendlichen "git clone --mirror ... Authentication failed".
+            # Der secrets-Kontext ist in einem step-if nicht erlaubt, deshalb ueber
+            # die Step-Umgebung.
             - name: Ensure the token for the private dev dependency exists
-              if: ${{ secrets.COMPOSER_GITHUB_TOKEN == '' }}
+              env:
+                  COMPOSER_GITHUB_TOKEN: ${{ secrets.COMPOSER_GITHUB_TOKEN }}
               run: |
-                  echo "::error::Das Secret COMPOSER_GITHUB_TOKEN fehlt. Es wird gebraucht, um die private Dev-Abhaengigkeit netzhirsch/contao-mcp-bundle zu installieren (PHPStan und die MCP-Tests brauchen deren Basisklasse). Anlegen unter Settings -> Secrets and variables -> Actions."
-                  exit 1
+                  if [ -z "$COMPOSER_GITHUB_TOKEN" ]; then
+                      echo "::error::Das Secret COMPOSER_GITHUB_TOKEN fehlt. Es wird gebraucht, um die private Dev-Abhaengigkeit netzhirsch/contao-mcp-bundle zu installieren (PHPStan und die MCP-Tests brauchen deren Basisklasse). Anlegen unter Settings -> Secrets and variables -> Actions."
+                      exit 1
+                  fi
 
             - name: Checkout
               uses: actions/checkout@v4
