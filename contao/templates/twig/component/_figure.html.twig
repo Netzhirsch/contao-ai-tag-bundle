@@ -8,17 +8,24 @@
     Element ausgegeben), weil er inhaltlich Teil des Bildes ist, kein Bildtitel:
     so bleibt das Layout unberuehrt und es braucht kein zusaetzliches CSS.
 
-    WICHTIG - kein {% extends %}: Der Core bindet diese Komponente ausschliesslich
-    per {% use %} ein (content_element/image, text, gallery, hyperlink, player,
-    component/_download, backend/search/_results). Ein Template mit "extends" kann
-    Twig nicht als Trait verwenden ("cannot be used as a trait"). Daher wird die
-    vorherige Fassung der Hierarchie per {% use %} eingebunden und ihr media-Block
-    unter einem Alias aufgerufen, statt parent() zu nutzen.
+    Zwei Fallstricke, die beide bereits aufgetreten sind:
+
+    1. Kein {% extends %}: Der Core bindet diese Komponente per {% use %} ein
+       (content_element/image, text, gallery, hyperlink, player, component/_download,
+       backend/search/_results). Ein Template mit "extends" kann Twig nicht als Trait
+       verwenden - jede Seite mit Bild bricht mit "cannot be used as a trait" ab.
+
+    2. Ueberschrieben wird figure_component, also der aeusserste Block - nicht media.
+       Beim direkten Rendern des Templates (FigureRenderer mit diesem Template,
+       {% include %}) ist ein Block auf Body-Ebene die gesamte Ausgabe. Ein
+       media-Override lieferte dort nur das <img> ohne das umgebende <figure>.
+       Die Zuweisung an img_attributes wirkt trotzdem, weil der Core sie in seinem
+       image-Block zuletzt hineinmergt.
 #}
 
-{% use "@Contao/component/_figure.html.twig" with media as base_media %}
+{% use "@Contao/component/_figure.html.twig" with figure_component as base_figure_component %}
 
-{% block media %}
+{% block figure_component %}
     {% set netzhirsch_ai_tag = netzhirsch_ai_tag_hint(figure) %}
 
     {% if netzhirsch_ai_tag %}
@@ -28,5 +35,5 @@
         %}
     {% endif %}
 
-    {{ block('base_media') }}
+    {{ block('base_figure_component') }}
 {% endblock %}
