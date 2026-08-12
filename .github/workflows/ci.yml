@@ -26,6 +26,14 @@ jobs:
                       dependencies: 'lowest'
 
         steps:
+            # Ohne diesen Vorabcheck scheitert der Lauf erst spaeter mit einem
+            # unverstaendlichen "git clone --mirror ... Authentication failed".
+            - name: Ensure the token for the private dev dependency exists
+              if: ${{ secrets.COMPOSER_GITHUB_TOKEN == '' }}
+              run: |
+                  echo "::error::Das Secret COMPOSER_GITHUB_TOKEN fehlt. Es wird gebraucht, um die private Dev-Abhaengigkeit netzhirsch/contao-mcp-bundle zu installieren (PHPStan und die MCP-Tests brauchen deren Basisklasse). Anlegen unter Settings -> Secrets and variables -> Actions."
+                  exit 1
+
             - name: Checkout
               uses: actions/checkout@v4
 
