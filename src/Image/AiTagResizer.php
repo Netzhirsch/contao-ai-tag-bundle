@@ -31,24 +31,24 @@ use Symfony\Component\Filesystem\Path;
  *  2. resizeDeferredImage() - eingefrorene Option lesen und die Kennzeichnung auf das
  *                             fertige Bild brennen.
  */
-final readonly class AiTagResizer implements ResizerInterface, DeferredResizerInterface
+final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 {
     /**
      * Qualitaet der ersten Kodierung. Bewusst hoch, weil die Nachbearbeitung ein
      * zweites Mal kodiert; gespeichert wird am Ende mit der Zielqualitaet.
      */
-    private const int INTERMEDIATE_QUALITY = 95;
+    private const INTERMEDIATE_QUALITY = 95;
 
-    private const array QUALITY_KEYS = ['quality', 'jpeg_quality', 'webp_quality', 'avif_quality', 'heic_quality', 'jxl_quality'];
+    private const QUALITY_KEYS = ['quality', 'jpeg_quality', 'webp_quality', 'avif_quality', 'heic_quality', 'jxl_quality'];
 
     public function __construct(
-        private ResizerInterface&DeferredResizerInterface $inner,
-        private AiTagResolver $resolver,
-        private TagRenderer $renderer,
-        private DeferredImageStorageInterface $storage,
-        private string $cacheDir,
-        private string $uploadDir,
-        private LoggerInterface|null $logger = null,
+        private readonly ResizerInterface&DeferredResizerInterface $inner,
+        private readonly AiTagResolver $resolver,
+        private readonly TagRenderer $renderer,
+        private readonly DeferredImageStorageInterface $storage,
+        private readonly string $cacheDir,
+        private readonly string $uploadDir,
+        private readonly LoggerInterface|null $logger = null,
     ) {
     }
 

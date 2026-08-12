@@ -1,5 +1,8 @@
 parameters:
     level: 6
+    # Contao 5.3 (LTS) laeuft ab PHP 8.1 - so meldet PHPStan die Verwendung
+    # neuerer Sprachfeatures, statt sie erst auf der Zielinstallation zu zeigen.
+    phpVersion: 80100
     paths:
         - src
         - tests

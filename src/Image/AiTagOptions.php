@@ -13,25 +13,25 @@ namespace Netzhirsch\ContaoAiTagBundle\Image;
  * Contao die Imagine-Optionen in den Cache-Hash einrechnet, entsteht dadurch
  * automatisch eine eigene Bilddatei pro Sprache und Textfassung.
  */
-final readonly class AiTagOptions
+final class AiTagOptions
 {
     /**
      * Schluessel der Imagine-Option. GD und Imagick lesen Optionen ausschliesslich
      * per isset() auf bekannte Schluessel, unbekannte werden ignoriert.
      */
-    public const string OPTION_KEY = 'netzhirsch_ai_tag';
+    public const OPTION_KEY = 'netzhirsch_ai_tag';
 
-    public const string POSITION_AUTO = 'auto';
+    public const POSITION_AUTO = 'auto';
 
-    public const string POSITION_TOP_RIGHT = 'top-right';
+    public const POSITION_TOP_RIGHT = 'top-right';
 
-    public const string POSITION_TOP_LEFT = 'top-left';
+    public const POSITION_TOP_LEFT = 'top-left';
 
-    public const string POSITION_BOTTOM_RIGHT = 'bottom-right';
+    public const POSITION_BOTTOM_RIGHT = 'bottom-right';
 
-    public const string POSITION_BOTTOM_LEFT = 'bottom-left';
+    public const POSITION_BOTTOM_LEFT = 'bottom-left';
 
-    public const array POSITIONS = [
+    public const POSITIONS = [
         self::POSITION_AUTO,
         self::POSITION_TOP_RIGHT,
         self::POSITION_TOP_LEFT,
@@ -43,13 +43,13 @@ final readonly class AiTagOptions
      * Version des Nutzdaten-Formats. Eine Erhoehung invalidiert saemtliche bereits
      * erzeugten Bilder, weil sie in den Cache-Hash eingeht.
      */
-    private const int PAYLOAD_VERSION = 1;
+    private const PAYLOAD_VERSION = 1;
 
     public function __construct(
-        public string $locale,
-        public string $corner,
-        public string $text,
-        public int $quality,
+        public readonly string $locale,
+        public readonly string $corner,
+        public readonly string $text,
+        public readonly int $quality,
     ) {
     }
 

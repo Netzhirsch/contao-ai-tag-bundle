@@ -14,15 +14,15 @@ final class ContaoAiTagPermissions
      *
      * Subject: 'flag'
      */
-    public const string USER_CAN_FLAG = 'contao_user.netzhirsch_ai_tagp';
+    public const USER_CAN_FLAG = 'contao_user.netzhirsch_ai_tagp';
 
     /**
      * Erlaubter Wert des Rechte-Feldes.
      */
-    public const string OPERATION_FLAG = 'flag';
+    public const OPERATION_FLAG = 'flag';
 
     /**
      * Backend-Modul mit dem Kennzeichnungs-Protokoll.
      */
-    public const string MODULE_LOG = 'netzhirsch_ai_tag_log';
+    public const MODULE_LOG = 'netzhirsch_ai_tag_log';
 }

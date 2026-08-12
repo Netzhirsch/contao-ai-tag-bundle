@@ -21,11 +21,11 @@ final class CornerSelector
      * grosszuegig geschaetzt: die exakte Groesse steht erst beim Zeichnen fest, hier
      * geht es nur um die Reihenfolge der Ecken.
      */
-    private const float PROBE_WIDTH = 0.4;
+    private const PROBE_WIDTH = 0.4;
 
-    private const float PROBE_HEIGHT = 0.18;
+    private const PROBE_HEIGHT = 0.18;
 
-    private const array CANDIDATES = [
+    private const CANDIDATES = [
         AiTagOptions::POSITION_TOP_RIGHT => [0.6, 0.0],
         AiTagOptions::POSITION_BOTTOM_RIGHT => [0.6, 0.82],
         AiTagOptions::POSITION_BOTTOM_LEFT => [0.0, 0.82],

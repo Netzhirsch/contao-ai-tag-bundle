@@ -26,7 +26,7 @@ use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface
  */
 class FilesAiTagVoter extends AbstractDataContainerVoter
 {
-    private const array GUARDED_FIELDS = [
+    private const GUARDED_FIELDS = [
         'netzhirschAiGenerated',
         'netzhirschAiTagPosition',
         'netzhirschAiTagText',

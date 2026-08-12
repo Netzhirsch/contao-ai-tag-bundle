@@ -17,7 +17,7 @@ use Psr\Log\LoggerInterface;
  */
 final class FontLocator
 {
-    private const array CANDIDATES = [
+    private const CANDIDATES = [
         // Linux (Debian/Ubuntu, Alpine mit ttf-dejavu)
         '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
         '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',

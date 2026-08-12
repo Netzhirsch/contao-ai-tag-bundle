@@ -23,14 +23,14 @@ use Symfony\Component\Filesystem\Filesystem;
  * per Contao-Bildgroesse konfigurierten Copyright-Metadaten wieder angewandt,
  * weil das erneute Speichern sie sonst verwirft.
  */
-final readonly class TagRenderer
+final class TagRenderer
 {
     /**
      * Qualitaets-Schluessel, die vor dem zweiten Speichern zurueckgesetzt werden,
      * damit die Zielqualitaet der Bildgroesse und nicht die angehobene erste
      * Kodierung greift.
      */
-    private const array QUALITY_KEYS = [
+    private const QUALITY_KEYS = [
         'quality',
         'jpeg_quality',
         'webp_quality',
@@ -40,19 +40,19 @@ final readonly class TagRenderer
         'png_compression_level',
     ];
 
-    private const int OPAQUE = 100;
+    private const OPAQUE = 100;
 
     public function __construct(
-        private ImagineInterface $imagine,
-        private MetadataReaderWriter $metadataReaderWriter,
-        private FontLocator $fontLocator,
-        private Filesystem $filesystem,
-        private LoggerInterface|null $logger = null,
-        private int $minFontSize = 11,
-        private float $relativeFontSize = 0.03,
-        private float $maxBoxWidth = 0.65,
-        private float $maxBoxHeight = 0.30,
-        private int $boxOpacity = 60,
+        private readonly ImagineInterface $imagine,
+        private readonly MetadataReaderWriter $metadataReaderWriter,
+        private readonly FontLocator $fontLocator,
+        private readonly Filesystem $filesystem,
+        private readonly LoggerInterface|null $logger = null,
+        private readonly int $minFontSize = 11,
+        private readonly float $relativeFontSize = 0.03,
+        private readonly float $maxBoxWidth = 0.65,
+        private readonly float $maxBoxHeight = 0.30,
+        private readonly int $boxOpacity = 60,
     ) {
     }
 

@@ -27,11 +27,11 @@ final class AiTagResolver
      * Formate, die rasterbasiert gekennzeichnet werden koennen. SVG ist bewusst nicht
      * dabei: Vektorgrafiken werden von Contao nicht durch Imagine gerendert.
      */
-    private const array TAGGABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'heic', 'jxl'];
+    private const TAGGABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'heic', 'jxl'];
 
-    private const string FALLBACK_TRANSLATION_KEY = 'netzhirsch_ai_tag.label';
+    private const FALLBACK_TRANSLATION_KEY = 'netzhirsch_ai_tag.label';
 
-    private const string TRANSLATION_DOMAIN = 'netzhirsch_ai_tag';
+    private const TRANSLATION_DOMAIN = 'netzhirsch_ai_tag';
 
     /**
      * @var array<string, array{position: string, text: string}|false>

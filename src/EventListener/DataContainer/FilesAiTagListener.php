@@ -20,7 +20,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class FilesAiTagListener
 {
-    private const string FLASH_INFO = 'contao.BE.info';
+    private const FLASH_INFO = 'contao.BE.info';
 
     public function __construct(
         private readonly Connection $connection,

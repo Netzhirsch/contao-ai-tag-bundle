@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle;
 
+use Netzhirsch\ContaoMcpBundle\Extension\AbstractMcpTool;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -13,7 +15,17 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
 {
     public function configure(DefinitionConfigurator $definition): void
     {
-        $definition->rootNode()
+        $rootNode = $definition->rootNode();
+
+        // children() gibt es nur auf der ArrayNodeDefinition, waehrend Symfony den
+        // Rueckgabetyp von rootNode() als NodeDefinition deklariert (in 6.4 als Union
+        // aus beidem). Zur Laufzeit ist es immer eine ArrayNodeDefinition - deshalb hier
+        // verengen und andernfalls laut scheitern, statt es anzunehmen.
+        if (!$rootNode instanceof ArrayNodeDefinition) {
+            throw new \LogicException(\sprintf('Die Bundle-Konfiguration erwartet eine %s, erhalten wurde %s.', ArrayNodeDefinition::class, get_debug_type($rootNode)));
+        }
+
+        $rootNode
             ->children()
             ->scalarNode('font_path')
             ->info('Absoluter Pfad zu einer TrueType-Schrift fuer die Kennzeichnung. Ohne Angabe werden gaengige System-Schriften gesucht.')
@@ -48,6 +60,11 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->min(0)
             ->max(100)
             ->end()
+            ->integerNode('log_retention_days')
+            ->info('Aufbewahrungsfrist des Kennzeichnungs-Protokolls in Tagen. 0 bewahrt unbegrenzt auf.')
+            ->defaultValue(1095)
+            ->min(0)
+            ->end()
             ->end()
         ;
     }
@@ -62,5 +79,11 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
         }
 
         $container->import('../config/services.yaml');
+
+        // Die MCP-Werkzeuge sind optional: ohne netzhirsch/contao-mcp-bundle gibt es die
+        // Basisklasse nicht, und der Service duerfte nicht registriert werden.
+        if (class_exists(AbstractMcpTool::class)) {
+            $container->import('../config/services_mcp.yaml');
+        }
     }
 }
