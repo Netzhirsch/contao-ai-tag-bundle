@@ -1,0 +1,32 @@
+{#
+    Ergaenzt jede Contao-Abbildung um die barrierefreie Textfassung der
+    KI-Kennzeichnung. Die eingebrannte Kennzeichnung im Bild ist fuer Screenreader
+    unsichtbar, und in sehr kleinen Bildgroessen laesst das Bundle sie bewusst weg -
+    die Textalternative ist deshalb der verlaessliche Traeger der Information.
+
+    Der Hinweis wird an den alt-Text angehaengt (und nicht als zusaetzliches
+    Element ausgegeben), weil er inhaltlich Teil des Bildes ist, kein Bildtitel:
+    so bleibt das Layout unberuehrt und es braucht kein zusaetzliches CSS.
+
+    WICHTIG - kein {% extends %}: Der Core bindet diese Komponente ausschliesslich
+    per {% use %} ein (content_element/image, text, gallery, hyperlink, player,
+    component/_download, backend/search/_results). Ein Template mit "extends" kann
+    Twig nicht als Trait verwenden ("cannot be used as a trait"). Daher wird die
+    vorherige Fassung der Hierarchie per {% use %} eingebunden und ihr media-Block
+    unter einem Alias aufgerufen, statt parent() zu nutzen.
+#}
+
+{% use "@Contao/component/_figure.html.twig" with media as base_media %}
+
+{% block media %}
+    {% set netzhirsch_ai_tag = netzhirsch_ai_tag_hint(figure) %}
+
+    {% if netzhirsch_ai_tag %}
+        {% set netzhirsch_base_alt = figure.hasMetadata ? figure.metadata.alt|insert_tag : '' %}
+        {% set img_attributes = attrs(img_attributes|default({}))
+            .set('alt', netzhirsch_base_alt ? netzhirsch_base_alt ~ ' – ' ~ netzhirsch_ai_tag : netzhirsch_ai_tag)
+        %}
+    {% endif %}
+
+    {{ block('base_media') }}
+{% endblock %}

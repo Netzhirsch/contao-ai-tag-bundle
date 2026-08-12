@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" datatype="plaintext" original="tl_files">
+    <body>
+      <trans-unit id="tl_files.netzhirschAiGenerated.0">
+        <source>AI-generated content</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiGenerated.1">
+        <source>Label this image as AI-generated. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPosition.0">
+        <source>Label position</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPosition.1">
+        <source>"Automatic" picks the corner with the least overlap with the important part of the image.</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagText.0">
+        <source>Label text</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagText.1">
+        <source>Overrides the website and default wording for this file only. Keep it short so it stays legible in small image sizes.</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.auto">
+        <source>Automatic (avoid important part)</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.top-right">
+        <source>Top right</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.top-left">
+        <source>Top left</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.bottom-right">
+        <source>Bottom right</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.bottom-left">
+        <source>Bottom left</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

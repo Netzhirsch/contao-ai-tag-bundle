@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="tl_page">
+    <body>
+      <trans-unit id="tl_page.netzhirsch_ai_tag_legend">
+        <source>AI labelling</source>
+        <target>KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagText.0">
+        <source>Wording of the AI label</source>
+        <target>Wortlaut der KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagText.1">
+        <source>Wording burnt into AI-generated images of this website. Leave empty to use the default wording of this language. As short as necessary so it stays legible in small image sizes.</source>
+        <target>Wortlaut, der in KI-generierte Bilder dieser Website gebrannt wird. Leer lassen, um die Standardformulierung dieser Sprache zu verwenden. So kurz wie nötig, damit die Kennzeichnung auch in kleinen Bildgrößen lesbar bleibt.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

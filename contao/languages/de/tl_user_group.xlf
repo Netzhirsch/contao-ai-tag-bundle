@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="tl_user_group">
+    <body>
+      <trans-unit id="tl_user_group.netzhirsch_ai_tag_legend">
+        <source>AI labelling</source>
+        <target>KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_user_group.netzhirsch_ai_tagp.0">
+        <source>AI labelling permissions</source>
+        <target>Rechte für die KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_user_group.netzhirsch_ai_tagp.1">
+        <source>Here you can define whether the user may set or remove the AI label on files and folders.</source>
+        <target>Hier legen Sie fest, ob der Benutzer die KI-Kennzeichnung an Dateien und Ordnern setzen oder entfernen darf.</target>
+      </trans-unit>
+      <trans-unit id="tl_user_group.netzhirsch_ai_tagpRef.flag">
+        <source>Set and remove the AI label</source>
+        <target>KI-Kennzeichnung setzen und entfernen</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" datatype="plaintext" original="modules">
+    <body>
+      <trans-unit id="MOD.netzhirsch_ai_tag_log.0">
+        <source>AI labelling log</source>
+      </trans-unit>
+      <trans-unit id="MOD.netzhirsch_ai_tag_log.1">
+        <source>Record of who labelled which file as AI-generated and when.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

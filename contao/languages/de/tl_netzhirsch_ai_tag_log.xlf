@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="tl_netzhirsch_ai_tag_log">
+    <body>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.tstamp.0">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.action.0">
+        <source>Change</source>
+        <target>Änderung</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scope.0">
+        <source>Type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.filePath.0">
+        <source>File or folder</source>
+        <target>Datei oder Ordner</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.detail.0">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.username.0">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.userId.0">
+        <source>User ID</source>
+        <target>Benutzer-ID</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.flag_set">
+        <source>Label set</source>
+        <target>Kennzeichnung gesetzt</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.flag_unset">
+        <source>Label removed</source>
+        <target>Kennzeichnung entfernt</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.text_changed">
+        <source>Wording changed</source>
+        <target>Wortlaut geändert</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.position_changed">
+        <source>Position changed</source>
+        <target>Position geändert</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.file">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.folder">
+        <source>Folder</source>
+        <target>Ordner</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

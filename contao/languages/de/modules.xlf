@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="modules">
+    <body>
+      <trans-unit id="MOD.netzhirsch_ai_tag_log.0">
+        <source>AI labelling log</source>
+        <target>Protokoll KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="MOD.netzhirsch_ai_tag_log.1">
+        <source>Record of who labelled which file as AI-generated and when.</source>
+        <target>Nachweis, wer wann welche Datei als KI-generiert gekennzeichnet hat.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

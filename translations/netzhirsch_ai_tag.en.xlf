@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="netzhirsch_ai_tag">
+    <body>
+      <trans-unit id="netzhirsch_ai_tag.label">
+        <source>netzhirsch_ai_tag.label</source>
+        <target>AI-generated</target>
+        <note>Default legal wording for image labelling. As short as possible so it stays legible in small image sizes.</note>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.format">
+        <source>netzhirsch_ai_tag.hint.format</source>
+        <target>"%file%" is not a raster image (e.g. SVG). The label cannot be burnt into the image and will only appear as a text alternative in the markup.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.size">
+        <source>netzhirsch_ai_tag.hint.size</source>
+        <target>"%file%" is too small at %width%×%height% pixels for a legible label. It will only appear as a text alternative in the markup.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

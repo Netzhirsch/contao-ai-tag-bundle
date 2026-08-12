@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="netzhirsch_ai_tag">
+    <body>
+      <trans-unit id="netzhirsch_ai_tag.label">
+        <source>netzhirsch_ai_tag.label</source>
+        <target>KI-generiert</target>
+        <note>Gesetzliche Standardformulierung fuer die Bildkennzeichnung. So kurz wie moeglich, damit sie auch in kleinen Bildgroessen lesbar bleibt.</note>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.format">
+        <source>netzhirsch_ai_tag.hint.format</source>
+        <target>"%file%" ist kein Rasterbild (z. B. SVG). Die Kennzeichnung kann nicht ins Bild gebrannt werden und erscheint nur als Textalternative im Markup.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.size">
+        <source>netzhirsch_ai_tag.hint.size</source>
+        <target>"%file%" ist mit %width%×%height% Pixeln zu klein fuer eine lesbare Kennzeichnung. Sie erscheint nur als Textalternative im Markup.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="tl_files">
+    <body>
+      <trans-unit id="tl_files.netzhirschAiGenerated.0">
+        <source>AI-generated content</source>
+        <target>KI-generierter Inhalt</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiGenerated.1">
+        <source>Label this image as AI-generated. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
+        <target>Dieses Bild als KI-generiert kennzeichnen. Bei Ordnern gilt die Einstellung für alle enthaltenen Bilder; der nächstliegende gekennzeichnete Eintrag gewinnt.</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPosition.0">
+        <source>Label position</source>
+        <target>Position der Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPosition.1">
+        <source>"Automatic" picks the corner with the least overlap with the important part of the image.</source>
+        <target>„Automatisch“ wählt die Ecke mit der geringsten Überlappung zum wichtigen Bildbereich.</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagText.0">
+        <source>Label text</source>
+        <target>Text der Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagText.1">
+        <source>Overrides the website and default wording for this file only. Keep it short so it stays legible in small image sizes.</source>
+        <target>Überschreibt den Wortlaut der Website und den Standard nur für diese Datei. Kurz halten, damit die Kennzeichnung auch in kleinen Bildgrößen lesbar bleibt.</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.auto">
+        <source>Automatic (avoid important part)</source>
+        <target>Automatisch (wichtigen Bereich meiden)</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.top-right">
+        <source>Top right</source>
+        <target>Rechts oben</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.top-left">
+        <source>Top left</source>
+        <target>Links oben</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.bottom-right">
+        <source>Bottom right</source>
+        <target>Rechts unten</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiTagPositionRef.bottom-left">
+        <source>Bottom left</source>
+        <target>Links unten</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

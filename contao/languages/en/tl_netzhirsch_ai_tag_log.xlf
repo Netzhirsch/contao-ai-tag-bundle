@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2">
+  <file source-language="en" datatype="plaintext" original="tl_netzhirsch_ai_tag_log">
+    <body>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.tstamp.0">
+        <source>Date</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.action.0">
+        <source>Change</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scope.0">
+        <source>Type</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.filePath.0">
+        <source>File or folder</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.detail.0">
+        <source>Details</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.username.0">
+        <source>User</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.userId.0">
+        <source>User ID</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.flag_set">
+        <source>Label set</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.flag_unset">
+        <source>Label removed</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.text_changed">
+        <source>Wording changed</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.position_changed">
+        <source>Position changed</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.file">
+        <source>File</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.folder">
+        <source>Folder</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

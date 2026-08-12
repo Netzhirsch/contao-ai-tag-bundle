@@ -8,5 +8,44 @@ services:
         exclude:
             - '../src/NetzhirschContaoAiTagBundle.php'
             - '../src/ContaoManager/'
-            - '../src/Model/'
-            - '../src/Entity/'
+            - '../src/Image/AiTagOptions.php'
+            - '../src/Security/ContaoAiTagPermissions.php'
+
+    Netzhirsch\ContaoAiTagBundle\Image\FontLocator:
+        arguments:
+            $configuredPath: '%netzhirsch_contao_ai_tag.font_path%'
+
+    Netzhirsch\ContaoAiTagBundle\Image\TagRenderer:
+        arguments:
+            $imagine: '@contao.image.imagine'
+            $metadataReaderWriter: '@contao.image.metadata'
+            $minFontSize: '%netzhirsch_contao_ai_tag.min_font_size%'
+            $relativeFontSize: '%netzhirsch_contao_ai_tag.relative_font_size%'
+            $maxBoxWidth: '%netzhirsch_contao_ai_tag.max_box_width%'
+            $maxBoxHeight: '%netzhirsch_contao_ai_tag.max_box_height%'
+            $boxOpacity: '%netzhirsch_contao_ai_tag.box_opacity%'
+
+    Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver:
+        arguments:
+            $pageFinder: '@contao.routing.page_finder'
+            $projectDir: '%kernel.project_dir%'
+            $uploadPath: '%contao.upload_path%'
+
+    # Dekoriert statt ersetzt: alle Verbraucher im Core typisieren gegen
+    # ResizerInterface bzw. DeferredResizerInterface, nicht gegen die Klasse.
+    Netzhirsch\ContaoAiTagBundle\Image\AiTagResizer:
+        decorates: contao.image.resizer
+        public: true
+        arguments:
+            $inner: '@.inner'
+            $storage: '@contao.image.deferred_image_storage'
+            $cacheDir: '%contao.image.target_dir%'
+            $uploadDir: '%kernel.project_dir%/%contao.upload_path%'
+
+    Netzhirsch\ContaoAiTagBundle\Twig\AiTagExtension:
+        arguments:
+            $imagine: '@contao.image.imagine'
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
