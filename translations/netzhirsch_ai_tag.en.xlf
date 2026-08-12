@@ -7,6 +7,22 @@
         <target>AI-generated</target>
         <note>Default legal wording for image labelling. As short as possible so it stays legible in small image sizes.</note>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.flag_set">
+        <source>netzhirsch_ai_tag.log.flag_set</source>
+        <target>AI label set: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.flag_unset">
+        <source>netzhirsch_ai_tag.log.flag_unset</source>
+        <target>AI label removed: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.text_changed">
+        <source>netzhirsch_ai_tag.log.text_changed</source>
+        <target>AI label wording changed: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.position_changed">
+        <source>netzhirsch_ai_tag.log.position_changed</source>
+        <target>AI label position changed: %path%</target>
+      </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.format">
         <source>netzhirsch_ai_tag.hint.format</source>
         <target>"%file%" is not a raster image (e.g. SVG). The label cannot be burnt into the image and will only appear as a text alternative in the markup.</target>

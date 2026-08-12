@@ -7,6 +7,22 @@
         <target>KI-generiert</target>
         <note>Gesetzliche Standardformulierung fuer die Bildkennzeichnung. So kurz wie moeglich, damit sie auch in kleinen Bildgroessen lesbar bleibt.</note>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.flag_set">
+        <source>netzhirsch_ai_tag.log.flag_set</source>
+        <target>KI-Kennzeichnung gesetzt: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.flag_unset">
+        <source>netzhirsch_ai_tag.log.flag_unset</source>
+        <target>KI-Kennzeichnung entfernt: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.text_changed">
+        <source>netzhirsch_ai_tag.log.text_changed</source>
+        <target>Wortlaut der KI-Kennzeichnung geändert: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.position_changed">
+        <source>netzhirsch_ai_tag.log.position_changed</source>
+        <target>Position der KI-Kennzeichnung geändert: %path%</target>
+      </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.format">
         <source>netzhirsch_ai_tag.hint.format</source>
         <target>"%file%" ist kein Rasterbild (z. B. SVG). Die Kennzeichnung kann nicht ins Bild gebrannt werden und erscheint nur als Textalternative im Markup.</target>
