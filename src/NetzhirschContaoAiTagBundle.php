@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle;
 
+use Netzhirsch\ContaoAiTagBundle\Image\TagStyle;
+use Netzhirsch\ContaoAiTagBundle\Twig\AiTagExtension;
 use Netzhirsch\ContaoMcpBundle\Extension\AbstractMcpTool;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -13,6 +15,11 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
 class NetzhirschContaoAiTagBundle extends AbstractBundle
 {
+    /**
+     * Farbangaben als Hex, drei- oder sechsstellig.
+     */
+    private const COLOR_PATTERN = '/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/';
+
     public function configure(DefinitionConfigurator $definition): void
     {
         $rootNode = $definition->rootNode();
@@ -27,6 +34,7 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
 
         $rootNode
             ->children()
+            // --- Schrift und Groesse ---
             ->scalarNode('font_path')
             ->info('Absoluter Pfad zu einer TrueType-Schrift fuer die Kennzeichnung. Ohne Angabe werden gaengige System-Schriften gesucht.')
             ->defaultNull()
@@ -42,6 +50,62 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->min(0.005)
             ->max(0.5)
             ->end()
+            ->integerNode('max_font_size')
+            ->info('Groesste Schriftgroesse in Pixel. Ohne Deckel wuerde das Label auf grossen Bildern zum Bildelement.')
+            ->defaultValue(48)
+            ->min(8)
+            ->end()
+            // --- Gestaltung ---
+            ->enumNode('style')
+            ->info('box = Text auf halbtransparenter Flaeche, outline = Text mit Kontur, plain = nur Text.')
+            ->values(TagStyle::STYLES)
+            ->defaultValue(TagStyle::STYLE_BOX)
+            ->end()
+            ->scalarNode('text_color')
+            ->info('Hex-Farbe des Textes. Ohne Angabe automatisch hell oder dunkel, je nach Untergrund.')
+            ->defaultNull()
+            ->validate()
+            ->ifTrue(static fn (mixed $value): bool => null !== $value && 1 !== preg_match(self::COLOR_PATTERN, (string) $value))
+            ->thenInvalid('text_color muss eine Hex-Farbe wie #ffffff sein, "%s" ist keine.')
+            ->end()
+            ->end()
+            ->scalarNode('box_color')
+            ->info('Hex-Farbe der Flaeche bzw. der Kontur. Ohne Angabe automatisch als Gegenfarbe zum Text.')
+            ->defaultNull()
+            ->validate()
+            ->ifTrue(static fn (mixed $value): bool => null !== $value && 1 !== preg_match(self::COLOR_PATTERN, (string) $value))
+            ->thenInvalid('box_color muss eine Hex-Farbe wie #000000 sein, "%s" ist keine.')
+            ->end()
+            ->end()
+            ->integerNode('box_opacity')
+            ->info('Deckkraft der Label-Flaeche in Prozent.')
+            ->defaultValue(60)
+            ->min(0)
+            ->max(100)
+            ->end()
+            ->floatNode('corner_radius')
+            ->info('Eckenradius der Flaeche, relativ zu ihrer Hoehe. 0 ergibt rechte Winkel, 0.5 eine Pillenform.')
+            ->defaultValue(0.25)
+            ->min(0.0)
+            ->max(0.5)
+            ->end()
+            ->floatNode('padding_ratio')
+            ->info('Innenabstand der Flaeche, relativ zur Schriftgroesse.')
+            ->defaultValue(0.45)
+            ->min(0.0)
+            ->max(2.0)
+            ->end()
+            ->floatNode('margin_ratio')
+            ->info('Abstand zum Bildrand, relativ zur Schriftgroesse.')
+            ->defaultValue(0.5)
+            ->min(0.0)
+            ->max(5.0)
+            ->end()
+            ->booleanNode('uppercase')
+            ->info('Kennzeichnung in Grossbuchstaben ausgeben.')
+            ->defaultFalse()
+            ->end()
+            // --- Reichweite ---
             ->floatNode('max_box_width')
             ->info('Maximaler Anteil der Bildbreite, den das Label belegen darf.')
             ->defaultValue(0.65)
@@ -54,10 +118,36 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->min(0.05)
             ->max(1.0)
             ->end()
-            ->integerNode('box_opacity')
-            ->info('Deckkraft der Label-Flaeche in Prozent.')
-            ->defaultValue(60)
+            ->integerNode('min_width')
+            ->info('Bildgroessen unterhalb dieser Breite werden nicht gekennzeichnet. 0 schaltet die Pruefung ab.')
+            ->defaultValue(0)
             ->min(0)
+            ->end()
+            ->integerNode('min_height')
+            ->info('Bildgroessen unterhalb dieser Hoehe werden nicht gekennzeichnet. 0 schaltet die Pruefung ab.')
+            ->defaultValue(0)
+            ->min(0)
+            ->end()
+            ->arrayNode('excluded_paths')
+            ->info('Pfade, die nie gekennzeichnet werden - auch nicht ueber die Ordner-Vererbung. Beispiel: files/icons')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            // --- Markup ---
+            ->enumNode('hint_placement')
+            ->info('Wohin die barrierefreie Textfassung geht: alt, caption, both oder none.')
+            ->values(AiTagExtension::PLACEMENTS)
+            ->defaultValue(AiTagExtension::PLACEMENT_ALT)
+            ->end()
+            ->scalarNode('hint_separator')
+            ->info('Trenner zwischen vorhandenem Text und der Kennzeichnung.')
+            ->defaultValue(' – ')
+            ->end()
+            // --- Betrieb ---
+            ->integerNode('intermediate_quality')
+            ->info('Qualitaet der ersten Kodierung. Die Nachbearbeitung kodiert ein zweites Mal, deshalb bewusst hoch.')
+            ->defaultValue(95)
+            ->min(1)
             ->max(100)
             ->end()
             ->integerNode('log_retention_days')

@@ -7,6 +7,7 @@ namespace Netzhirsch\ContaoAiTagBundle\Image;
 use Contao\Image\Metadata\ImageMetadata;
 use Contao\Image\Metadata\MetadataReaderWriter;
 use Imagine\Image\AbstractFont;
+use Imagine\Image\Box;
 use Imagine\Image\ImageInterface as ImagineImageInterface;
 use Imagine\Image\ImagineInterface;
 use Imagine\Image\Palette\Color\ColorInterface;
@@ -47,12 +48,8 @@ final class TagRenderer
         private readonly MetadataReaderWriter $metadataReaderWriter,
         private readonly FontLocator $fontLocator,
         private readonly Filesystem $filesystem,
+        private readonly TagStyle $style,
         private readonly LoggerInterface|null $logger = null,
-        private readonly int $minFontSize = 11,
-        private readonly float $relativeFontSize = 0.03,
-        private readonly float $maxBoxWidth = 0.65,
-        private readonly float $maxBoxHeight = 0.30,
-        private readonly int $boxOpacity = 60,
     ) {
     }
 
@@ -84,17 +81,13 @@ final class TagRenderer
             return false;
         }
 
-        if (!$this->draw($image, $tag, $font, $path)) {
-            // Nicht gezeichnet: die Datei traegt noch die angehobene erste Kodierung,
-            // deshalb trotzdem mit der Zielqualitaet neu speichern.
-            $this->save($image, $path, $tag, $imagineOptions, $preserveCopyright);
+        $drawn = $this->draw($image, $tag, $font, $path);
 
-            return false;
-        }
-
+        // Auch ohne Overlay neu speichern: die Datei traegt sonst die angehobene erste
+        // Kodierung statt der Zielqualitaet der Bildgroesse.
         $this->save($image, $path, $tag, $imagineOptions, $preserveCopyright);
 
-        return true;
+        return $drawn;
     }
 
     /**
@@ -105,31 +98,35 @@ final class TagRenderer
     {
         $font = $this->fontLocator->locate();
 
-        if (null === $font) {
+        if (null === $font || $this->style->isTooSmall($width, $height)) {
             return false;
         }
 
-        $fontSize = $this->fontSize($width);
-        $box = $this->imagine->font($font, $fontSize, (new RGB())->color('#000000', self::OPAQUE))->box($text);
-        $padding = (int) round($fontSize * 0.45);
+        $fontSize = $this->style->fontSize($width);
+        $box = $this->imagine->font($font, $fontSize, (new RGB())->color('#000000', self::OPAQUE))->box($this->label($text));
 
-        return $box->getWidth() + 2 * $padding <= $width * $this->maxBoxWidth
-            && $box->getHeight() + 2 * $padding <= $height * $this->maxBoxHeight;
+        return $this->fits($box->getWidth(), $box->getHeight(), $fontSize, $width, $height);
     }
 
     private function draw(ImagineImageInterface $image, AiTagOptions $tag, string $font, string $path): bool
     {
         $width = $image->getSize()->getWidth();
         $height = $image->getSize()->getHeight();
-        $fontSize = $this->fontSize($width);
+
+        if ($this->style->isTooSmall($width, $height)) {
+            $this->logger?->info(\sprintf('KI-Kennzeichnung fuer "%s" ausgelassen: %dx%d px liegt unter der konfigurierten Mindestgroesse.', $path, $width, $height));
+
+            return false;
+        }
+
+        $text = $this->label($tag->text);
+        $fontSize = $this->style->fontSize($width);
+        $corner = AiTagOptions::POSITION_AUTO === $tag->corner ? AiTagOptions::POSITION_TOP_RIGHT : $tag->corner;
 
         $palette = $image->palette();
-        $corner = AiTagOptions::POSITION_AUTO === $tag->corner ? AiTagOptions::POSITION_TOP_RIGHT : $tag->corner;
         $isDarkBackground = $this->averageLuminance($image, $corner) < 128;
 
-        $textColor = $palette->color($isDarkBackground ? '#ffffff' : '#000000', self::OPAQUE);
-        $boxColor = $palette->color($isDarkBackground ? '#000000' : '#ffffff', $this->boxOpacity);
-
+        $textColor = $palette->color($this->style->textColor ?? ($isDarkBackground ? '#ffffff' : '#000000'), self::OPAQUE);
         $fontObject = $this->imagine->font($font, $fontSize, $textColor);
 
         // Imagines eigene Schnittstellen passen nicht zusammen: font() liefert ein
@@ -141,26 +138,23 @@ final class TagRenderer
             return false;
         }
 
-        $textBox = $fontObject->box($tag->text);
-        $padding = (int) round($fontSize * 0.45);
+        $textBox = $fontObject->box($text);
+        $padding = $this->padding($fontSize);
 
-        $boxWidth = $textBox->getWidth() + 2 * $padding;
-        $boxHeight = $textBox->getHeight() + 2 * $padding;
-
-        if ($boxWidth > $width * $this->maxBoxWidth || $boxHeight > $height * $this->maxBoxHeight) {
+        if (!$this->fits($textBox->getWidth(), $textBox->getHeight(), $fontSize, $width, $height)) {
             $this->logger?->info(\sprintf(
-                'KI-Kennzeichnung fuer "%s" ausgelassen: bei %dx%d px passt das Label (%dx%d px) nicht lesbar ins Bild.',
+                'KI-Kennzeichnung fuer "%s" ausgelassen: bei %dx%d px passt das Label nicht lesbar ins Bild.',
                 $path,
                 $width,
                 $height,
-                $boxWidth,
-                $boxHeight,
             ));
 
             return false;
         }
 
-        $margin = (int) round($fontSize * 0.5);
+        $boxWidth = $textBox->getWidth() + 2 * $padding;
+        $boxHeight = $textBox->getHeight() + 2 * $padding;
+        $margin = (int) round($fontSize * $this->style->marginRatio);
 
         [$x, $y] = match ($corner) {
             AiTagOptions::POSITION_TOP_LEFT => [$margin, $margin],
@@ -172,21 +166,107 @@ final class TagRenderer
         $x = max(0, $x);
         $y = max(0, $y);
 
-        $image->draw()->rectangle(
-            new Point($x, $y),
-            new Point(min($width - 1, $x + $boxWidth), min($height - 1, $y + $boxHeight)),
-            $boxColor,
-            true,
-        );
+        if (TagStyle::STYLE_BOX === $this->style->style) {
+            $boxColor = $palette->color(
+                $this->style->boxColor ?? ($isDarkBackground ? '#000000' : '#ffffff'),
+                $this->style->boxOpacity,
+            );
 
-        $image->draw()->text($tag->text, $fontObject, new Point($x + $padding, $y + $padding));
+            $this->drawBox($image, $x, $y, min($width - 1, $x + $boxWidth), min($height - 1, $y + $boxHeight), $boxHeight, $boxColor);
+        }
+
+        if (TagStyle::STYLE_OUTLINE === $this->style->style) {
+            $this->drawOutline($image, $text, $font, $fontSize, $x + $padding, $y + $padding, $isDarkBackground, $palette);
+        }
+
+        $image->draw()->text($text, $fontObject, new Point($x + $padding, $y + $padding));
 
         return true;
     }
 
-    private function fontSize(int $width): int
+    /**
+     * Zeichnet die Label-Flaeche, bei Bedarf mit runden Ecken.
+     *
+     * Die Teilflaechen duerfen sich nicht ueberlappen: die Flaeche ist
+     * halbtransparent, und uebereinander gezeichnete Teile wuerden an den Nahtstellen
+     * doppelt aufgetragen und als dunklere Kanten sichtbar. Deshalb drei Rechtecke
+     * ohne Ueberschneidung und vier Kreissegmente in den verbleibenden Ecken.
+     */
+    private function drawBox(ImagineImageInterface $image, int $x1, int $y1, int $x2, int $y2, int $boxHeight, ColorInterface $color): void
     {
-        return max($this->minFontSize, (int) round($width * $this->relativeFontSize));
+        $drawer = $image->draw();
+        $radius = (int) round($boxHeight * $this->style->cornerRadius);
+        $radius = max(0, min($radius, (int) floor(min($x2 - $x1, $y2 - $y1) / 2)));
+
+        if ($radius < 1) {
+            $drawer->rectangle(new Point($x1, $y1), new Point($x2, $y2), $color, true);
+
+            return;
+        }
+
+        $drawer->rectangle(new Point($x1, $y1 + $radius), new Point($x2, $y2 - $radius), $color, true);
+        $drawer->rectangle(new Point($x1 + $radius, $y1), new Point($x2 - $radius, $y1 + $radius - 1), $color, true);
+        $drawer->rectangle(new Point($x1 + $radius, $y2 - $radius + 1), new Point($x2 - $radius, $y2), $color, true);
+
+        // Die Kreissegmente muessen exakt in den verbleibenden Ecken landen. Ein
+        // gefuellter Bogen zeichnet bis zu seinem Mittelpunkt einschliesslich, deshalb
+        // liegt der Mittelpunkt einen Pixel innerhalb und der Durchmesser ist ungerade -
+        // sonst ueberlappt jede Ecke die Rechtecke um eine Reihe und diese Naht wird bei
+        // halbtransparenter Flaeche als dunklere Linie sichtbar.
+        $diameter = new Box(2 * $radius - 1, 2 * $radius - 1);
+        $left = $x1 + $radius - 1;
+        $right = $x2 - $radius + 1;
+        $top = $y1 + $radius - 1;
+        $bottom = $y2 - $radius + 1;
+
+        foreach (
+            [
+                [$left, $top, 180, 270],
+                [$right, $top, 270, 360],
+                [$left, $bottom, 90, 180],
+                [$right, $bottom, 0, 90],
+            ] as [$centerX, $centerY, $start, $end]
+        ) {
+            $drawer->pieSlice(new Point($centerX, $centerY), $diameter, $start, $end, $color, true);
+        }
+    }
+
+    /**
+     * Kontur statt Flaeche: der Text wird in der Gegenfarbe leicht versetzt mehrfach
+     * gezeichnet, darueber liegt spaeter der eigentliche Text.
+     */
+    private function drawOutline(ImagineImageInterface $image, string $text, string $font, int $fontSize, int $x, int $y, bool $isDarkBackground, mixed $palette): void
+    {
+        $outlineColor = $palette->color($this->style->boxColor ?? ($isDarkBackground ? '#000000' : '#ffffff'), self::OPAQUE);
+        $outlineFont = $this->imagine->font($font, $fontSize, $outlineColor);
+
+        if (!$outlineFont instanceof AbstractFont) {
+            return;
+        }
+
+        $offset = max(1, (int) round($fontSize * 0.07));
+
+        foreach ([[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]] as [$dx, $dy]) {
+            $image->draw()->text($text, $outlineFont, new Point(max(0, $x + $dx * $offset), max(0, $y + $dy * $offset)));
+        }
+    }
+
+    private function label(string $text): string
+    {
+        return $this->style->uppercase ? mb_strtoupper($text) : $text;
+    }
+
+    private function padding(int $fontSize): int
+    {
+        return TagStyle::STYLE_BOX === $this->style->style ? (int) round($fontSize * $this->style->paddingRatio) : 0;
+    }
+
+    private function fits(int $textWidth, int $textHeight, int $fontSize, int $imageWidth, int $imageHeight): bool
+    {
+        $padding = $this->padding($fontSize);
+
+        return $textWidth + 2 * $padding <= $imageWidth * $this->style->maxBoxWidth
+            && $textHeight + 2 * $padding <= $imageHeight * $this->style->maxBoxHeight;
     }
 
     /**

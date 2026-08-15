@@ -56,15 +56,55 @@ netzhirsch_contao_ai_tag:
 
 ## Konfiguration
 
+**Schrift und Größe**
+
 | Schlüssel | Standard | Bedeutung |
 |---|---|---|
 | `font_path` | `null` | Absoluter Pfad zur TrueType-Schrift. Ohne Angabe automatische Suche. |
 | `min_font_size` | `11` | Kleinste Schriftgröße in Pixel. |
 | `relative_font_size` | `0.03` | Wunsch-Schriftgröße relativ zur Bildbreite. |
+| `max_font_size` | `48` | Größte Schriftgröße. Ohne Deckel würde das Label auf einem 3000px-Hero 90px groß und damit zum Bildelement. |
+
+**Gestaltung**
+
+| Schlüssel | Standard | Bedeutung |
+|---|---|---|
+| `style` | `box` | `box` = Text auf halbtransparenter Fläche, `outline` = Text mit Kontur, `plain` = nur Text. |
+| `text_color` | `null` | Hex-Farbe des Textes. Ohne Angabe automatisch hell oder dunkel, je nach Untergrund. |
+| `box_color` | `null` | Hex-Farbe der Fläche bzw. der Kontur. Ohne Angabe die Gegenfarbe zum Text. |
+| `box_opacity` | `60` | Deckkraft der Fläche in Prozent. |
+| `corner_radius` | `0.25` | Eckenradius relativ zur Label-Höhe. `0` ergibt rechte Winkel, `0.5` eine Pillenform. |
+| `padding_ratio` | `0.45` | Innenabstand der Fläche, relativ zur Schriftgröße. |
+| `margin_ratio` | `0.5` | Abstand zum Bildrand, relativ zur Schriftgröße. |
+| `uppercase` | `false` | Kennzeichnung in Großbuchstaben. |
+
+**Reichweite**
+
+| Schlüssel | Standard | Bedeutung |
+|---|---|---|
 | `max_box_width` | `0.65` | Maximaler Anteil der Bildbreite für das Label. |
 | `max_box_height` | `0.3` | Maximaler Anteil der Bildhöhe für das Label. |
-| `box_opacity` | `60` | Deckkraft der Label-Fläche in Prozent. |
+| `min_width` / `min_height` | `0` | Bildgrößen darunter werden nicht gekennzeichnet. `0` schaltet die Prüfung ab. |
+| `excluded_paths` | `[]` | Pfade, die nie gekennzeichnet werden – auch nicht über die Ordner-Vererbung. |
+
+**Markup und Betrieb**
+
+| Schlüssel | Standard | Bedeutung |
+|---|---|---|
+| `hint_placement` | `alt` | Wohin die barrierefreie Textfassung geht: `alt`, `caption`, `both` oder `none`. |
+| `hint_separator` | `' – '` | Trenner zwischen vorhandenem Text und der Kennzeichnung. |
+| `intermediate_quality` | `95` | Qualität der ersten Kodierung (die Nachbearbeitung kodiert ein zweites Mal). |
 | `log_retention_days` | `1095` | Aufbewahrungsfrist des Protokolls in Tagen (3 Jahre). `0` bewahrt unbegrenzt auf. |
+
+Jede Einstellung, die das Aussehen verändert, fließt über einen Fingerabdruck in den
+Cache-Schlüssel der Bildgröße ein. Eine Design-Änderung erzeugt die betroffenen Bilder
+also automatisch neu; der Bild-Cache muss nicht geleert werden.
+
+Zu den runden Ecken: die Fläche entsteht aus drei Rechtecken und vier Kreissegmenten,
+die sich bewusst **nicht** überlappen – bei halbtransparenter Fläche würde die Farbe an
+den Nahtstellen sonst zweimal aufgetragen und als dunklere Linie sichtbar. GD zeichnet
+Bögen ohne Kantenglättung, die Rundung ist deshalb bei kleinen Radien leicht stufig;
+Imagick glättet.
 
 ## Protokoll und Aufbewahrung
 

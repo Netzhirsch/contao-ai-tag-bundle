@@ -14,6 +14,7 @@ use Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver;
 use Netzhirsch\ContaoAiTagBundle\Image\CornerSelector;
 use Netzhirsch\ContaoAiTagBundle\Image\FontLocator;
 use Netzhirsch\ContaoAiTagBundle\Image\TagRenderer;
+use Netzhirsch\ContaoAiTagBundle\Image\TagStyle;
 use Netzhirsch\ContaoAiTagBundle\Mcp\AiTagTool;
 use Netzhirsch\ContaoMcpBundle\Server\ExtensionToolRegistrar;
 use PhpMcp\Server\Registry;
@@ -109,12 +110,15 @@ class AiTagToolTest extends TestCase
         $connection = $this->createStub(Connection::class);
         $translator = $this->createStub(TranslatorInterface::class);
 
+        $style = new TagStyle();
+
         $resolver = new AiTagResolver(
             $connection,
             new RequestStack(),
             $this->createStub(PageFinder::class),
             $translator,
             new CornerSelector(),
+            $style,
             '/var/www/project',
             'files',
         );
@@ -124,6 +128,7 @@ class AiTagToolTest extends TestCase
             $this->createStub(MetadataReaderWriter::class),
             new FontLocator(),
             new Filesystem(),
+            $style,
         );
 
         $auditLogger = new AiTagAuditLogger(

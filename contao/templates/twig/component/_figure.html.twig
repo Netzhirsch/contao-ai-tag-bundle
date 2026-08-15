@@ -4,36 +4,64 @@
     unsichtbar, und in sehr kleinen Bildgroessen laesst das Bundle sie bewusst weg -
     die Textalternative ist deshalb der verlaessliche Traeger der Information.
 
-    Der Hinweis wird an den alt-Text angehaengt (und nicht als zusaetzliches
-    Element ausgegeben), weil er inhaltlich Teil des Bildes ist, kein Bildtitel:
-    so bleibt das Layout unberuehrt und es braucht kein zusaetzliches CSS.
+    Wohin sie geht, steuert netzhirsch_contao_ai_tag.hint_placement:
+    alt (Standard), caption, both oder none.
 
-    Zwei Fallstricke, die beide bereits aufgetreten sind:
+    Drei Regeln, die dieses Template einhalten muss - alle drei sind schon einmal
+    verletzt worden:
 
-    1. Kein {% extends %}: Der Core bindet diese Komponente per {% use %} ein
+    1. Kein {% extends %} und ueberhaupt nichts ausserhalb von {% use %} und
+       {% block %}: Der Core bindet die Komponente als Twig-Trait ein
        (content_element/image, text, gallery, hyperlink, player, component/_download,
-       backend/search/_results). Ein Template mit "extends" kann Twig nicht als Trait
-       verwenden - jede Seite mit Bild bricht mit "cannot be used as a trait" ab.
+       backend/search/_results). Schon ein {% if %} auf dieser Ebene macht das
+       Template als Trait unbrauchbar - jede Seite mit Bild bricht dann mit
+       "cannot be used as a trait" ab.
 
     2. Ueberschrieben wird figure_component, also der aeusserste Block - nicht media.
-       Beim direkten Rendern des Templates (FigureRenderer mit diesem Template,
-       {% include %}) ist ein Block auf Body-Ebene die gesamte Ausgabe. Ein
-       media-Override lieferte dort nur das <img> ohne das umgebende <figure>.
-       Die Zuweisung an img_attributes wirkt trotzdem, weil der Core sie in seinem
-       image-Block zuletzt hineinmergt.
+       Beim direkten Rendern (FigureRenderer mit diesem Template, {% include %}) ist
+       ein Block auf Body-Ebene die Ausgabe; ein media-Override lieferte dort nur das
+       <img> ohne das umgebende <figure>.
+
+    3. Aus demselben Grund gibt der caption-Block nur etwas aus, wenn er aus dem
+       figure_component heraus aufgerufen wurde. Beim Direktrendern wuerde er sonst
+       ein zweites, freistehendes <figcaption> hinter die Abbildung setzen.
 #}
 
-{% use "@Contao/component/_figure.html.twig" with figure_component as base_figure_component %}
+{% use "@Contao/component/_figure.html.twig" with figure_component as base_figure_component, caption as base_caption %}
 
 {% block figure_component %}
     {% set netzhirsch_ai_tag = netzhirsch_ai_tag_hint(figure) %}
+    {% set netzhirsch_ai_tag_config = netzhirsch_ai_tag_hint_config() %}
+    {% set netzhirsch_ai_tag_in_figure = true %}
 
-    {% if netzhirsch_ai_tag %}
+    {% if netzhirsch_ai_tag and netzhirsch_ai_tag_config.placement in ['alt', 'both'] %}
         {% set netzhirsch_base_alt = figure.hasMetadata ? figure.metadata.alt|insert_tag : '' %}
         {% set img_attributes = attrs(img_attributes|default({}))
-            .set('alt', netzhirsch_base_alt ? netzhirsch_base_alt ~ ' – ' ~ netzhirsch_ai_tag : netzhirsch_ai_tag)
+            .set('alt', netzhirsch_base_alt
+                ? netzhirsch_base_alt ~ netzhirsch_ai_tag_config.separator ~ netzhirsch_ai_tag
+                : netzhirsch_ai_tag)
         %}
     {% endif %}
 
     {{ block('base_figure_component') }}
+{% endblock %}
+
+{% block caption %}
+    {% if not netzhirsch_ai_tag_in_figure|default(false) %}
+        {# Direkt gerendert - der figure_component-Block hat die Ausgabe bereits erzeugt #}
+    {% elseif not netzhirsch_ai_tag|default or netzhirsch_ai_tag_config.placement not in ['caption', 'both'] %}
+        {{ block('base_caption') }}
+    {% else %}
+        {% set caption_attributes = attrs()
+            .mergeWith(figure.options.caption_attr|default)
+            .mergeWith(caption_attributes|default)
+        %}
+        <figcaption{{ caption_attributes }}>
+            {%- if figure.metadata and figure.metadata.caption -%}
+                {{- figure.metadata.caption|sanitize_html('contao')|insert_tag_raw -}}
+                {{- netzhirsch_ai_tag_config.separator -}}
+            {%- endif -%}
+            <span class="ai-tag-note">{{- netzhirsch_ai_tag -}}</span>
+        </figcaption>
+    {% endif %}
 {% endblock %}

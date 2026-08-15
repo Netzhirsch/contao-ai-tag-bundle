@@ -50,6 +50,7 @@ final class AiTagOptions
         public readonly string $corner,
         public readonly string $text,
         public readonly int $quality,
+        public readonly string $styleFingerprint = '',
     ) {
     }
 
@@ -64,6 +65,7 @@ final class AiTagOptions
             'corner' => $this->corner,
             'text' => $this->text,
             'quality' => $this->quality,
+            'style' => $this->styleFingerprint,
         ];
     }
 
@@ -85,6 +87,7 @@ final class AiTagOptions
             (string) $payload['corner'],
             (string) $payload['text'],
             (int) $payload['quality'],
+            (string) ($payload['style'] ?? ''),
         );
     }
 }

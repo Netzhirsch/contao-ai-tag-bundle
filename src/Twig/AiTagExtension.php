@@ -20,9 +20,21 @@ use Twig\TwigFunction;
  */
 final class AiTagExtension extends AbstractExtension
 {
+    public const PLACEMENT_ALT = 'alt';
+
+    public const PLACEMENT_CAPTION = 'caption';
+
+    public const PLACEMENT_BOTH = 'both';
+
+    public const PLACEMENT_NONE = 'none';
+
+    public const PLACEMENTS = [self::PLACEMENT_ALT, self::PLACEMENT_CAPTION, self::PLACEMENT_BOTH, self::PLACEMENT_NONE];
+
     public function __construct(
         private readonly AiTagResolver $resolver,
         private readonly ImagineInterface $imagine,
+        private readonly string $placement = self::PLACEMENT_ALT,
+        private readonly string $separator = ' – ',
     ) {
     }
 
@@ -30,6 +42,7 @@ final class AiTagExtension extends AbstractExtension
     {
         return [
             new TwigFunction('netzhirsch_ai_tag_hint', $this->getHint(...)),
+            new TwigFunction('netzhirsch_ai_tag_hint_config', $this->getHintConfig(...)),
         ];
     }
 
@@ -56,5 +69,20 @@ final class AiTagExtension extends AbstractExtension
         }
 
         return $tag?->text;
+    }
+
+    /**
+     * Wo die Textfassung landen soll und womit sie angefuegt wird. Eigene Funktion
+     * statt eines erweiterten Rueckgabewerts von getHint(), damit Projekte, die den
+     * Text bereits im Template verwenden, nichts anpassen muessen.
+     *
+     * @return array{placement: string, separator: string}
+     */
+    public function getHintConfig(): array
+    {
+        return [
+            'placement' => $this->placement,
+            'separator' => $this->separator,
+        ];
     }
 }

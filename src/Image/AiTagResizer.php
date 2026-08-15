@@ -33,12 +33,6 @@ use Symfony\Component\Filesystem\Path;
  */
 final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 {
-    /**
-     * Qualitaet der ersten Kodierung. Bewusst hoch, weil die Nachbearbeitung ein
-     * zweites Mal kodiert; gespeichert wird am Ende mit der Zielqualitaet.
-     */
-    private const INTERMEDIATE_QUALITY = 95;
-
     private const QUALITY_KEYS = ['quality', 'jpeg_quality', 'webp_quality', 'avif_quality', 'heic_quality', 'jxl_quality'];
 
     public function __construct(
@@ -48,6 +42,11 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
         private readonly DeferredImageStorageInterface $storage,
         private readonly string $cacheDir,
         private readonly string $uploadDir,
+        /**
+         * Qualitaet der ersten Kodierung. Bewusst hoch, weil die Nachbearbeitung ein zweites
+         * Mal kodiert; gespeichert wird am Ende mit der Zielqualitaet der Bildgroesse.
+         */
+        private readonly int $intermediateQuality = 95,
         private readonly LoggerInterface|null $logger = null,
     ) {
     }
@@ -146,11 +145,11 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 
         foreach (self::QUALITY_KEYS as $key) {
             if (isset($imagineOptions[$key])) {
-                $imagineOptions[$key] = self::INTERMEDIATE_QUALITY;
+                $imagineOptions[$key] = $this->intermediateQuality;
             }
         }
 
-        $imagineOptions['quality'] = self::INTERMEDIATE_QUALITY;
+        $imagineOptions['quality'] = $this->intermediateQuality;
         $imagineOptions[AiTagOptions::OPTION_KEY] = $tag->toArray();
 
         $prepared = clone $options;

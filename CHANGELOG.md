@@ -4,6 +4,27 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+### Hinzugefügt
+
+- Konfiguration für das Aussehen der Kennzeichnung: `style` (`box`, `outline`, `plain`),
+  `text_color`, `box_color`, `corner_radius` (runde Ecken bis zur Pillenform),
+  `padding_ratio`, `margin_ratio`, `uppercase` und `max_font_size`.
+- Reichweite steuerbar über `min_width`, `min_height` und `excluded_paths`.
+- Die barrierefreie Textfassung ist über `hint_placement` (`alt`, `caption`, `both`,
+  `none`) und `hint_separator` platzierbar; dazu die Twig-Funktion
+  `netzhirsch_ai_tag_hint_config()`.
+- `intermediate_quality` konfigurierbar.
+
+### Behoben
+
+- Ohne Obergrenze wurde die Schrift auf großen Bildern absurd groß (90px bei 3000px
+  Breite). `max_font_size` deckelt sie, Standard 48.
+- Jede Gestaltungseinstellung fließt als Fingerabdruck in den Cache-Schlüssel ein –
+  ohne das behielten bereits erzeugte Bilder nach einer Design-Änderung ihr altes
+  Aussehen.
+
 ## [0.1.0] - 2026-08-12
 
 Erste Fassung. Funktional vollständig und gegen Contao 5.7 (Laufzeit) sowie Contao 5.3

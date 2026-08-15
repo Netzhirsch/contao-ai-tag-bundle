@@ -18,21 +18,38 @@ services:
         arguments:
             $configuredPath: '%netzhirsch_contao_ai_tag.font_path%'
 
+    # Buendelt das Aussehen. Der Fingerabdruck dieses Objekts geht in den
+    # Cache-Schluessel ein, damit Design-Aenderungen bereits erzeugte Bilder
+    # invalidieren.
+    Netzhirsch\ContaoAiTagBundle\Image\TagStyle:
+        arguments:
+            $style: '%netzhirsch_contao_ai_tag.style%'
+            $textColor: '%netzhirsch_contao_ai_tag.text_color%'
+            $boxColor: '%netzhirsch_contao_ai_tag.box_color%'
+            $boxOpacity: '%netzhirsch_contao_ai_tag.box_opacity%'
+            $cornerRadius: '%netzhirsch_contao_ai_tag.corner_radius%'
+            $paddingRatio: '%netzhirsch_contao_ai_tag.padding_ratio%'
+            $marginRatio: '%netzhirsch_contao_ai_tag.margin_ratio%'
+            $uppercase: '%netzhirsch_contao_ai_tag.uppercase%'
+            $minFontSize: '%netzhirsch_contao_ai_tag.min_font_size%'
+            $relativeFontSize: '%netzhirsch_contao_ai_tag.relative_font_size%'
+            $maxFontSize: '%netzhirsch_contao_ai_tag.max_font_size%'
+            $maxBoxWidth: '%netzhirsch_contao_ai_tag.max_box_width%'
+            $maxBoxHeight: '%netzhirsch_contao_ai_tag.max_box_height%'
+            $minWidth: '%netzhirsch_contao_ai_tag.min_width%'
+            $minHeight: '%netzhirsch_contao_ai_tag.min_height%'
+
     Netzhirsch\ContaoAiTagBundle\Image\TagRenderer:
         arguments:
             $imagine: '@contao.image.imagine'
             $metadataReaderWriter: '@contao.image.metadata'
-            $minFontSize: '%netzhirsch_contao_ai_tag.min_font_size%'
-            $relativeFontSize: '%netzhirsch_contao_ai_tag.relative_font_size%'
-            $maxBoxWidth: '%netzhirsch_contao_ai_tag.max_box_width%'
-            $maxBoxHeight: '%netzhirsch_contao_ai_tag.max_box_height%'
-            $boxOpacity: '%netzhirsch_contao_ai_tag.box_opacity%'
 
     Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver:
         arguments:
             $pageFinder: '@contao.routing.page_finder'
             $projectDir: '%kernel.project_dir%'
             $uploadPath: '%contao.upload_path%'
+            $excludedPaths: '%netzhirsch_contao_ai_tag.excluded_paths%'
 
     # Dekoriert statt ersetzt: alle Verbraucher im Core typisieren gegen
     # ResizerInterface bzw. DeferredResizerInterface, nicht gegen die Klasse.
@@ -44,10 +61,13 @@ services:
             $storage: '@contao.image.deferred_image_storage'
             $cacheDir: '%contao.image.target_dir%'
             $uploadDir: '%kernel.project_dir%/%contao.upload_path%'
+            $intermediateQuality: '%netzhirsch_contao_ai_tag.intermediate_quality%'
 
     Netzhirsch\ContaoAiTagBundle\Twig\AiTagExtension:
         arguments:
             $imagine: '@contao.image.imagine'
+            $placement: '%netzhirsch_contao_ai_tag.hint_placement%'
+            $separator: '%netzhirsch_contao_ai_tag.hint_separator%'
 
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
         arguments:

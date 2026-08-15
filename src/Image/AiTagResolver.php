@@ -38,14 +38,21 @@ final class AiTagResolver
      */
     private array $cache = [];
 
+    /**
+     * @param list<string> $excludedPaths Pfade, die nie gekennzeichnet werden - auch
+     *                                    dann nicht, wenn ein uebergeordneter Ordner
+     *                                    markiert ist
+     */
     public function __construct(
         private readonly Connection $connection,
         private readonly RequestStack $requestStack,
         private readonly PageFinder $pageFinder,
         private readonly TranslatorInterface $translator,
         private readonly CornerSelector $cornerSelector,
+        private readonly TagStyle $style,
         private readonly string $projectDir,
         private readonly string $uploadPath,
+        private readonly array $excludedPaths = [],
         private readonly LoggerInterface|null $logger = null,
     ) {
     }
@@ -69,7 +76,7 @@ final class AiTagResolver
             ? $this->cornerSelector->select($image->getImportantPart())
             : $record['position'];
 
-        return new AiTagOptions($locale, $corner, $text, $quality);
+        return new AiTagOptions($locale, $corner, $text, $quality, $this->style->fingerprint());
     }
 
     public function isTaggableFormat(string $path): bool
@@ -152,6 +159,12 @@ final class AiTagResolver
         if (str_starts_with($path, '..') || !Path::isBasePath($this->uploadPath, $path)) {
             // Nicht im Dateiverwaltungs-Verzeichnis (z. B. bereits ein Cache-Bild)
             return null;
+        }
+
+        foreach ($this->excludedPaths as $excluded) {
+            if (Path::isBasePath(Path::canonicalize($excluded), $path)) {
+                return null;
+            }
         }
 
         return $path;
