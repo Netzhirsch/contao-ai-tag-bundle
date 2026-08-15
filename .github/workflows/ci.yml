@@ -76,13 +76,18 @@ jobs:
             - name: Audit dependencies
               run: composer audit --abandoned=report
 
+            # Stil und Refactoring nur im hoechsten Satz: der lowest-Job soll die
+            # unterstuetzte Contao-/PHP-Untergrenze pruefen, nicht uralte Fassungen der
+            # Werkzeuge selbst - ECS 6.0 kennt ECSConfig::configure() noch nicht.
             - name: Check the coding style
+              if: matrix.dependencies == 'highest'
               run: vendor/bin/ecs check --no-progress-bar --ansi
 
             - name: Analyse the code
               run: vendor/bin/phpstan analyse --no-progress --ansi ${{ steps.mcp.outputs.available == 'no' && '--configuration=phpstan-without-mcp.neon.dist' || '' }}
 
             - name: Check for refactorings
+              if: matrix.dependencies == 'highest'
               run: vendor/bin/rector process --dry-run --no-progress-bar --ansi ${{ steps.mcp.outputs.available == 'no' && '--config=rector-without-mcp.php' || '' }}
 
             - name: Run the unit tests
