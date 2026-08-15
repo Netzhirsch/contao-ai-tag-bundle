@@ -68,7 +68,7 @@ jobs:
                   dependency-versions: ${{ matrix.dependencies }}
 
             - name: Show the resolved Contao version
-              run: composer show contao/core-bundle | head -3
+              run: composer show contao/core-bundle | grep -E '^(name|versions)'
 
             # Sicherheitslücken lassen den Lauf scheitern, aufgegebene Pakete nicht:
             # doctrine/annotations kommt transitiv aus dem Contao-Baum und ist nichts,
