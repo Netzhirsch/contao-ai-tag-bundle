@@ -17,8 +17,17 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
   `netzhirsch_ai_tag_hint_config()`.
 - `intermediate_quality` konfigurierbar.
 
+- Gegenüberstellung beider Fassungen in der Dateibearbeitung, sobald die
+  Kennzeichnung gesetzt ist – *Ohne Kennzeichnung* neben *Mit Kennzeichnung*.
+- `tag_backend_images`, um Backend-Bilder wieder mitzukennzeichnen.
+
 ### Behoben
 
+- Backend-Bilder wurden mitgekennzeichnet, weil die Dateiverwaltung durch dieselbe
+  Bildpipeline läuft – schon das Thumbnail in der Dateiliste trug das Label. Im
+  Backend-Scope wird jetzt nicht mehr gekennzeichnet; die erzwungene Fassung der
+  Vorschau trifft dieselbe Cache-Datei wie das Frontend, es entsteht kein
+  zusätzliches Bild.
 - Ohne Obergrenze wurde die Schrift auf großen Bildern absurd groß (90px bei 3000px
   Breite). `max_font_size` deckelt sie, Standard 48.
 - Jede Gestaltungseinstellung fließt als Fingerabdruck in den Cache-Schlüssel ein –

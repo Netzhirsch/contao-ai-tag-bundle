@@ -31,6 +31,26 @@
         <source>netzhirsch_ai_tag.hint.size</source>
         <target>"%file%" is too small at %width%×%height% pixels for a legible label. It will only appear as a text alternative in the markup.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.label">
+        <source>netzhirsch_ai_tag.preview.label</source>
+        <target>Label preview</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.plain">
+        <source>netzhirsch_ai_tag.preview.plain</source>
+        <target>Without label</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.tagged">
+        <source>netzhirsch_ai_tag.preview.tagged</source>
+        <target>With label</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.hint">
+        <source>netzhirsch_ai_tag.preview.hint</source>
+        <target>The preview shows the label at the size of this preview. In the delivered image size it scales accordingly, and below the legibility threshold it is omitted entirely.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.not_taggable">
+        <source>netzhirsch_ai_tag.preview.not_taggable</source>
+        <target>The label cannot be burnt into this format. Only the text alternative in the markup applies.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

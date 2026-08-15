@@ -91,6 +91,7 @@ netzhirsch_contao_ai_tag:
 
 | Schlüssel | Standard | Bedeutung |
 |---|---|---|
+| `tag_backend_images` | `false` | Auch Bilder im Backend kennzeichnen. Standardmäßig aus, siehe *Backend-Vorschau*. |
 | `hint_placement` | `alt` | Wohin die barrierefreie Textfassung geht: `alt`, `caption`, `both` oder `none`. |
 | `hint_separator` | `' – '` | Trenner zwischen vorhandenem Text und der Kennzeichnung. |
 | `intermediate_quality` | `95` | Qualität der ersten Kodierung (die Nachbearbeitung kodiert ein zweites Mal). |
@@ -105,6 +106,23 @@ die sich bewusst **nicht** überlappen – bei halbtransparenter Fläche würde 
 den Nahtstellen sonst zweimal aufgetragen und als dunklere Linie sichtbar. GD zeichnet
 Bögen ohne Kantenglättung, die Rundung ist deshalb bei kleinen Radien leicht stufig;
 Imagick glättet.
+
+## Backend-Vorschau
+
+Die Dateiverwaltung läuft durch dieselbe Bildpipeline wie das Frontend – ohne
+Gegenmaßnahme trägt deshalb schon das Thumbnail in der Dateiliste die Kennzeichnung.
+Dort soll aber die Datei zu sehen sein, nicht ihre Auslieferung. **Bilder im
+Backend-Scope werden daher nicht gekennzeichnet** (umstellbar über
+`tag_backend_images`).
+
+Stattdessen zeigt die Dateibearbeitung beide Fassungen nebeneinander, sobald die
+Kennzeichnung gesetzt ist: *Ohne Kennzeichnung* und *Mit Kennzeichnung*. Die rechte
+Fassung erzwingt die Kennzeichnung gezielt und trifft dabei **dieselbe Cache-Datei wie
+das Frontend** – es entsteht kein zusätzliches Bild.
+
+Die Vorschau zeigt das Label in der Größe der Vorschau. In der ausgelieferten
+Bildgröße fällt es entsprechend größer oder kleiner aus, unterhalb der
+Lesbarkeitsgrenze bleibt es ganz weg.
 
 ## Protokoll und Aufbewahrung
 

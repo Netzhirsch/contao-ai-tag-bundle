@@ -143,6 +143,10 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->info('Trenner zwischen vorhandenem Text und der Kennzeichnung.')
             ->defaultValue(' – ')
             ->end()
+            ->booleanNode('tag_backend_images')
+            ->info('Auch Bilder im Backend kennzeichnen. Standardmaessig aus: in der Dateiverwaltung soll die Datei zu sehen sein, nicht die Auslieferung - die Gegenueberstellung leistet das Vorschaufeld in der Dateibearbeitung.')
+            ->defaultFalse()
+            ->end()
             // --- Betrieb ---
             ->integerNode('intermediate_quality')
             ->info('Qualitaet der ersten Kodierung. Die Nachbearbeitung kodiert ein zweites Mal, deshalb bewusst hoch.')

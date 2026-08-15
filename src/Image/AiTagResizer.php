@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle\Image;
 
+use Contao\CoreBundle\Routing\ScopeMatcher;
 use Contao\Image\DeferredImageInterface;
 use Contao\Image\DeferredImageStorageInterface;
 use Contao\Image\DeferredResizerInterface;
@@ -14,6 +15,7 @@ use Contao\Image\ResizerInterface;
 use Imagine\Image\ImagineInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Path;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Legt die KI-Kennzeichnung auf jede erzeugte Bildgroesse.
@@ -33,6 +35,13 @@ use Symfony\Component\Filesystem\Path;
  */
 final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 {
+    /**
+     * Erzwingt die Kennzeichnung auch dort, wo sie sonst unterbleibt. Wird vor dem
+     * Delegieren wieder entfernt, damit die Vorschau dieselbe Cache-Datei trifft wie
+     * das Frontend und kein zusaetzliches Bild entsteht.
+     */
+    public const FORCE_KEY = 'netzhirsch_ai_tag_force';
+
     private const QUALITY_KEYS = ['quality', 'jpeg_quality', 'webp_quality', 'avif_quality', 'heic_quality', 'jxl_quality'];
 
     public function __construct(
@@ -40,8 +49,16 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
         private readonly AiTagResolver $resolver,
         private readonly TagRenderer $renderer,
         private readonly DeferredImageStorageInterface $storage,
+        private readonly ScopeMatcher $scopeMatcher,
+        private readonly RequestStack $requestStack,
         private readonly string $cacheDir,
         private readonly string $uploadDir,
+        /**
+         * Backend-Bilder - etwa die Vorschau in der Dateiverwaltung - bleiben standardmaessig
+         * unbearbeitet: dort soll die Datei zu sehen sein, nicht die Auslieferung. Die
+         * Gegenueberstellung beider Fassungen leistet das eigene Vorschaufeld.
+         */
+        private readonly bool $tagBackendImages = false,
         /**
          * Qualitaet der ersten Kodierung. Bewusst hoch, weil die Nachbearbeitung ein zweites
          * Mal kodiert; gespeichert wird am Ende mit der Zielqualitaet der Bildgroesse.
@@ -129,6 +146,10 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 
     private function resolveTag(ImageInterface $image, ResizeOptions $options): AiTagOptions|null
     {
+        if (!$this->isForced($options) && !$this->tagBackendImages && $this->isBackendRequest()) {
+            return null;
+        }
+
         try {
             return $this->resolver->resolve($image, $this->targetQuality($options->getImagineOptions()));
         } catch (\Throwable $exception) {
@@ -139,9 +160,22 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
         }
     }
 
+    private function isForced(ResizeOptions $options): bool
+    {
+        return true === ($options->getImagineOptions()[self::FORCE_KEY] ?? false);
+    }
+
+    private function isBackendRequest(): bool
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        return null !== $request && $this->scopeMatcher->isBackendRequest($request);
+    }
+
     private function prepareOptions(ResizeOptions $options, AiTagOptions $tag): ResizeOptions
     {
         $imagineOptions = $options->getImagineOptions();
+        unset($imagineOptions[self::FORCE_KEY]);
 
         foreach (self::QUALITY_KEYS as $key) {
             if (isset($imagineOptions[$key])) {

@@ -31,6 +31,26 @@
         <source>netzhirsch_ai_tag.hint.size</source>
         <target>"%file%" ist mit %width%×%height% Pixeln zu klein fuer eine lesbare Kennzeichnung. Sie erscheint nur als Textalternative im Markup.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.label">
+        <source>netzhirsch_ai_tag.preview.label</source>
+        <target>Vorschau der Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.plain">
+        <source>netzhirsch_ai_tag.preview.plain</source>
+        <target>Ohne Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.tagged">
+        <source>netzhirsch_ai_tag.preview.tagged</source>
+        <target>Mit Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.hint">
+        <source>netzhirsch_ai_tag.preview.hint</source>
+        <target>Die Vorschau zeigt die Kennzeichnung in der Größe dieser Vorschau. In der ausgelieferten Bildgröße fällt sie entsprechend größer oder kleiner aus; unterhalb der Lesbarkeitsgrenze bleibt sie ganz weg.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.preview.not_taggable">
+        <source>netzhirsch_ai_tag.preview.not_taggable</source>
+        <target>In dieses Format kann die Kennzeichnung nicht eingebrannt werden. Es greift nur die Textalternative im Markup.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

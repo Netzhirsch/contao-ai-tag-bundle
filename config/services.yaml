@@ -59,8 +59,10 @@ services:
         arguments:
             $inner: '@.inner'
             $storage: '@contao.image.deferred_image_storage'
+            $scopeMatcher: '@contao.routing.scope_matcher'
             $cacheDir: '%contao.image.target_dir%'
             $uploadDir: '%kernel.project_dir%/%contao.upload_path%'
+            $tagBackendImages: '%netzhirsch_contao_ai_tag.tag_backend_images%'
             $intermediateQuality: '%netzhirsch_contao_ai_tag.intermediate_quality%'
 
     Netzhirsch\ContaoAiTagBundle\Twig\AiTagExtension:
@@ -72,6 +74,12 @@ services:
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\AiTagPreviewListener:
+        arguments:
+            $imageFactory: '@contao.image.factory'
+            $projectDir: '%kernel.project_dir%'
+            $imagineOptions: '%contao.image.imagine_options%'
 
     # Der Kanal "contao" schreibt ueber den ContaoTableHandler nach tl_log
     Netzhirsch\ContaoAiTagBundle\Audit\AiTagAuditLogger:

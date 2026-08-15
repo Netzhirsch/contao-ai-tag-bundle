@@ -38,8 +38,16 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagText'] = [
     'sql' => ['type' => 'string', 'length' => 128, 'default' => ''],
 ];
 
+/*
+ * Virtuelles Feld ohne Datenbankspalte: stellt beide Fassungen gegenueber, sobald
+ * die Kennzeichnung gesetzt ist. Gerendert vom AiTagPreviewListener.
+ */
+$GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagPreview'] = [
+    'exclude' => false,
+];
+
 $GLOBALS['TL_DCA']['tl_files']['palettes']['__selector__'][] = 'netzhirschAiGenerated';
-$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiTagPosition,netzhirschAiTagText';
+$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview';
 
 PaletteManipulator::create()
     ->addField('netzhirschAiGenerated', 'syncExclude', PaletteManipulator::POSITION_AFTER)
