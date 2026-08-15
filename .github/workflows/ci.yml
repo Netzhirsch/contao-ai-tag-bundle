@@ -70,8 +70,11 @@ jobs:
             - name: Show the resolved Contao version
               run: composer show contao/core-bundle | head -3
 
+            # Sicherheitslücken lassen den Lauf scheitern, aufgegebene Pakete nicht:
+            # doctrine/annotations kommt transitiv aus dem Contao-Baum und ist nichts,
+            # was dieses Bundle beheben koennte.
             - name: Audit dependencies
-              run: composer audit
+              run: composer audit --abandoned=report
 
             - name: Check the coding style
               run: vendor/bin/ecs check --no-progress-bar --ansi
