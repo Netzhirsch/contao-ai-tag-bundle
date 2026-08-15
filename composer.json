@@ -30,16 +30,16 @@
     "suggest": {
         "netzhirsch/contao-mcp-bundle": "Stellt den MCP-Server; erst damit stehen die Werkzeuge netzhirsch_ai_tag_get/list/set zur Verfuegung (nach Freigabe durch den Betreiber)."
     },
-    "repositories": [
-        {
+    "repositories": {
+        "netzhirsch-mcp": {
             "type": "vcs",
             "url": "https://github.com/Netzhirsch/contao-mcp-bundle.git"
         }
-    ],
+    },
     "require-dev": {
         "contao/easy-coding-standard": "^6.0",
         "contao/manager-plugin": "^2.0",
-        "netzhirsch/contao-mcp-bundle": "^0.8",
+        "netzhirsch/contao-mcp-bundle": "^1.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",

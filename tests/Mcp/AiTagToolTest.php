@@ -19,6 +19,7 @@ use Netzhirsch\ContaoAiTagBundle\Mcp\AiTagTool;
 use Netzhirsch\ContaoMcpBundle\Server\ExtensionToolRegistrar;
 use PhpMcp\Server\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,6 +31,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * Die Eingabepruefung laeuft absichtlich vor jedem Datenbank- und Rechtezugriff -
  * deshalb sind diese Faelle ohne verdrahtete MCP-Dienste pruefbar.
  */
+#[Group('mcp')]
 class AiTagToolTest extends TestCase
 {
     #[DataProvider('invalidPathProvider')]

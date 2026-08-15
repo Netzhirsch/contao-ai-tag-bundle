@@ -26,21 +26,29 @@ jobs:
                       dependencies: 'lowest'
 
         steps:
-            # Ohne diesen Vorabcheck scheitert der Lauf erst spaeter mit einem
-            # unverstaendlichen "git clone --mirror ... Authentication failed".
-            # Der secrets-Kontext ist in einem step-if nicht erlaubt, deshalb ueber
-            # die Step-Umgebung.
-            - name: Ensure the token for the private dev dependency exists
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            # netzhirsch/contao-mcp-bundle liegt als require-dev in einem privaten
+            # Repository. Fehlt das Token, laeuft der Rest trotzdem durch - die
+            # MCP-Werkzeuge bleiben dann aber ungeprueft, und das sagt der Lauf auch.
+            - name: Detect the private-repo token
+              id: mcp
               env:
                   COMPOSER_GITHUB_TOKEN: ${{ secrets.COMPOSER_GITHUB_TOKEN }}
               run: |
-                  if [ -z "$COMPOSER_GITHUB_TOKEN" ]; then
-                      echo "::error::Das Secret COMPOSER_GITHUB_TOKEN fehlt. Es wird gebraucht, um die private Dev-Abhaengigkeit netzhirsch/contao-mcp-bundle zu installieren (PHPStan und die MCP-Tests brauchen deren Basisklasse). Anlegen unter Settings -> Secrets and variables -> Actions."
-                      exit 1
+                  if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
+                      echo 'available=yes' >> "$GITHUB_OUTPUT"
+                  else
+                      echo 'available=no' >> "$GITHUB_OUTPUT"
+                      echo "::warning title=MCP-Werkzeuge ungeprueft::Das Secret COMPOSER_GITHUB_TOKEN fehlt, deshalb konnte netzhirsch/contao-mcp-bundle nicht installiert werden. src/Mcp und tests/Mcp wurden in diesem Lauf NICHT geprueft. Secret anlegen unter Settings -> Secrets and variables -> Actions."
                   fi
 
-            - name: Checkout
-              uses: actions/checkout@v4
+            - name: Drop the private dev dependency without a token
+              if: steps.mcp.outputs.available == 'no'
+              run: |
+                  composer remove --dev --no-update netzhirsch/contao-mcp-bundle
+                  composer config --unset repositories.netzhirsch-mcp
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -49,8 +57,6 @@ jobs:
                   extensions: gd, imagick, dom, json, mbstring, pdo_mysql
                   coverage: none
 
-            # netzhirsch/contao-mcp-bundle liegt als require-dev in einem privaten
-            # Repository. Ohne Token schlaegt die Installation fehl.
             - name: Install dependencies
               uses: ramsey/composer-install@v3
               with:
@@ -68,10 +74,10 @@ jobs:
               run: vendor/bin/ecs check --no-progress-bar --ansi
 
             - name: Analyse the code
-              run: vendor/bin/phpstan analyse --no-progress --ansi
+              run: vendor/bin/phpstan analyse --no-progress --ansi ${{ steps.mcp.outputs.available == 'no' && '--configuration=phpstan-without-mcp.neon.dist' || '' }}
 
             - name: Check for refactorings
-              run: vendor/bin/rector process --dry-run --no-progress-bar --ansi
+              run: vendor/bin/rector process --dry-run --no-progress-bar --ansi ${{ steps.mcp.outputs.available == 'no' && '--config=rector-without-mcp.php' || '' }}
 
             - name: Run the unit tests
-              run: vendor/bin/phpunit --colors=always
+              run: vendor/bin/phpunit --colors=always ${{ steps.mcp.outputs.available == 'no' && '--exclude-group mcp' || '' }}

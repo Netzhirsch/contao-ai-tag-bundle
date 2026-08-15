@@ -23,6 +23,14 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Behoben
 
+- Die CI lief ohne das Secret `COMPOSER_GITHUB_TOKEN` grundsätzlich rot, weil die
+  private Dev-Abhängigkeit `netzhirsch/contao-mcp-bundle` nicht installierbar war.
+  Ohne Token entfällt sie jetzt samt Repository-Eintrag, `src/Mcp` und `tests/Mcp`
+  werden übersprungen (eigene PHPStan- und Rector-Konfiguration, PHPUnit-Gruppe
+  `mcp`) und der Lauf meldet als Warnung, was ungeprüft blieb.
+- Dev-Abhängigkeit auf `netzhirsch/contao-mcp-bundle: ^1.0` angehoben: die
+  0.8-Reihe ist aus dem Repository verschwunden. Geprüft gegen v1.2.0, die
+  genutzte Erweiterungs-API ist dort laut EXTENDING.md eingefroren.
 - Backend-Bilder wurden mitgekennzeichnet, weil die Dateiverwaltung durch dieselbe
   Bildpipeline läuft – schon das Thumbnail in der Dateiliste trug das Label. Im
   Backend-Scope wird jetzt nicht mehr gekennzeichnet; die erzwungene Fassung der
