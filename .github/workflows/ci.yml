@@ -47,6 +47,13 @@ jobs:
                       echo "::warning title=MCP-Werkzeuge ungeprueft::Das Secret COMPOSER_GITHUB_TOKEN fehlt, deshalb konnte netzhirsch/contao-mcp-bundle nicht installiert werden. src/Mcp und tests/Mcp wurden in diesem Lauf NICHT geprueft. Secret anlegen unter Settings -> Secrets and variables -> Actions."
                   fi
 
+            # composer.json pinnt die Plattform lokal auf PHP 8.1, damit Entwicklung
+            # und Untergrenze zusammenpassen. In der CI muss der Pin weg, sonst loest
+            # auch der PHP-8.4-Job nur Contao 5.3 auf (5.7 verlangt PHP ^8.3) und die
+            # obere Haelfte der Matrix pruefte gar nichts Neues.
+            - name: Resolve against the PHP version of this job
+              run: composer config --unset platform.php
+
             - name: Drop the private dev dependency without a token
               if: steps.mcp.outputs.available == 'no'
               run: |
