@@ -39,6 +39,9 @@ jobs:
               run: |
                   if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
                       echo 'available=yes' >> "$GITHUB_OUTPUT"
+                      # Nur mit echtem Token setzen: mit leerem Wert versucht Composer
+                      # sich anzumelden und GitHub weist JEDEN Download ab.
+                      echo "COMPOSER_AUTH={\"github-oauth\":{\"github.com\":\"$COMPOSER_GITHUB_TOKEN\"}}" >> "$GITHUB_ENV"
                   else
                       echo 'available=no' >> "$GITHUB_OUTPUT"
                       echo "::warning title=MCP-Werkzeuge ungeprueft::Das Secret COMPOSER_GITHUB_TOKEN fehlt, deshalb konnte netzhirsch/contao-mcp-bundle nicht installiert werden. src/Mcp und tests/Mcp wurden in diesem Lauf NICHT geprueft. Secret anlegen unter Settings -> Secrets and variables -> Actions."
@@ -57,12 +60,12 @@ jobs:
                   extensions: gd, imagick, dom, json, mbstring, pdo_mysql
                   coverage: none
 
+            # COMPOSER_AUTH kommt aus dem Schritt oben und steht nur dann in der
+            # Umgebung, wenn es ein Token gibt.
             - name: Install dependencies
               uses: ramsey/composer-install@v3
               with:
                   dependency-versions: ${{ matrix.dependencies }}
-              env:
-                  COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
 
             - name: Show the resolved Contao version
               run: composer show contao/core-bundle | head -3
