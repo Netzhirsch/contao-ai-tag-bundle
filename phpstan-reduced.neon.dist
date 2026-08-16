@@ -1,0 +1,13 @@
+# Fassung fuer Umgebungen, in denen optionale Abhaengigkeiten fehlen:
+#   - netzhirsch/contao-mcp-bundle (privates Repository, in der CI ohne Token)
+#   - Contao ab 5.5 fuer DbafsChangeEvent (auf 5.3 greift der Upload-Hook)
+# Die vollstaendige Analyse laeuft im CI-Job mit der hoechsten Aufloesung.
+includes:
+    - phpstan.neon.dist
+
+parameters:
+    excludePaths:
+        analyse:
+            - src/Mcp
+            - tests/Mcp
+            - src/EventListener/DetectAiSourceListener.php

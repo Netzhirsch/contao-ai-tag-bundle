@@ -51,6 +51,38 @@
         <source>netzhirsch_ai_tag.preview.not_taggable</source>
         <target>The label cannot be burnt into this format. Only the text alternative in the markup applies.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.declared">
+        <source>netzhirsch_ai_tag.detection.declared</source>
+        <target>This file declares itself as AI-generated in its metadata (%source%: %detail%).</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.hint">
+        <source>netzhirsch_ai_tag.detection.hint</source>
+        <target>The metadata of this file points to an AI generator (%source%: %detail%). That is an indication, not a declaration.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.decide">
+        <source>netzhirsch_ai_tag.detection.decide</source>
+        <target>Whether a label is required depends on the content - set it if the content falls under the obligation.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.already_flagged">
+        <source>netzhirsch_ai_tag.detection.already_flagged</source>
+        <target>The label is set.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.label">
+        <source>netzhirsch_ai_tag.coverage.label</source>
+        <target>Legibility per image size</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.legible">
+        <source>netzhirsch_ai_tag.coverage.legible</source>
+        <target>legible</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.too_small">
+        <source>netzhirsch_ai_tag.coverage.too_small</source>
+        <target>too small - text alternative only</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.hint">
+        <source>netzhirsch_ai_tag.coverage.hint</source>
+        <target>Calculated for the image sizes configured in this installation. Where the label does not fit legibly it is omitted, and only the text alternative in the markup carries the information.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

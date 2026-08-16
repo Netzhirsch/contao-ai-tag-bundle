@@ -51,6 +51,38 @@
         <source>netzhirsch_ai_tag.preview.not_taggable</source>
         <target>In dieses Format kann die Kennzeichnung nicht eingebrannt werden. Es greift nur die Textalternative im Markup.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.declared">
+        <source>netzhirsch_ai_tag.detection.declared</source>
+        <target>Diese Datei weist sich in ihren Metadaten selbst als KI-generiert aus (%source%: %detail%).</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.hint">
+        <source>netzhirsch_ai_tag.detection.hint</source>
+        <target>Die Metadaten dieser Datei deuten auf einen KI-Generator hin (%source%: %detail%). Das ist ein Indiz, keine verbindliche Angabe.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.decide">
+        <source>netzhirsch_ai_tag.detection.decide</source>
+        <target>Ob gekennzeichnet werden muss, hängt vom Inhalt ab – setzen Sie die Kennzeichnung, wenn er kennzeichnungspflichtig ist.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.already_flagged">
+        <source>netzhirsch_ai_tag.detection.already_flagged</source>
+        <target>Die Kennzeichnung ist gesetzt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.label">
+        <source>netzhirsch_ai_tag.coverage.label</source>
+        <target>Lesbarkeit je Bildgröße</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.legible">
+        <source>netzhirsch_ai_tag.coverage.legible</source>
+        <target>lesbar</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.too_small">
+        <source>netzhirsch_ai_tag.coverage.too_small</source>
+        <target>zu klein – nur Textalternative</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.hint">
+        <source>netzhirsch_ai_tag.coverage.hint</source>
+        <target>Berechnet für die in diesem System angelegten Bildgrößen. Wo das Label nicht lesbar hineinpasst, wird es weggelassen und die Kennzeichnung trägt allein die Textalternative im Markup.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle;
 
+use Contao\CoreBundle\Filesystem\Dbafs\DbafsChangeEvent;
+use Netzhirsch\ContaoAiTagBundle\Detection\AiSourceInspector;
 use Netzhirsch\ContaoAiTagBundle\Image\TagStyle;
 use Netzhirsch\ContaoAiTagBundle\Twig\AiTagExtension;
 use Netzhirsch\ContaoMcpBundle\Extension\AbstractMcpTool;
@@ -143,6 +145,11 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->info('Trenner zwischen vorhandenem Text und der Kennzeichnung.')
             ->defaultValue(' – ')
             ->end()
+            ->enumNode('detection')
+            ->info('Erkennung beim Hinzufuegen von Dateien: suggest merkt nur an, was sich selbst als KI-generiert ausweist, auto setzt die Kennzeichnung, off schaltet ab.')
+            ->values(AiSourceInspector::MODES)
+            ->defaultValue(AiSourceInspector::MODE_SUGGEST)
+            ->end()
             ->booleanNode('tag_backend_images')
             ->info('Auch Bilder im Backend kennzeichnen. Standardmaessig aus: in der Dateiverwaltung soll die Datei zu sehen sein, nicht die Auslieferung - die Gegenueberstellung leistet das Vorschaufeld in der Dateibearbeitung.')
             ->defaultFalse()
@@ -173,6 +180,12 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
         }
 
         $container->import('../config/services.yaml');
+
+        // DbafsChangeEvent deckt jeden Weg in tl_files ab, gibt es aber erst ab Contao
+        // 5.5. Auf 5.3 bleibt nur der Upload-Hook des Dateimanagers.
+        $container->import(class_exists(DbafsChangeEvent::class)
+            ? '../config/services_detection_event.yaml'
+            : '../config/services_detection_hook.yaml');
 
         // Die MCP-Werkzeuge sind optional: ohne netzhirsch/contao-mcp-bundle gibt es die
         // Basisklasse nicht, und der Service duerfte nicht registriert werden.

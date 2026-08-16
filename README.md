@@ -91,6 +91,7 @@ netzhirsch_contao_ai_tag:
 
 | Schlüssel | Standard | Bedeutung |
 |---|---|---|
+| `detection` | `suggest` | Erkennung beim Hinzufügen von Dateien: `suggest`, `auto` oder `off`. Siehe *Erkennung*. |
 | `tag_backend_images` | `false` | Auch Bilder im Backend kennzeichnen. Standardmäßig aus, siehe *Backend-Vorschau*. |
 | `hint_placement` | `alt` | Wohin die barrierefreie Textfassung geht: `alt`, `caption`, `both` oder `none`. |
 | `hint_separator` | `' – '` | Trenner zwischen vorhandenem Text und der Kennzeichnung. |
@@ -106,6 +107,45 @@ die sich bewusst **nicht** überlappen – bei halbtransparenter Fläche würde 
 den Nahtstellen sonst zweimal aufgetragen und als dunklere Linie sichtbar. GD zeichnet
 Bögen ohne Kantenglättung, die Rundung ist deshalb bei kleinen Radien leicht stufig;
 Imagick glättet.
+
+## Erkennung
+
+Viele Generatoren schreiben ihre Herkunft in die Metadaten. Das Bundle liest sie, wenn
+eine Datei neu in `tl_files` landet, und unterscheidet zwei Stufen:
+
+| Signal | Aussage |
+|---|---|
+| XMP `Iptc4xmpExt:DigitalSourceType` = `trainedAlgorithmicMedia` (oder `compositeWith…`) | **Erklärung** – der IPTC-Standard, den C2PA und die großen Generatoren schreiben |
+| `xmp:CreatorTool`, `photoshop:Credit`, `dc:creator`, EXIF `Software` mit bekanntem Generatornamen | Indiz |
+| PNG-Textblock `parameters` (Stable Diffusion legt dort den Prompt ab) | Indiz |
+
+**Gesetzt wird nichts automatisch** (`detection: suggest`). Die Datei bekommt eine Notiz,
+die beim Bearbeiten erscheint; die Entscheidung bleibt bei der Redaktion, weil sie vom
+Inhalt abhängt – ein Deepfake ist kennzeichnungspflichtig, eine Illustration nicht. Mit
+`detection: auto` setzt das Bundle die Kennzeichnung bei einer echten Erklärung selbst
+und protokolliert das mit der Quelle; `off` schaltet die Prüfung ab.
+
+Angebunden ist die Erkennung an `DbafsChangeEvent` – damit erreicht sie **jeden** Weg in
+die Dateiverwaltung: Upload, Drag and Drop, `contao:filesync`, MCP, per FTP nachgeschobene
+Dateien.
+
+> **Auf Contao 5.3** gibt es dieses Ereignis noch nicht. Dort greift der
+> `postUpload`-Hook, der nur den Upload im Backend-Dateimanager abdeckt; alle anderen
+> Dateien werden geprüft, sobald sie jemand im Backend öffnet. Das Bundle registriert
+> automatisch den jeweils passenden Weg.
+
+**Grenzen:** Metadaten überleben Screenshots, Messenger und viele Exporte nicht. Die
+Erkennung ist ein Netz gegen das Vergessen, kein Beweis für das Gegenteil – und
+ausdrücklich keine Bildanalyse, sondern nur die Auswertung dessen, was die Datei über
+sich selbst behauptet.
+
+## Lesbarkeit je Bildgröße
+
+Ist die Kennzeichnung gesetzt, zeigt die Dateibearbeitung für jede in dieser
+Installation angelegte Bildgröße, ob das Label dort noch lesbar hineinpasst. Gerechnet
+wird mit Contaos eigenem `ResizeCalculator`, die Maße entsprechen also der späteren
+Auslieferung. Wo es nicht passt, trägt allein die Textalternative im Markup – und genau
+das steht dann in der Übersicht statt einer stillen Auslassung.
 
 ## Backend-Vorschau
 

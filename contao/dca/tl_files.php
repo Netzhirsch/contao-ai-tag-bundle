@@ -39,6 +39,14 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagText'] = [
 ];
 
 /*
+ * Ergebnis der Erkennung beim Hinzufuegen der Datei. Keine Palette: reine Datenspalte,
+ * ausgewertet von AiTagDetectionListener und der Uebersicht.
+ */
+$GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiDetected'] = [
+    'sql' => ['type' => 'string', 'length' => 96, 'default' => ''],
+];
+
+/*
  * Virtuelles Feld ohne Datenbankspalte: stellt beide Fassungen gegenueber, sobald
  * die Kennzeichnung gesetzt ist. Gerendert vom AiTagPreviewListener.
  */
@@ -46,10 +54,26 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagPreview'] = [
     'exclude' => false,
 ];
 
+/*
+ * Hinweis, wenn die Datei sich selbst als KI-generiert ausweist. Gehoert in die
+ * Hauptpalette: er ist gerade dann wichtig, wenn noch nichts gekennzeichnet ist.
+ */
+$GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagDetection'] = [
+    'exclude' => false,
+];
+
+/*
+ * Ampel je Bildgroesse, nur sinnvoll wenn gekennzeichnet wird.
+ */
+$GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagCoverage'] = [
+    'exclude' => false,
+];
+
 $GLOBALS['TL_DCA']['tl_files']['palettes']['__selector__'][] = 'netzhirschAiGenerated';
-$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview';
+$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview,netzhirschAiTagCoverage';
 
 PaletteManipulator::create()
-    ->addField('netzhirschAiGenerated', 'syncExclude', PaletteManipulator::POSITION_AFTER)
+    ->addField('netzhirschAiTagDetection', 'syncExclude', PaletteManipulator::POSITION_AFTER)
+    ->addField('netzhirschAiGenerated', 'netzhirschAiTagDetection', PaletteManipulator::POSITION_AFTER)
     ->applyToPalette('default', 'tl_files')
 ;

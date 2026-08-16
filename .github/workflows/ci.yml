@@ -77,6 +77,20 @@ jobs:
             - name: Show the resolved Contao version
               run: composer show contao/core-bundle | grep -E '^(name|versions)'
 
+            # Zwei Dateien haengen an optionalen Abhaengigkeiten: src/Mcp am
+            # MCP-Bundle, der Dbafs-Listener an Contao ab 5.5. Fehlt eine davon,
+            # laufen PHPStan und Rector mit der reduzierten Konfiguration - und der
+            # Lauf sagt, was dabei ungeprueft bleibt.
+            - name: Decide the analysis scope
+              id: scope
+              run: |
+                  if [ '${{ steps.mcp.outputs.available }}' = 'yes' ] && [ -f vendor/contao/core-bundle/src/Filesystem/Dbafs/DbafsChangeEvent.php ]; then
+                      echo 'full=yes' >> "$GITHUB_OUTPUT"
+                  else
+                      echo 'full=no' >> "$GITHUB_OUTPUT"
+                      echo "::warning title=Analyse eingeschraenkt::Optionale Abhaengigkeiten fehlen (MCP-Bundle: ${{ steps.mcp.outputs.available }}, DbafsChangeEvent: $([ -f vendor/contao/core-bundle/src/Filesystem/Dbafs/DbafsChangeEvent.php ] && echo ja || echo nein)). src/Mcp und der Dbafs-Listener wurden nicht analysiert."
+                  fi
+
             # Sicherheitslücken lassen den Lauf scheitern, aufgegebene Pakete nicht:
             # doctrine/annotations kommt transitiv aus dem Contao-Baum und ist nichts,
             # was dieses Bundle beheben koennte.
@@ -91,11 +105,11 @@ jobs:
               run: vendor/bin/ecs check --no-progress-bar --ansi
 
             - name: Analyse the code
-              run: vendor/bin/phpstan analyse --no-progress --ansi ${{ steps.mcp.outputs.available == 'no' && '--configuration=phpstan-without-mcp.neon.dist' || '' }}
+              run: vendor/bin/phpstan analyse --no-progress --ansi ${{ steps.scope.outputs.full == 'no' && '--configuration=phpstan-reduced.neon.dist' || '' }}
 
             - name: Check for refactorings
               if: matrix.dependencies == 'highest'
-              run: vendor/bin/rector process --dry-run --no-progress-bar --ansi ${{ steps.mcp.outputs.available == 'no' && '--config=rector-without-mcp.php' || '' }}
+              run: vendor/bin/rector process --dry-run --no-progress-bar --ansi ${{ steps.scope.outputs.full == 'no' && '--config=rector-reduced.php' || '' }}
 
             - name: Run the unit tests
               run: vendor/bin/phpunit --colors=always ${{ steps.mcp.outputs.available == 'no' && '--exclude-group mcp' || '' }}

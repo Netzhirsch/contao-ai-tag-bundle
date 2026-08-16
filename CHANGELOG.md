@@ -8,6 +8,15 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Hinzugefügt
 
+- Erkennung beim Hinzufügen von Dateien: liest IPTC/XMP und erkennt, ob eine Datei
+  sich selbst als KI-generiert ausweist (`Iptc4xmpExt:DigitalSourceType`) oder ob
+  Metadaten auf einen Generator hindeuten. Standard `suggest` setzt nichts, sondern
+  weist die Redaktion darauf hin; `auto` setzt die Kennzeichnung bei einer echten
+  Erklärung. Angebunden an `DbafsChangeEvent`, damit jeder Weg in die Dateiverwaltung
+  erfasst ist – auf Contao 5.3 über den `postUpload`-Hook plus Nachprüfung beim Öffnen.
+- Lesbarkeits-Ampel in der Dateibearbeitung: zeigt je konfigurierter Bildgröße, ob das
+  Label dort lesbar hineinpasst, gerechnet mit Contaos `ResizeCalculator`.
+
 - Konfiguration für das Aussehen der Kennzeichnung: `style` (`box`, `outline`, `plain`),
   `text_color`, `box_color`, `corner_radius` (runde Ecken bis zur Pillenform),
   `padding_ratio`, `margin_ratio`, `uppercase` und `max_font_size`.

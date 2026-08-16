@@ -13,6 +13,9 @@ services:
             - '../src/Audit/AuditActor.php'
             # Optional, siehe services_mcp.yaml
             - '../src/Mcp/'
+            # Versionsabhaengig, siehe services_detection_*.yaml
+            - '../src/EventListener/DetectAiSourceListener.php'
+            - '../src/EventListener/DetectAiSourceOnUploadListener.php'
 
     Netzhirsch\ContaoAiTagBundle\Image\FontLocator:
         arguments:
@@ -73,6 +76,20 @@ services:
 
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
         arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    Netzhirsch\ContaoAiTagBundle\Detection\AiSourceDetector:
+        arguments:
+            $metadataReaderWriter: '@contao.image.metadata'
+
+    Netzhirsch\ContaoAiTagBundle\Detection\AiSourceInspector:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $mode: '%netzhirsch_contao_ai_tag.detection%'
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\AiTagCoverageListener:
+        arguments:
+            $calculator: '@contao.image.resize_calculator'
             $projectDir: '%kernel.project_dir%'
 
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\AiTagPreviewListener:

@@ -1,0 +1,8 @@
+# Rueckfallebene fuer Contao 5.3: dort gibt es kein Ereignis fuer neu registrierte
+# Dateien, nur den Upload-Hook des Backend-Dateimanagers.
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DetectAiSourceOnUploadListener: ~

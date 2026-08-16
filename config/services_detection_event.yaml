@@ -1,0 +1,10 @@
+# Nur ab Contao 5.5: dort deckt DbafsChangeEvent jeden Weg in tl_files ab.
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DetectAiSourceListener:
+        arguments:
+            $filesStorage: '@contao.filesystem.virtual.files'
+            $uploadPath: '%contao.upload_path%'
