@@ -31,6 +31,16 @@ $GLOBALS['TL_DCA']['tl_netzhirsch_ai_tag_log'] = [
         ],
     ],
     'list' => [
+        'global_operations' => [
+            // Ziel und Anfrage-Token setzt der AiTagLogExportButtonListener; ein
+            // fest verdrahteter href wuerde relativ zur aktuellen Backend-URL
+            // aufgeloest und traege kein Token.
+            'netzhirschAiTagExport' => [
+                'href' => '',
+                'class' => 'header_icon',
+                'icon' => 'theme_export.svg',
+            ],
+        ],
         'sorting' => [
             'mode' => DataContainer::MODE_SORTED,
             'fields' => ['tstamp DESC'],

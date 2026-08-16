@@ -83,6 +83,14 @@
         <source>netzhirsch_ai_tag.coverage.hint</source>
         <target>Berechnet für die in diesem System angelegten Bildgrößen. Wo das Label nicht lesbar hineinpasst, wird es weggelassen und die Kennzeichnung trägt allein die Textalternative im Markup.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.export.button">
+        <source>netzhirsch_ai_tag.export.button</source>
+        <target>CSV-Export</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.export.title">
+        <source>netzhirsch_ai_tag.export.title</source>
+        <target>Protokoll als CSV herunterladen. Für einen Stichtag &as_of=JJJJ-MM-TT anhängen, ohne Benutzernamen &anonymous=1.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

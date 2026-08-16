@@ -83,6 +83,14 @@
         <source>netzhirsch_ai_tag.coverage.hint</source>
         <target>Calculated for the image sizes configured in this installation. Where the label does not fit legibly it is omitted, and only the text alternative in the markup carries the information.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.export.button">
+        <source>netzhirsch_ai_tag.export.button</source>
+        <target>CSV export</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.export.title">
+        <source>netzhirsch_ai_tag.export.title</source>
+        <target>Download the log as CSV. Append &as_of=YYYY-MM-DD for a given date, &anonymous=1 to omit user names.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

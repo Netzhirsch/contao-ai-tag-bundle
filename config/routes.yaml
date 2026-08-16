@@ -1,0 +1,5 @@
+# Ohne diesen Eintrag findet Symfony das #[Route]-Attribut des Export-Controllers
+# nicht - Bundles bringen ihre Routen in Contao ueber das Manager-Plugin ein.
+netzhirsch_ai_tag_export:
+    resource: '../src/Controller/'
+    type: attribute

@@ -82,6 +82,17 @@ services:
         arguments:
             $metadataReaderWriter: '@contao.image.metadata'
 
+    Netzhirsch\ContaoAiTagBundle\Controller\AiTagLogExportController:
+        public: true
+        arguments:
+            $csrfTokenManager: '@contao.csrf.token_manager'
+            $csrfTokenName: '%contao.csrf_token_name%'
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\AiTagLogExportButtonListener:
+        arguments:
+            $csrfTokenManager: '@contao.csrf.token_manager'
+            $csrfTokenName: '%contao.csrf_token_name%'
+
     Netzhirsch\ContaoAiTagBundle\Detection\AiSourceInspector:
         arguments:
             $projectDir: '%kernel.project_dir%'

@@ -182,6 +182,28 @@ dauerhaft vorzuhalten.
 Anlegen und Ändern sind über die Oberfläche für alle gesperrt, Löschen nur für
 Administratoren.
 
+### Nachweis-Export
+
+Im Protokoll-Modul liegt eine Schaltfläche **CSV-Export**. Zwei Fassungen:
+
+- ohne Parameter das vollständige Protokoll,
+- mit `&as_of=JJJJ-MM-TT` der **Stichtag**: welche Dateien an diesem Tag gekennzeichnet
+  waren, rekonstruiert aus dem Protokoll (je Pfad zählt der letzte Eintrag bis dahin).
+- `&anonymous=1` lässt die Benutzernamen weg – für Vorlagen an Dritte.
+
+Zur Sicherheit: der Export prüft dieselbe Modulberechtigung wie die Ansicht, verlangt
+das Contao-Anfrage-Token (ein untergeschobener Link läuft ins Leere), streamt zeilenweise
+statt alles in den Speicher zu laden, und **neutralisiert Formeln** – ein Dateiname wie
+`=cmd|…` würde von Excel sonst beim Öffnen ausgeführt. Zeiten stehen in der Zeitzone der
+Installation, passend zur Backend-Ansicht.
+
+> Der Stichtag kann nur zeigen, was das Protokoll enthält: Kennzeichnungen aus der Zeit
+> vor der Installation des Bundles, direkte Datenbankänderungen und Einträge jenseits der
+> Aufbewahrungsfrist (`log_retention_days`) sind darin nicht enthalten.
+
+Ein Eingabeformular für den Stichtag gibt es noch nicht – das Datum wird an die URL
+angehängt.
+
 ## Wortlaut
 
 Reihenfolge, die greift:

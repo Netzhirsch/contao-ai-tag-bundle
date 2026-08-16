@@ -14,6 +14,10 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
   weist die Redaktion darauf hin; `auto` setzt die Kennzeichnung bei einer echten
   Erklärung. Angebunden an `DbafsChangeEvent`, damit jeder Weg in die Dateiverwaltung
   erfasst ist – auf Contao 5.3 über den `postUpload`-Hook plus Nachprüfung beim Öffnen.
+- Nachweis-Export als CSV im Protokoll-Modul, wahlweise als vollständiges Protokoll
+  oder als Stichtag (`as_of`), auf Wunsch ohne Benutzernamen (`anonymous`). Geprüft
+  werden Modulberechtigung und Anfrage-Token; die Ausgabe wird gestreamt, Formeln in
+  Zellen werden neutralisiert und Zeiten in der Zeitzone der Installation ausgegeben.
 - Lesbarkeits-Ampel in der Dateibearbeitung: zeigt je konfigurierter Bildgröße, ob das
   Label dort lesbar hineinpasst, gerechnet mit Contaos `ResizeCalculator`.
 
