@@ -228,6 +228,9 @@ class RenewalClientTest extends TestCase
              */
             public array $lines = [];
 
+            /**
+             * @param array<string, mixed> $context
+             */
             public function log(mixed $level, \Stringable|string $message, array $context = []): void
             {
                 $this->lines[] = (string) $message.' '.print_r(array_keys($context), true).' '.implode(' ', array_filter($context, is_scalar(...)));
@@ -278,6 +281,9 @@ class RenewalClientTest extends TestCase
             $store,
             $this->gate($store),
             new class() extends AbstractLogger {
+                /**
+                 * @param array<string, mixed> $context
+                 */
                 public function log(mixed $level, \Stringable|string $message, array $context = []): void
                 {
                 }

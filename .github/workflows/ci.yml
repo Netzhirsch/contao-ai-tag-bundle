@@ -64,7 +64,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
-                  extensions: gd, imagick, dom, json, mbstring, pdo_mysql
+                  extensions: gd, imagick, dom, json, mbstring, pdo_mysql, sodium
                   coverage: none
 
             # COMPOSER_AUTH kommt aus dem Schritt oben und steht nur dann in der
