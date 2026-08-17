@@ -13,6 +13,7 @@ use Contao\Environment;
 use Contao\Input;
 use Contao\Message;
 use Contao\System;
+use Netzhirsch\ContaoAiTagBundle\Backend\LicenseLabels;
 use Netzhirsch\ContaoAiTagBundle\EventListener\BillingReturnListener;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
@@ -83,16 +84,17 @@ class ModuleAiTagLicense extends BackendModule
         /** @var LicenseGate $gate */
         $gate = $container->get(LicenseGate::class);
 
-        $this->Template->license = $gate->state();
+        $state = $gate->state();
+
+        $this->Template->license = $state;
         // Eine interne Lizenz verlaengert sich unbefristet - "35 Tage" waere dort eine
         // Ablaufangabe, die es nicht gibt.
         $this->Template->licensePlan = $container->get(LicenseStore::class)->getPlan();
         $this->Template->licenseFile = $container->get(LicenseStore::class)->filePath();
-        $this->Template->trans = static fn (string $key, array $parameters = []): string => $translator->trans(
-            'netzhirsch_ai_tag.license.'.$key,
-            $parameters,
-            self::TRANSLATION_DOMAIN,
-        );
+        // Nur Zeichenketten in die Vorlage: Contaos Template::__get() ruft jedes
+        // aufrufbare Objekt beim Lesen sofort auf, eine uebergebene Closure wuerde die
+        // Seite mit "Too few arguments" abbrechen. Siehe LicenseLabels.
+        $this->Template->labels = LicenseLabels::build($translator, $state);
         $this->Template->messages = Message::generate();
         $this->Template->referer = $this->getReferer(true);
         $this->Template->backTitle = $GLOBALS['TL_LANG']['MSC']['backBTTitle'] ?? '';

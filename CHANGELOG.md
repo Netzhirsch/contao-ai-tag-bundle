@@ -4,6 +4,24 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.1] - 2026-08-17
+
+### Behoben
+
+- Die Lizenz-Seite im Backend brach beim Aufruf mit *Too few arguments to function …
+  {closure}()* ab. Ursache: Contaos `Template::__get()` **ruft** jedes aufrufbare Objekt
+  beim Lesen sofort auf – der Vorlage war eine Closure für die Übersetzungen übergeben
+  worden, die dadurch ohne Argumente ausgeführt wurde. Die Vorlage bekommt jetzt
+  ausschließlich fertige Zeichenketten (`Backend\LicenseLabels`), inklusive Grund und
+  Resttagen. Das Frontend und die Kennzeichnung waren nie betroffen, nur diese eine
+  Backend-Seite.
+- Die Backend-Vorlage hat jetzt Tests: einer führt sie in allen sechs Zuständen
+  wirklich aus (nicht lizenzpflichtig, keine Lizenz, Testphase, bezahlt, intern,
+  Karenz) und prüft die angebotenen Schaltflächen, ein zweiter gleicht die von der
+  Vorlage gelesenen Textschlüssel gegen die gelieferten ab. Der Stellvertreter im Test
+  hat dieselben Zugriffsregeln wie Contaos Template, damit derselbe Fehler dort
+  auffällt und nicht erst auf einer Installation.
+
 ## [1.0.0] - 2026-08-17
 
 Erste öffentliche Fassung. Gegenüber 0.1.0 sind Erkennung, Lesbarkeits-Ampel,
