@@ -33,13 +33,17 @@ final class LicenseToken
     /**
      * Oeffentlicher Ed25519-Schluessel des Herstellers, Base64 der rohen 32 Bytes.
      *
-     * Leer = diese Fassung ist nicht lizenzpflichtig: das Gate laesst dann alles
-     * durch (siehe isArmed()). So laesst sich das Bundle ausrollen, interne Lizenzen
-     * ausstellen und erst danach scharf schalten - ohne dass ein Update die eigenen
-     * Installationen aussperrt. Der Schalter ist der Schluessel selbst und keine
-     * Konfiguration, weil eine Konfiguration der Kunde umlegen koennte.
+     * Er kann Tokens nur PRUEFEN, niemals ausstellen - der passende geheime Schluessel
+     * liegt ausschliesslich auf dem Lizenzserver (Umgebungsvariable
+     * LICENSE_SIGNING_SECRET_AI_TAG, eigenes Paar je Produkt). Deshalb darf er hier im
+     * Code stehen, und genau hier muss er auch stehen: aus einer Konfigurationsdatei
+     * liesse er sich gegen einen selbst erzeugten tauschen.
+     *
+     * Leer = diese Fassung ist nicht lizenzpflichtig, das Gate laesst dann alles durch
+     * (siehe isArmed()). Damit liess sich das Bundle ausrollen und die internen Lizenzen
+     * ausstellen, bevor mit diesem Wert scharf geschaltet wurde.
      */
-    public const VENDOR_PUBLIC_KEY_B64 = '';
+    public const VENDOR_PUBLIC_KEY_B64 = 'oXwrdfKe5p1/g+gQOS+33OQCZ4YITfwvrXOwGoDAEAI=';
 
     /**
      * Produkt-Slug auf dem Lizenzserver: der Composer-Paketname.
