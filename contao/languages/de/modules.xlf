@@ -10,6 +10,14 @@
         <source>Record of who labelled which file as AI-generated and when.</source>
         <target>Nachweis, wer wann welche Datei als KI-generiert gekennzeichnet hat.</target>
       </trans-unit>
+      <trans-unit id="MOD.netzhirsch_ai_tag_license.0">
+        <source>AI labelling licence</source>
+        <target>Lizenz KI-Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="MOD.netzhirsch_ai_tag_license.1">
+        <source>Licence state, trial and subscription for the burnt-in labelling.</source>
+        <target>Lizenzzustand, Testphase und Abonnement fuer die eingebrannte Kennzeichnung.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

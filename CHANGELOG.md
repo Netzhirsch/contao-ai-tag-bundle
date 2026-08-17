@@ -8,6 +8,22 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Hinzugefügt
 
+- Lizenzierung gegen `https://license.netzhirsch.de`: kurzlebige, mit Ed25519 signierte
+  Tokens, offline geprüft gegen den einkompilierten Public Key (Signatur, Produkt,
+  Domain, Ablauf, High-Water-Mark gegen Uhr-Manipulation), Erneuerung über einen
+  stündlichen Cron-Job mit 6-Stunden-Drosselung, drei Tage Karenz und Widerruf als
+  Kill-Switch. Lizenzpflichtig ist allein das Einbrennen; Markieren, Protokoll,
+  Nachweis-Export und Textalternative bleiben immer verfügbar. Neues Backend-Modul
+  *System → Lizenz KI-Kennzeichnung* mit zustandsabhängigen Schaltflächen (Testphase,
+  Abonnieren, Abo verwalten, aktualisieren) sowie
+  `netzhirsch:ai-tag:license status|renew` für den Betrieb. Solange
+  `LicenseToken::VENDOR_PUBLIC_KEY_B64` leer ist, prüft die Fassung nichts – der
+  Schlüssel selbst ist der Schalter, damit ein Update nicht die eigenen Installationen
+  aussperrt.
+- Ohne aktive Lizenz weist das Backend deutlich darauf hin: Fehlermeldung beim Setzen
+  der Kennzeichnung, entsprechender Hinweis im Vorschaufeld. Eine stillschweigend
+  fehlende Kennzeichnung wäre ein rechtliches Risiko für den Betreiber.
+
 - Erkennung beim Hinzufügen von Dateien: liest IPTC/XMP und erkennt, ob eine Datei
   sich selbst als KI-generiert ausweist (`Iptc4xmpExt:DigitalSourceType`) oder ob
   Metadaten auf einen Generator hindeuten. Standard `suggest` setzt nichts, sondern
@@ -36,6 +52,9 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Behoben
 
+- Unmaskierte `&` in den Export-Übersetzungen: die XLIFF-Dateien waren damit kein
+  gültiges XML, Symfonys Loader hätte beim ersten Zugriff auf eine Übersetzung des
+  Bundles abgebrochen.
 - Die CI lief ohne das Secret `COMPOSER_GITHUB_TOKEN` grundsätzlich rot, weil die
   private Dev-Abhängigkeit `netzhirsch/contao-mcp-bundle` nicht installierbar war.
   Ohne Token entfällt sie jetzt samt Repository-Eintrag, `src/Mcp` und `tests/Mcp`

@@ -1,0 +1,125 @@
+<?php
+/** @var \Contao\BackendTemplate $this */
+
+/** @var callable(string, array<string, string>=): string $t */
+$t = $this->trans;
+
+/** @var array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, expires_at: int, days_left: int, in_grace: bool} $license */
+$license = $this->license;
+
+$plan = (string) $this->licensePlan;
+$armed = (bool) $license['armed'];
+$active = (bool) $license['active'];
+$type = (string) $license['type'];
+
+// Eine interne Lizenz (vom Hersteller ausgestellt) hat keinen Stripe-Kunden - es gibt
+// dort nichts zu verwalten, das Portal koennte nur mit einem Fehler antworten.
+$internal = 'internal' === $plan;
+
+$actionUrl = (string) $this->actionUrl;
+$actionLink = static fn (string $action): string => $actionUrl.'&amp;action='.$action;
+?>
+
+<div id="tl_buttons">
+    <a href="<?= $this->referer ?>" class="header_back" title="<?= htmlspecialchars((string) $this->backTitle, ENT_QUOTES) ?>" accesskey="b" onclick="Backend.getScrollOffset()"><?= $this->backLabel ?></a>
+    <?php if ($armed): ?>
+        <a href="<?= $actionLink('refresh_license') ?>" class="header_sync" title="<?= htmlspecialchars($t('help.refresh'), ENT_QUOTES) ?>"><?= $t('button.refresh') ?></a>
+        <?php if ($active && $internal): ?>
+            <?php // Interne Lizenz: verlaengert sich selbst, kein Abrechnungskonto. Keine Schaltflaechen. ?>
+        <?php elseif ($active && 'full' === $type): ?>
+            <a href="<?= $actionLink('manage_billing') ?>" class="header_edit_all" title="<?= htmlspecialchars($t('help.manage'), ENT_QUOTES) ?>"><?= $t('button.manage') ?></a>
+        <?php elseif ($active): ?>
+            <?php // Laufende Testphase: den Wechsel ins Abo anbieten. Ein Abrechnungskonto gibt es noch nicht. ?>
+            <a href="<?= $actionLink('subscribe') ?>" class="header_new" title="<?= htmlspecialchars($t('help.subscribe'), ENT_QUOTES) ?>"><?= $t('button.subscribe') ?></a>
+        <?php elseif ($internal): ?>
+            <?php // Interne Lizenz, die nicht mehr wirkt (widerrufen, abgelaufen): kaufen ist der Ausweg, verwalten gibt es nicht. ?>
+            <a href="<?= $actionLink('subscribe') ?>" class="header_new" title="<?= htmlspecialchars($t('help.subscribe'), ENT_QUOTES) ?>"><?= $t('button.subscribe') ?></a>
+        <?php elseif ('full' === $type): ?>
+            <?php // Bezahlte Lizenz ueber die Karenz hinaus abgelaufen: dafuer braucht es das Portal (Zahlungsmittel, Abo neu starten), eine zweite Testphase lehnt der Server ab. ?>
+            <a href="<?= $actionLink('subscribe') ?>" class="header_new" title="<?= htmlspecialchars($t('help.subscribe'), ENT_QUOTES) ?>"><?= $t('button.subscribe') ?></a>
+            <a href="<?= $actionLink('manage_billing') ?>" class="header_edit_all" title="<?= htmlspecialchars($t('help.manage'), ENT_QUOTES) ?>"><?= $t('button.manage') ?></a>
+        <?php else: ?>
+            <a href="<?= $actionLink('start_trial') ?>" class="header_new" title="<?= htmlspecialchars($t('help.trial'), ENT_QUOTES) ?>"><?= $t('button.trial') ?></a>
+            <a href="<?= $actionLink('subscribe') ?>" class="header_new" title="<?= htmlspecialchars($t('help.subscribe'), ENT_QUOTES) ?>"><?= $t('button.subscribe') ?></a>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+
+<?= $this->messages ?>
+
+<?php if (!$armed): ?>
+    <div class="tl_message">
+        <p class="tl_info"><?= $t('notice.not_enforced') ?></p>
+    </div>
+<?php elseif (!$active): ?>
+    <div class="tl_message">
+        <p class="tl_error"><?= $t('notice.inactive') ?></p>
+    </div>
+<?php elseif ($license['in_grace']): ?>
+    <div class="tl_message">
+        <p class="tl_info"><?= $t('notice.grace') ?></p>
+    </div>
+<?php endif; ?>
+
+<h2 class="sub_headline"><?= $t('headline') ?></h2>
+
+<table class="tl_show">
+    <tbody>
+        <tr>
+            <td class="tl_file_list"><?= $t('field.state') ?></td>
+            <td class="tl_file_list">
+                <?php if (!$armed): ?>
+                    <?= $t('state.not_enforced') ?>
+                <?php elseif ($active): ?>
+                    <strong class="tl_green">&#9679;</strong> <?= $t('state.active') ?>
+                    <?php if ($license['in_grace']): ?>
+                        <span class="tl_orange">(<?= $t('state.grace') ?>)</span>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <strong class="tl_red">&#9679;</strong> <?= $t('state.inactive') ?>
+                    (<?= htmlspecialchars($t('reason.'.$license['reason']), ENT_QUOTES) ?>)
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php if ($armed): ?>
+            <tr>
+                <td class="tl_file_list"><?= $t('field.type') ?></td>
+                <td class="tl_file_list">
+                    <?php if ($internal): ?>
+                        <?= $t('type.internal') ?>
+                    <?php elseif ('trial' === $type): ?>
+                        <?= $t('type.trial') ?>
+                    <?php elseif ('full' === $type): ?>
+                        <?= $t('type.full') ?>
+                    <?php else: ?>
+                        &ndash;
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="tl_file_list"><?= $t('field.expiry') ?></td>
+                <td class="tl_file_list">
+                    <?php if ($internal): ?>
+                        <?= $t('expiry.unlimited') ?>
+                    <?php elseif ($license['expires_at'] > 0): ?>
+                        <?= htmlspecialchars(date('d.m.Y H:i', (int) $license['expires_at']), ENT_QUOTES) ?>
+                        (<?= htmlspecialchars($t('expiry.days_left', ['%days%' => (string) $license['days_left']]), ENT_QUOTES) ?>)
+                    <?php else: ?>
+                        &ndash;
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endif; ?>
+        <tr>
+            <td class="tl_file_list"><?= $t('field.domain') ?></td>
+            <td class="tl_file_list"><?= htmlspecialchars((string) $license['domain'], ENT_QUOTES) ?: '&ndash;' ?></td>
+        </tr>
+        <tr>
+            <td class="tl_file_list"><?= $t('field.file') ?></td>
+            <td class="tl_file_list"><code><?= htmlspecialchars((string) $this->licenseFile, ENT_QUOTES) ?></code></td>
+        </tr>
+    </tbody>
+</table>
+
+<p class="tl_help tl_tip"><?= $t('help.scope') ?></p>
+<p class="tl_help tl_tip"><?= $t('help.file') ?></p>

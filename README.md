@@ -35,6 +35,8 @@ Bildbereichs.
   Datei markiert hat. Nur lesbar, nicht editierbar; zusätzlich erscheint jede Änderung
   im Contao-Systemprotokoll.
 - **Eigenes Recht** für das Setzen der Kennzeichnung (Voter + Contao-Feldrechte).
+- **Lizenz** unter *System → Lizenz KI-Kennzeichnung*: Testphase, Abonnement und
+  Zustand. Lizenzpflichtig ist nur das Einbrennen, siehe *Lizenz und Aktivierung*.
 
 ## Installation
 
@@ -42,6 +44,11 @@ Bildbereichs.
 composer require netzhirsch/contao-ai-tag-bundle
 vendor/bin/contao-console contao:migrate
 ```
+
+Danach unter *System → Lizenz KI-Kennzeichnung* die Testphase starten oder das
+Abonnement abschließen – ohne aktive Lizenz wird die Kennzeichnung nicht eingebrannt
+(siehe *Lizenz und Aktivierung*). Voraussetzung ist `ext-sodium` (in üblichen
+PHP-Builds vorhanden) und ein laufender Cron.
 
 Zusätzlich muss eine **TrueType-Schrift** verfügbar sein. Ohne Schrift bleiben Bilder
 ungekennzeichnet (mit Fehlereintrag im Log) – die Bildauslieferung selbst bricht nie ab.
@@ -97,6 +104,8 @@ netzhirsch_contao_ai_tag:
 | `hint_separator` | `' – '` | Trenner zwischen vorhandenem Text und der Kennzeichnung. |
 | `intermediate_quality` | `95` | Qualität der ersten Kodierung (die Nachbearbeitung kodiert ein zweites Mal). |
 | `log_retention_days` | `1095` | Aufbewahrungsfrist des Protokolls in Tagen (3 Jahre). `0` bewahrt unbegrenzt auf. |
+| `license_backend_url` | `''` | Adresse oder Hostname des Backends, auf den die Lizenz ausgestellt ist. Nur für Cron und CLI nötig, siehe *Lizenz*. |
+| `license_server_url` | `''` | Abweichender Lizenzserver. Nur für die Entwicklung. |
 
 Jede Einstellung, die das Aussehen verändert, fließt über einen Fingerabdruck in den
 Cache-Schlüssel der Bildgröße ein. Eine Design-Änderung erzeugt die betroffenen Bilder
@@ -259,8 +268,80 @@ Wichtig für den Betrieb:
 Für die Entwicklung wird das MCP-Bundle als `require-dev` aus dem privaten
 GitHub-Repository geladen; die CI braucht dafür Zugangsdaten (`COMPOSER_AUTH`).
 
+## Lizenz und Aktivierung
+
+Lizenzpflichtig ist **allein das Einbrennen** der Kennzeichnung in die erzeugten
+Bildgrößen. Markieren in der Dateiverwaltung, Erkennung, Protokoll, Nachweis-Export und
+die Textalternative im Markup funktionieren immer – der Zugriff auf die eigenen
+Nachweise darf nicht an einem Abonnement hängen.
+
+Verwaltet wird das unter *System → Lizenz KI-Kennzeichnung* (nur für
+Administratoren): Zustand, *Testphase starten*, *Abonnieren*, *Abo verwalten* und
+*Lizenz aktualisieren*.
+
+**Wie es funktioniert.** Der Lizenzserver (`https://license.netzhirsch.de`) stellt
+kurzlebige, mit Ed25519 **signierte** Tokens aus; das Bundle prüft sie **offline** gegen
+den einkompilierten Public Key und erneuert sie über einen stündlichen Cron-Job. Ein
+Serverausfall ist damit unkritisch, ein Widerruf greift trotzdem innerhalb weniger
+Stunden. Geprüft werden Signatur, Produkt, Domain und Ablauf; gegen ein Zurückstellen
+der Systemuhr steht eine High-Water-Mark.
+
+- **Domainbindung.** Das Token gilt für den Backend-Host, normalisiert (klein
+  geschrieben, ohne Port, ohne führendes `www.`). Kopieren auf eine andere Domain nützt
+  nichts. Kostenlos ohne Lizenz sind serverseitig nur `localhost`, `127.0.0.1`, `::1`
+  und `*.localhost` – **`.test`, `.local` und `.ddev.site` nicht.**
+- **Instanzbindung.** `var/netzhirsch-ai-tag/license.json` enthält Token und
+  `instance_secret`. Beim Umzug auf einen anderen Server die Datei mitnehmen und
+  *Lizenz aktualisieren* klicken, sonst antwortet der Server `instance_mismatch`. Die
+  Datei gehört ins Backup, nicht ins Repository.
+- **Cron.** Die Erneuerung läuft als `hourly`-Cron-Job, echte Serveraufrufe sind auf
+  einen alle sechs Stunden gedrosselt. Auf Seiten mit wenig Verkehr braucht es dafür
+  einen echten Systemcron (`vendor/bin/contao-console contao:cron`).
+- **Karenz.** Ein abgelaufenes Token wirkt noch drei Tage weiter, damit eine kurze
+  Netz- oder Serverstörung niemanden aussperrt. Nur ein ausdrücklicher Widerruf des
+  Servers löscht das Token sofort.
+- **Kein Request, kein Host.** In Cron und CLI gibt es keinen Request-Host. Die Domain
+  kommt dann aus dem gespeicherten Token; ist noch keines vorhanden, setzen Sie
+  `license_backend_url`.
+
+Zustand prüfen oder Token sofort erneuern, ohne Backend:
+
+```bash
+vendor/bin/contao-console netzhirsch:ai-tag:license status
+vendor/bin/contao-console netzhirsch:ai-tag:license renew
+```
+
+**Ohne aktive Lizenz** bleibt die Website unangetastet und markierte Bilder werden
+unverändert ausgeliefert. Das sagt das Bundle deutlich: beim Setzen der Kennzeichnung
+erscheint eine Fehlermeldung, und das Vorschaufeld zeigt statt der Gegenüberstellung
+denselben Hinweis. Eine stillschweigend fehlende Kennzeichnung wäre ein rechtliches
+Risiko für den Betreiber.
+
+**Sicherheit.** Der Public Key steht im Code und nicht in der Konfiguration – ein
+konfigurierbarer Schlüssel ließe sich gegen einen selbst erzeugten tauschen. Die
+Server-Adresse ist ebenfalls einkompiliert. Bezahlt wird ausschließlich auf den von
+Stripe gehosteten Seiten; **Karten- und SEPA-Daten laufen nie durch Contao**, und es
+wird nur `https://` gefolgt. Token und `instance_secret` erscheinen weder im Protokoll
+noch im Backend.
+
+Ehrliche Grenze: PHP liegt beim Kunden im Klartext, das Gate ist patchbar. Ziel ist,
+bequeme Weitergabe zu verhindern und absichtliche sichtbar und widerrufbar zu machen –
+kein DRM.
+
 ## Grenzen (bewusst)
 
+- **Ohne einkompilierten Public Key wird nicht geprüft.** Solange
+  `LicenseToken::VENDOR_PUBLIC_KEY_B64` leer ist, gilt die Fassung als nicht
+  lizenzpflichtig und brennt immer ein. Das ist die Reihenfolge beim Ausrollen: erst
+  Produkt und Pläne auf dem Server anlegen, dann interne Lizenzen ausstellen, danach den
+  Schlüssel einsetzen. Ein Update mit Schlüssel vor den internen Lizenzen sperrt die
+  eigenen Installationen aus.
+- **Rückkehr von Stripe.** Der Lizenzserver hängt für alle Produkte denselben
+  Parameter `mcp_billing` an die Rückkehr-Adresse. Der Listener greift deshalb nur auf
+  dem nackten `/contao`-Aufruf; ist auf derselben Installation ein weiteres
+  Netzhirsch-Bundle mit Lizenzierung aktiv, landet die Rückkehr eventuell auf dessen
+  Lizenzseite. Die Lizenz aktiviert sich trotzdem – spätestens mit dem stündlichen Cron
+  oder auf Klick über *Lizenz aktualisieren*.
 - **SVG wird nicht eingebrannt.** Vektorgrafiken laufen in Contao nicht durch Imagine.
   Beim Markieren erscheint ein entsprechender Hinweis; die Textalternative greift
   trotzdem.

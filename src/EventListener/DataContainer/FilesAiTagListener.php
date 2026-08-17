@@ -11,6 +11,7 @@ use Netzhirsch\ContaoAiTagBundle\Audit\AiTagAuditLogger;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver;
 use Netzhirsch\ContaoAiTagBundle\Image\TagRenderer;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -22,11 +23,14 @@ class FilesAiTagListener
 {
     private const FLASH_INFO = 'contao.BE.info';
 
+    private const FLASH_ERROR = 'contao.BE.error';
+
     public function __construct(
         private readonly Connection $connection,
         private readonly AiTagAuditLogger $auditLogger,
         private readonly AiTagResolver $resolver,
         private readonly TagRenderer $renderer,
+        private readonly LicenseGate $gate,
         private readonly RequestStack $requestStack,
         private readonly TranslatorInterface $translator,
         private readonly string $projectDir,
@@ -50,6 +54,7 @@ class FilesAiTagListener
         );
 
         if ($isEnabled) {
+            $this->addLicenseWarning();
             $this->addCoverageHints($path);
         }
 
@@ -102,6 +107,20 @@ class FilesAiTagListener
     }
 
     /**
+     * Ohne aktive Lizenz wird nichts eingebrannt. Das darf nicht stillschweigend
+     * passieren: wer hier die Kennzeichnung setzt, verlaesst sich darauf, dass sie im
+     * Bild landet - fehlt sie, ist das ein rechtliches Risiko.
+     */
+    private function addLicenseWarning(): void
+    {
+        if ($this->gate->isActive()) {
+            return;
+        }
+
+        $this->addFlash(self::FLASH_ERROR, 'netzhirsch_ai_tag.license.hint.inactive', []);
+    }
+
+    /**
      * Sagt der Redaktion sofort, wenn die Kennzeichnung nicht ins Bild gebrannt
      * werden kann - dann traegt sie nur die Textalternative im Markup.
      */
@@ -112,7 +131,7 @@ class FilesAiTagListener
         }
 
         if (!$this->resolver->isTaggableFormat($path)) {
-            $this->addInfo('netzhirsch_ai_tag.hint.format', ['%file%' => basename($path)]);
+            $this->addFlash(self::FLASH_INFO, 'netzhirsch_ai_tag.hint.format', ['%file%' => basename($path)]);
 
             return;
         }
@@ -131,11 +150,15 @@ class FilesAiTagListener
             return;
         }
 
-        $this->addInfo('netzhirsch_ai_tag.hint.size', [
-            '%file%' => basename($path),
-            '%width%' => (string) $size[0],
-            '%height%' => (string) $size[1],
-        ]);
+        $this->addFlash(
+            self::FLASH_INFO,
+            'netzhirsch_ai_tag.hint.size',
+            [
+                '%file%' => basename($path),
+                '%width%' => (string) $size[0],
+                '%height%' => (string) $size[1],
+            ],
+        );
     }
 
     private function currentFlag(string $path): bool
@@ -161,7 +184,7 @@ class FilesAiTagListener
     /**
      * @param array<string, string> $parameters
      */
-    private function addInfo(string $key, array $parameters): void
+    private function addFlash(string $level, string $key, array $parameters): void
     {
         $session = $this->requestStack->getSession();
 
@@ -170,7 +193,7 @@ class FilesAiTagListener
         }
 
         $session->getFlashBag()->add(
-            self::FLASH_INFO,
+            $level,
             $this->translator->trans($key, $parameters, 'netzhirsch_ai_tag'),
         );
     }

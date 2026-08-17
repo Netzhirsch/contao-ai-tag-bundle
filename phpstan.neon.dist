@@ -7,3 +7,10 @@ parameters:
         - src
         - tests
     treatPhpDocTypesAsCertain: false
+    # Contaos Templates sind Eigenschaftsbeutel: das Modul setzt seine Werte ueber die
+    # magischen Zugriffsmethoden, das Template liest sie. Ohne diesen Eintrag meldet
+    # PHPStan jede Template-Variable als undefinierte Eigenschaft. stdClass steht in der
+    # Voreinstellung und muss hier mitgefuehrt werden, weil die Liste ersetzt wird.
+    universalObjectCratesClasses:
+        - stdClass
+        - Contao\Template

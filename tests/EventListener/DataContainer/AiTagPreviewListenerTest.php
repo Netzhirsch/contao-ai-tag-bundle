@@ -13,6 +13,9 @@ use Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\AiTagPreviewListene
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver;
 use Netzhirsch\ContaoAiTagBundle\Image\CornerSelector;
 use Netzhirsch\ContaoAiTagBundle\Image\TagStyle;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseToken;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
@@ -73,6 +76,8 @@ class AiTagPreviewListenerTest extends TestCase
             ->willReturnArgument(0)
         ;
 
+        $gate = new LicenseGate(new LicenseToken(''), new LicenseStore($this->projectDir), new RequestStack());
+
         $resolver = new AiTagResolver(
             $this->createStub(Connection::class),
             new RequestStack(),
@@ -80,6 +85,7 @@ class AiTagPreviewListenerTest extends TestCase
             $translator,
             new CornerSelector(),
             new TagStyle(),
+            $gate,
             $this->projectDir,
             'files',
         );
@@ -87,7 +93,7 @@ class AiTagPreviewListenerTest extends TestCase
         $requestStack = new RequestStack();
         $requestStack->push(Request::create('https://example.com/contao'));
 
-        $listener = new AiTagPreviewListener($imageFactory, $resolver, $translator, $requestStack, $this->projectDir, []);
+        $listener = new AiTagPreviewListener($imageFactory, $resolver, $gate, $translator, $requestStack, $this->projectDir, []);
 
         return $listener($this->dataContainer('files/'.$name));
     }

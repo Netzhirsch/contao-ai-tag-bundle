@@ -166,6 +166,15 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->defaultValue(1095)
             ->min(0)
             ->end()
+            // --- Lizenz ---
+            ->scalarNode('license_backend_url')
+            ->info('Adresse oder Hostname des Backends, auf den die Lizenz ausgestellt ist. Nur fuer Cron und CLI noetig, wo es keinen Request gibt; im Backend wird der laufende Host benutzt.')
+            ->defaultValue('')
+            ->end()
+            ->scalarNode('license_server_url')
+            ->info('Abweichender Lizenzserver. Nur fuer die Entwicklung - im Betrieb bleibt der einkompilierte Server richtig.')
+            ->defaultValue('')
+            ->end()
             ->end()
         ;
     }

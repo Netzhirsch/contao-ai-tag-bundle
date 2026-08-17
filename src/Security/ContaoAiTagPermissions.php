@@ -25,4 +25,10 @@ final class ContaoAiTagPermissions
      * Backend-Modul mit dem Kennzeichnungs-Protokoll.
      */
     public const MODULE_LOG = 'netzhirsch_ai_tag_log';
+
+    /**
+     * Backend-Modul mit dem Lizenzzustand. Nur fuer Administratoren: dort werden
+     * Testphase und Abonnement gestartet und verwaltet.
+     */
+    public const MODULE_LICENSE = 'netzhirsch_ai_tag_license';
 }

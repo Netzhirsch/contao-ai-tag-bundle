@@ -11,6 +11,9 @@ services:
             - '../src/Image/AiTagOptions.php'
             - '../src/Security/ContaoAiTagPermissions.php'
             - '../src/Audit/AuditActor.php'
+            # Backend-Module erzeugt Contao selbst; als Service wuerde das Autowiring am
+            # DataContainer-Parameter des Konstruktors scheitern.
+            - '../src/Backend/Module/'
             # Optional, siehe services_mcp.yaml
             - '../src/Mcp/'
             # Versionsabhaengig, siehe services_detection_*.yaml
@@ -117,3 +120,30 @@ services:
     Netzhirsch\ContaoAiTagBundle\Cron\PurgeAiTagLogCron:
         arguments:
             $retentionDays: '%netzhirsch_contao_ai_tag.log_retention_days%'
+
+    # --- Lizenz ---
+    # LicenseToken bekommt keinen Konstruktor-Parameter: der oeffentliche Schluessel
+    # steht im Code und darf nicht aus der Konfiguration kommen.
+    Netzhirsch\ContaoAiTagBundle\License\LicenseStore:
+        public: true
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    Netzhirsch\ContaoAiTagBundle\License\LicenseGate:
+        public: true
+        arguments:
+            $backendUrl: '%netzhirsch_contao_ai_tag.license_backend_url%'
+
+    # Oeffentlich, weil das Backend-Modul von Contao ausserhalb des Containers
+    # erzeugt wird und die Dienste ueber System::getContainer() holt.
+    Netzhirsch\ContaoAiTagBundle\License\RenewalClient:
+        public: true
+        arguments:
+            $httpClient: '@http_client'
+            $serverUrlOverride: '%netzhirsch_contao_ai_tag.license_server_url%'
+
+    Netzhirsch\ContaoAiTagBundle\EventListener\BillingReturnListener:
+        arguments:
+            $scopeMatcher: '@contao.routing.scope_matcher'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }

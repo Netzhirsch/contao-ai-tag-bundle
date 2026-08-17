@@ -89,7 +89,207 @@
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.export.title">
         <source>netzhirsch_ai_tag.export.title</source>
-        <target>Protokoll als CSV herunterladen. Für einen Stichtag &as_of=JJJJ-MM-TT anhängen, ohne Benutzernamen &anonymous=1.</target>
+        <target>Protokoll als CSV herunterladen. Für einen Stichtag &amp;as_of=JJJJ-MM-TT anhängen, ohne Benutzernamen &amp;anonymous=1.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.headline">
+        <source>netzhirsch_ai_tag.license.headline</source>
+        <target>Lizenz der eingebrannten Kennzeichnung</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.state">
+        <source>netzhirsch_ai_tag.license.field.state</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.type">
+        <source>netzhirsch_ai_tag.license.field.type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.expiry">
+        <source>netzhirsch_ai_tag.license.field.expiry</source>
+        <target>Gültig bis</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.domain">
+        <source>netzhirsch_ai_tag.license.field.domain</source>
+        <target>Lizenzierte Domain</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.file">
+        <source>netzhirsch_ai_tag.license.field.file</source>
+        <target>Lizenzdatei</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.active">
+        <source>netzhirsch_ai_tag.license.state.active</source>
+        <target>aktiv</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.inactive">
+        <source>netzhirsch_ai_tag.license.state.inactive</source>
+        <target>nicht aktiv</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.grace">
+        <source>netzhirsch_ai_tag.license.state.grace</source>
+        <target>Karenzzeit</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.not_enforced">
+        <source>netzhirsch_ai_tag.license.state.not_enforced</source>
+        <target>Diese Fassung ist nicht lizenzpflichtig.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.trial">
+        <source>netzhirsch_ai_tag.license.type.trial</source>
+        <target>Testphase</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.full">
+        <source>netzhirsch_ai_tag.license.type.full</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.internal">
+        <source>netzhirsch_ai_tag.license.type.internal</source>
+        <target>Interne Lizenz</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.expiry.unlimited">
+        <source>netzhirsch_ai_tag.license.expiry.unlimited</source>
+        <target>unbefristet (verlängert sich automatisch)</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.expiry.days_left">
+        <source>netzhirsch_ai_tag.license.expiry.days_left</source>
+        <target>noch %days% Tage</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.trial">
+        <source>netzhirsch_ai_tag.license.button.trial</source>
+        <target>Testphase starten</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.subscribe">
+        <source>netzhirsch_ai_tag.license.button.subscribe</source>
+        <target>Abonnieren</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.manage">
+        <source>netzhirsch_ai_tag.license.button.manage</source>
+        <target>Abo verwalten</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.refresh">
+        <source>netzhirsch_ai_tag.license.button.refresh</source>
+        <target>Lizenz aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.trial">
+        <source>netzhirsch_ai_tag.license.help.trial</source>
+        <target>Startet die Testphase. Schaltet die eingebrannte Kennzeichnung für den Testzeitraum frei, ohne Zahlung.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.subscribe">
+        <source>netzhirsch_ai_tag.license.help.subscribe</source>
+        <target>Öffnet die gesicherte Zahlungsseite von Stripe. Karten- und SEPA-Daten werden dort eingegeben, niemals in Contao.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.manage">
+        <source>netzhirsch_ai_tag.license.help.manage</source>
+        <target>Öffnet das Stripe-Kundenportal: Zahlungsmittel, Kündigung, Rechnungen.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.refresh">
+        <source>netzhirsch_ai_tag.license.help.refresh</source>
+        <target>Fragt den Lizenzserver sofort. Holt eine bereits bezahlte oder interne Lizenz, ohne auf den stündlichen Cron zu warten.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.scope">
+        <source>netzhirsch_ai_tag.license.help.scope</source>
+        <target>Lizenzpflichtig ist allein das Einbrennen der Kennzeichnung in die erzeugten Bildgrößen. Markieren in der Dateiverwaltung, Protokoll, Nachweis-Export und die Textalternative im Markup funktionieren immer – der Zugriff auf die eigenen Nachweise hängt nicht an der Lizenz.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.file">
+        <source>netzhirsch_ai_tag.license.help.file</source>
+        <target>Die Lizenz ist an diese Installation gebunden. Beim Umzug auf einen anderen Server oder eine andere Domain die Datei mitnehmen und danach "Lizenz aktualisieren" klicken; sonst meldet der Server eine andere Installation (instance_mismatch).</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.not_enforced">
+        <source>netzhirsch_ai_tag.license.notice.not_enforced</source>
+        <target>Diese Fassung des Bundles prüft keine Lizenz: die Kennzeichnung wird immer eingebrannt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.inactive">
+        <source>netzhirsch_ai_tag.license.notice.inactive</source>
+        <target>Ohne aktive Lizenz wird die Kennzeichnung nicht in die Bilder eingebrannt. Markierte Bilder erscheinen unverändert; im Markup bleibt nur die Textalternative.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.grace">
+        <source>netzhirsch_ai_tag.license.notice.grace</source>
+        <target>Die Lizenz ist abgelaufen und läuft in der Karenzzeit weiter. Erneuern Sie sie, bevor die Kennzeichnung ausbleibt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.ok">
+        <source>netzhirsch_ai_tag.license.reason.ok</source>
+        <target>gültig</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.not_enforced">
+        <source>netzhirsch_ai_tag.license.reason.not_enforced</source>
+        <target>keine Prüfung</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.no_token">
+        <source>netzhirsch_ai_tag.license.reason.no_token</source>
+        <target>keine Lizenz hinterlegt</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.expired">
+        <source>netzhirsch_ai_tag.license.reason.expired</source>
+        <target>abgelaufen</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.wrong_domain">
+        <source>netzhirsch_ai_tag.license.reason.wrong_domain</source>
+        <target>auf eine andere Domain ausgestellt</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.wrong_product">
+        <source>netzhirsch_ai_tag.license.reason.wrong_product</source>
+        <target>für ein anderes Produkt ausgestellt</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.bad_signature">
+        <source>netzhirsch_ai_tag.license.reason.bad_signature</source>
+        <target>Signatur ungültig</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.malformed">
+        <source>netzhirsch_ai_tag.license.reason.malformed</source>
+        <target>Lizenz unlesbar</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.clock_tampered">
+        <source>netzhirsch_ai_tag.license.reason.clock_tampered</source>
+        <target>Systemzeit liegt vor dem Ausstellungsdatum</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.sodium_unavailable">
+        <source>netzhirsch_ai_tag.license.reason.sodium_unavailable</source>
+        <target>PHP-Erweiterung sodium fehlt</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.throttled">
+        <source>netzhirsch_ai_tag.license.reason.throttled</source>
+        <target>kürzlich geprüft</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.claimed">
+        <source>netzhirsch_ai_tag.license.msg.claimed</source>
+        <target>Lizenz aktiviert – die Kennzeichnung wird eingebrannt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.trial_started">
+        <source>netzhirsch_ai_tag.license.msg.trial_started</source>
+        <target>Testphase aktiviert – die Kennzeichnung wird für den Testzeitraum eingebrannt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.no_license_found">
+        <source>netzhirsch_ai_tag.license.msg.no_license_found</source>
+        <target>Der Lizenzserver hält für diese Domain derzeit keine Lizenz.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.action_failed">
+        <source>netzhirsch_ai_tag.license.msg.action_failed</source>
+        <target>Die Lizenzaktion ist fehlgeschlagen: %reason%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.revoked">
+        <source>netzhirsch_ai_tag.license.msg.revoked</source>
+        <target>Diese Lizenz wurde widerrufen. Bitte wenden Sie sich an Netzhirsch.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.instance_mismatch">
+        <source>netzhirsch_ai_tag.license.msg.instance_mismatch</source>
+        <target>Für diese Domain ist bereits eine andere Installation lizenziert. Nehmen Sie deren Lizenzdatei mit oder lassen Sie die Bindung bei Netzhirsch aufheben.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.internal_no_billing">
+        <source>netzhirsch_ai_tag.license.msg.internal_no_billing</source>
+        <target>Dies ist eine interne Lizenz von Netzhirsch. Es gibt kein Abonnement zu verwalten; sie verlängert sich automatisch.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_cancel">
+        <source>netzhirsch_ai_tag.license.msg.billing_cancel</source>
+        <target>Der Kauf wurde abgebrochen – es wurde nichts abgebucht.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_activated">
+        <source>netzhirsch_ai_tag.license.msg.billing_activated</source>
+        <target>Zahlung eingegangen – das Abonnement ist aktiv und die Kennzeichnung wird eingebrannt.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_pending">
+        <source>netzhirsch_ai_tag.license.msg.billing_pending</source>
+        <target>Zahlung eingegangen – das Abonnement wird aktiviert. Bei SEPA kann das einen Moment dauern; die Lizenz schaltet sich selbst frei.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.hint.inactive">
+        <source>netzhirsch_ai_tag.license.hint.inactive</source>
+        <target>Ohne aktive Lizenz wird die Kennzeichnung nicht ins Bild gebrannt. Sie erscheint nur als Textalternative im Markup – siehe System, Lizenz KI-Kennzeichnung.</target>
       </trans-unit>
     </body>
   </file>

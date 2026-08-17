@@ -11,6 +11,7 @@ use Contao\Image\ResizeConfiguration;
 use Contao\Image\ResizeOptions;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagResizer;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -35,6 +36,7 @@ class AiTagPreviewListener
     public function __construct(
         private readonly ImageFactoryInterface $imageFactory,
         private readonly AiTagResolver $resolver,
+        private readonly LicenseGate $gate,
         private readonly TranslatorInterface $translator,
         private readonly RequestStack $requestStack,
         private readonly string $projectDir,
@@ -53,6 +55,12 @@ class AiTagPreviewListener
 
         if (!$this->resolver->isTaggableFormat($path)) {
             return $this->widget($this->translator->trans('netzhirsch_ai_tag.preview.not_taggable', [], 'netzhirsch_ai_tag'), '');
+        }
+
+        // Ohne aktive Lizenz wird nicht eingebrannt. Beide Fassungen waeren identisch -
+        // die Gegenueberstellung wuerde das Gegenteil dessen zeigen, was passiert.
+        if (!$this->gate->isActive()) {
+            return $this->widget($this->translator->trans('netzhirsch_ai_tag.license.hint.inactive', [], 'netzhirsch_ai_tag'), '');
         }
 
         try {

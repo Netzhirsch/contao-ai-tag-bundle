@@ -89,7 +89,207 @@
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.export.title">
         <source>netzhirsch_ai_tag.export.title</source>
-        <target>Download the log as CSV. Append &as_of=YYYY-MM-DD for a given date, &anonymous=1 to omit user names.</target>
+        <target>Download the log as CSV. Append &amp;as_of=YYYY-MM-DD for a given date, &amp;anonymous=1 to omit user names.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.headline">
+        <source>netzhirsch_ai_tag.license.headline</source>
+        <target>Licence for the burnt-in labelling</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.state">
+        <source>netzhirsch_ai_tag.license.field.state</source>
+        <target>State</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.type">
+        <source>netzhirsch_ai_tag.license.field.type</source>
+        <target>Type</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.expiry">
+        <source>netzhirsch_ai_tag.license.field.expiry</source>
+        <target>Valid until</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.domain">
+        <source>netzhirsch_ai_tag.license.field.domain</source>
+        <target>Licensed domain</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.field.file">
+        <source>netzhirsch_ai_tag.license.field.file</source>
+        <target>Licence file</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.active">
+        <source>netzhirsch_ai_tag.license.state.active</source>
+        <target>active</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.inactive">
+        <source>netzhirsch_ai_tag.license.state.inactive</source>
+        <target>inactive</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.grace">
+        <source>netzhirsch_ai_tag.license.state.grace</source>
+        <target>grace period</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.state.not_enforced">
+        <source>netzhirsch_ai_tag.license.state.not_enforced</source>
+        <target>This build does not require a licence.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.trial">
+        <source>netzhirsch_ai_tag.license.type.trial</source>
+        <target>Trial</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.full">
+        <source>netzhirsch_ai_tag.license.type.full</source>
+        <target>Subscription</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.type.internal">
+        <source>netzhirsch_ai_tag.license.type.internal</source>
+        <target>Internal licence</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.expiry.unlimited">
+        <source>netzhirsch_ai_tag.license.expiry.unlimited</source>
+        <target>unlimited (renews automatically)</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.expiry.days_left">
+        <source>netzhirsch_ai_tag.license.expiry.days_left</source>
+        <target>%days% days left</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.trial">
+        <source>netzhirsch_ai_tag.license.button.trial</source>
+        <target>Start trial</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.subscribe">
+        <source>netzhirsch_ai_tag.license.button.subscribe</source>
+        <target>Subscribe</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.manage">
+        <source>netzhirsch_ai_tag.license.button.manage</source>
+        <target>Manage subscription</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.button.refresh">
+        <source>netzhirsch_ai_tag.license.button.refresh</source>
+        <target>Refresh licence</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.trial">
+        <source>netzhirsch_ai_tag.license.help.trial</source>
+        <target>Starts the trial. Unlocks the burnt-in labelling for the trial period, no payment required.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.subscribe">
+        <source>netzhirsch_ai_tag.license.help.subscribe</source>
+        <target>Opens the secure Stripe payment page. Card and SEPA details are entered there, never in Contao.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.manage">
+        <source>netzhirsch_ai_tag.license.help.manage</source>
+        <target>Opens the Stripe customer portal: payment method, cancellation, invoices.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.refresh">
+        <source>netzhirsch_ai_tag.license.help.refresh</source>
+        <target>Asks the licence server right away. Pulls an already paid or internal licence without waiting for the hourly cron.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.scope">
+        <source>netzhirsch_ai_tag.license.help.scope</source>
+        <target>Only burning the label into the generated image sizes requires a licence. Flagging files, the log, the audit export and the text alternative in the markup always work – access to your own records never depends on the licence.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.help.file">
+        <source>netzhirsch_ai_tag.license.help.file</source>
+        <target>The licence is bound to this installation. When moving to another server or domain, take the file along and then click "Refresh licence"; otherwise the server reports another installation (instance_mismatch).</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.not_enforced">
+        <source>netzhirsch_ai_tag.license.notice.not_enforced</source>
+        <target>This build of the bundle checks no licence: the label is always burnt in.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.inactive">
+        <source>netzhirsch_ai_tag.license.notice.inactive</source>
+        <target>Without an active licence the label is not burnt into the images. Flagged images are delivered unchanged; only the text alternative remains in the markup.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.notice.grace">
+        <source>netzhirsch_ai_tag.license.notice.grace</source>
+        <target>The licence has expired and is running in the grace period. Renew it before the labelling stops.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.ok">
+        <source>netzhirsch_ai_tag.license.reason.ok</source>
+        <target>valid</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.not_enforced">
+        <source>netzhirsch_ai_tag.license.reason.not_enforced</source>
+        <target>not checked</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.no_token">
+        <source>netzhirsch_ai_tag.license.reason.no_token</source>
+        <target>no licence installed</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.expired">
+        <source>netzhirsch_ai_tag.license.reason.expired</source>
+        <target>expired</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.wrong_domain">
+        <source>netzhirsch_ai_tag.license.reason.wrong_domain</source>
+        <target>issued for a different domain</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.wrong_product">
+        <source>netzhirsch_ai_tag.license.reason.wrong_product</source>
+        <target>issued for a different product</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.bad_signature">
+        <source>netzhirsch_ai_tag.license.reason.bad_signature</source>
+        <target>invalid signature</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.malformed">
+        <source>netzhirsch_ai_tag.license.reason.malformed</source>
+        <target>licence unreadable</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.clock_tampered">
+        <source>netzhirsch_ai_tag.license.reason.clock_tampered</source>
+        <target>system clock predates the issue date</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.sodium_unavailable">
+        <source>netzhirsch_ai_tag.license.reason.sodium_unavailable</source>
+        <target>PHP extension sodium is missing</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.reason.throttled">
+        <source>netzhirsch_ai_tag.license.reason.throttled</source>
+        <target>checked recently</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.claimed">
+        <source>netzhirsch_ai_tag.license.msg.claimed</source>
+        <target>Licence activated – the label is burnt in.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.trial_started">
+        <source>netzhirsch_ai_tag.license.msg.trial_started</source>
+        <target>Trial activated – the label is burnt in for the trial period.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.no_license_found">
+        <source>netzhirsch_ai_tag.license.msg.no_license_found</source>
+        <target>The licence server currently holds no licence for this domain.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.action_failed">
+        <source>netzhirsch_ai_tag.license.msg.action_failed</source>
+        <target>The licence action failed: %reason%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.revoked">
+        <source>netzhirsch_ai_tag.license.msg.revoked</source>
+        <target>This licence has been revoked. Please contact Netzhirsch.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.instance_mismatch">
+        <source>netzhirsch_ai_tag.license.msg.instance_mismatch</source>
+        <target>Another installation is already licensed for this domain. Take its licence file along or ask Netzhirsch to release the binding.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.internal_no_billing">
+        <source>netzhirsch_ai_tag.license.msg.internal_no_billing</source>
+        <target>This is an internal licence issued by Netzhirsch. There is no subscription to manage; it renews automatically.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_cancel">
+        <source>netzhirsch_ai_tag.license.msg.billing_cancel</source>
+        <target>Checkout cancelled – nothing was charged.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_activated">
+        <source>netzhirsch_ai_tag.license.msg.billing_activated</source>
+        <target>Payment received – the subscription is active and the label is burnt in.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.msg.billing_pending">
+        <source>netzhirsch_ai_tag.license.msg.billing_pending</source>
+        <target>Payment received – the subscription is being activated. With SEPA this can take a moment; the licence unlocks by itself.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.hint.inactive">
+        <source>netzhirsch_ai_tag.license.hint.inactive</source>
+        <target>Without an active licence the label is not burnt into the image. It only appears as a text alternative in the markup – see System, AI labelling licence.</target>
       </trans-unit>
     </body>
   </file>
