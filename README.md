@@ -333,12 +333,9 @@ kein DRM.
 
 ## Grenzen (bewusst)
 
-- **Ohne einkompilierten Public Key wird nicht geprüft.** Solange
-  `LicenseToken::VENDOR_PUBLIC_KEY_B64` leer ist, gilt die Fassung als nicht
-  lizenzpflichtig und brennt immer ein. Das ist die Reihenfolge beim Ausrollen: erst
-  Produkt und Pläne auf dem Server anlegen, dann interne Lizenzen ausstellen, danach den
-  Schlüssel einsetzen. Ein Update mit Schlüssel vor den internen Lizenzen sperrt die
-  eigenen Installationen aus.
+- **Diese Fassung prüft die Lizenz.** Der Herstellerschlüssel ist ab 1.0.0
+  einkompiliert; ohne gültige Lizenz wird nicht eingebrannt. Nur das Einbrennen hängt
+  daran – siehe *Lizenz und Aktivierung*.
 - **Rückkehr von Stripe.** Der Lizenzserver hängt für alle Produkte denselben
   Parameter `mcp_billing` an die Rückkehr-Adresse. Der Listener greift deshalb nur auf
   dem nackten `/contao`-Aufruf; ist auf derselben Installation ein weiteres

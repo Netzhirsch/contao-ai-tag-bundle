@@ -4,7 +4,18 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unveröffentlicht]
+## [1.0.0] - 2026-08-17
+
+Erste öffentliche Fassung. Gegenüber 0.1.0 sind Erkennung, Lesbarkeits-Ampel,
+Nachweis-Export und die Lizenzierung dazugekommen; die **Lizenzprüfung ist in dieser
+Fassung aktiv**. Ohne gültige Lizenz wird die Kennzeichnung nicht in die Bilder gebrannt
+– die Website läuft unverändert weiter, und Dateiverwaltung wie Vorschaufeld sagen
+ausdrücklich, dass gerade nichts eingebrannt wird.
+
+Geprüft gegen Contao 5.7 (Laufzeit) und Contao 5.3 (statische Analyse und aufgelöster
+Abhängigkeitssatz), 126 Tests, CI auf PHP 8.1 (lowest und highest) sowie 8.4. Noch nicht
+erprobt: der Backend-Klickweg der Lizenzseite gegen einen laufenden Lizenzserver, der
+Imagick-Pfad und der Backend-Klickweg auf einer echten 5.3-Instanz.
 
 ### Hinzugefügt
 
@@ -18,10 +29,7 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
   Nachweis-Export und Textalternative bleiben immer verfügbar. Neues Backend-Modul
   *System → Lizenz KI-Kennzeichnung* mit zustandsabhängigen Schaltflächen (Testphase,
   Abonnieren, Abo verwalten, aktualisieren) sowie
-  `netzhirsch:ai-tag:license status|renew` für den Betrieb. Solange
-  `LicenseToken::VENDOR_PUBLIC_KEY_B64` leer ist, prüft die Fassung nichts – der
-  Schlüssel selbst ist der Schalter, damit ein Update nicht die eigenen Installationen
-  aussperrt.
+  `netzhirsch:ai-tag:license status|renew` für den Betrieb.
 - Ohne aktive Lizenz weist das Backend deutlich darauf hin: Fehlermeldung beim Setzen
   der Kennzeichnung, entsprechender Hinweis im Vorschaufeld. Eine stillschweigend
   fehlende Kennzeichnung wäre ein rechtliches Risiko für den Betreiber.
