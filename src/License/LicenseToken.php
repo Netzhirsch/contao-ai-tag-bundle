@@ -33,15 +33,15 @@ final class LicenseToken
     /**
      * Oeffentlicher Ed25519-Schluessel des Herstellers, Base64 der rohen 32 Bytes.
      *
-     * Er kann Tokens nur PRUEFEN, niemals ausstellen - der passende geheime Schluessel
-     * liegt ausschliesslich auf dem Lizenzserver (Umgebungsvariable
-     * LICENSE_SIGNING_SECRET_AI_TAG, eigenes Paar je Produkt). Deshalb darf er hier im
-     * Code stehen, und genau hier muss er auch stehen: aus einer Konfigurationsdatei
-     * liesse er sich gegen einen selbst erzeugten tauschen.
+     * Er kann Tokens nur PRUEFEN, niemals ausstellen - der passende geheime
+     * Schluessel liegt ausschliesslich auf dem Lizenzserver (Umgebungsvariable
+     * LICENSE_SIGNING_SECRET_AI_TAG, eigenes Paar je Produkt). Deshalb darf er hier
+     * im Code stehen, und genau hier muss er auch stehen: aus einer
+     * Konfigurationsdatei liesse er sich gegen einen selbst erzeugten tauschen.
      *
-     * Leer = diese Fassung ist nicht lizenzpflichtig, das Gate laesst dann alles durch
-     * (siehe isArmed()). Damit liess sich das Bundle ausrollen und die internen Lizenzen
-     * ausstellen, bevor mit diesem Wert scharf geschaltet wurde.
+     * Leer = diese Fassung ist nicht lizenzpflichtig, das Gate laesst dann alles
+     * durch (siehe isArmed()). Damit liess sich das Bundle ausrollen und die internen
+     * Lizenzen ausstellen, bevor mit diesem Wert scharf geschaltet wurde.
      */
     public const VENDOR_PUBLIC_KEY_B64 = 'oXwrdfKe5p1/g+gQOS+33OQCZ4YITfwvrXOwGoDAEAI=';
 
