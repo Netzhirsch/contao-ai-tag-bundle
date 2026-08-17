@@ -85,7 +85,6 @@ class AiTagPreviewListenerTest extends TestCase
             $translator,
             new CornerSelector(),
             new TagStyle(),
-            $gate,
             $this->projectDir,
             'files',
         );

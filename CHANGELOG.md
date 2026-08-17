@@ -8,6 +8,8 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Hinzugefügt
 
+- `SECURITY.md`: Meldeweg für Sicherheitslücken, unterstützte Fassungen,
+  Sicherheitsmodell, Vertrauensgrenzen und Empfehlungen für den Betrieb.
 - Lizenzierung gegen `https://license.netzhirsch.de`: kurzlebige, mit Ed25519 signierte
   Tokens, offline geprüft gegen den einkompilierten Public Key (Signatur, Produkt,
   Domain, Ablauf, High-Water-Mark gegen Uhr-Manipulation), Erneuerung über einen
@@ -52,6 +54,17 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Behoben
 
+- Das Lizenz-Gate saß im `AiTagResolver` und schaltete damit auch die barrierefreie
+  Textalternative im Markup ab – entgegen der zugesagten Aufteilung. Geprüft wird jetzt
+  ausschließlich im `AiTagResizer`, also genau dort, wo eingebrannt wird; ein Test hält
+  beide Fälle fest.
+- Aus den Antworten des Lizenzservers wird nur noch eine Weiterleitung auf eine von
+  Stripe gehostete Domain gefolgt (vorher jede `https`-Adresse). Am anderen Ende der
+  Weiterleitung sitzt ein angemeldeter Administrator; ein kompromittierter oder
+  untergeschobener Serverantwort-Pfad hätte auf eine Phishing-Seite führen können.
+- In Aufrufen ohne Request (Konsole, Cron) ist die Domainbindung ohne
+  `license_backend_url` nicht prüfbar. Der Lizenzzustand weist das jetzt als
+  `domain_verified` aus und `netzhirsch:ai-tag:license status` sagt es ausdrücklich.
 - Unmaskierte `&` in den Export-Übersetzungen: die XLIFF-Dateien waren damit kein
   gültiges XML, Symfonys Loader hätte beim ersten Zugriff auf eine Übersetzung des
   Bundles abgebrochen.

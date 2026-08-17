@@ -72,13 +72,30 @@ final class AiTagLicenseCommand extends Command
             ['Grund' => $state['reason']],
             ['Art' => '' !== $state['type'] ? $state['type'] : '-'],
             ['Plan' => '' !== $state['plan'] ? $state['plan'] : '-'],
-            ['Domain' => '' !== $state['domain'] ? $state['domain'] : '-'],
+            ['Domain' => $this->domainLine($state)],
             ['Laeuft ab' => $state['expires_at'] > 0 ? date('Y-m-d H:i', $state['expires_at']).' ('.$state['days_left'].' Tage)' : '-'],
             ['Karenz' => $state['in_grace'] ? 'ja' : 'nein'],
             ['Datei' => $this->store->filePath()],
         );
 
         return $state['active'] ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    /**
+     * In der Konsole gibt es keinen Request-Host. Steht dann keine
+     * license_backend_url in der Konfiguration, kommt die Domain aus dem Token selbst
+     * und die Bindung ist an dieser Stelle nicht pruefbar - das muss dastehen, sonst
+     * liest sich die Ausgabe wie eine bestaetigte Bindung.
+     *
+     * @param array{domain: string, domain_verified: bool} $state
+     */
+    private function domainLine(array $state): string
+    {
+        if ('' === $state['domain']) {
+            return '-';
+        }
+
+        return $state['domain'].($state['domain_verified'] ? '' : ' (aus dem Token, nicht geprueft - license_backend_url setzen)');
     }
 
     private function renew(SymfonyStyle $io): void

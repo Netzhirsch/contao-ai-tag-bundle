@@ -9,7 +9,6 @@ use Contao\Image\ImageInterface;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
-use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -51,7 +50,6 @@ final class AiTagResolver
         private readonly TranslatorInterface $translator,
         private readonly CornerSelector $cornerSelector,
         private readonly TagStyle $style,
-        private readonly LicenseGate $gate,
         private readonly string $projectDir,
         private readonly string $uploadPath,
         private readonly array $excludedPaths = [],
@@ -59,15 +57,13 @@ final class AiTagResolver
     ) {
     }
 
+    /**
+     * Bewusst ohne Lizenzpruefung: hier haengt auch die barrierefreie Textalternative
+     * dran (Twig-Funktion netzhirsch_ai_tag_hint). Lizenzpflichtig ist allein das
+     * Einbrennen, und das entscheidet der AiTagResizer.
+     */
     public function resolve(ImageInterface $image, int $quality): AiTagOptions|null
     {
-        // Einbrennen ist die lizenzpflichtige Leistung. Ohne aktive Lizenz entsteht das
-        // Bild ohne Label - die Redaktion erfaehrt das beim Markieren und in der
-        // Dateibearbeitung, damit die fehlende Kennzeichnung nicht unbemerkt bleibt.
-        if (!$this->gate->isActive()) {
-            return null;
-        }
-
         $record = $this->findMarkedRecord($image->getPath());
 
         if (null === $record) {

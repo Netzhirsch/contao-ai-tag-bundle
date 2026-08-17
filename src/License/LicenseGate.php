@@ -41,7 +41,7 @@ final class LicenseGate
      * Signaturpruefungen. Wechselt das Token (Erneuerung, Widerruf), faellt der
      * Eintrag von selbst weg.
      *
-     * @var array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, expires_at: int, days_left: int, in_grace: bool}|null
+     * @var array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, domain_verified: bool, expires_at: int, days_left: int, in_grace: bool}|null
      */
     private array|null $memo = null;
 
@@ -71,7 +71,7 @@ final class LicenseGate
      * Der Lizenzzustand, unabhaengig davon, ob durchgesetzt wird - das Backend soll
      * ihn immer zeigen koennen.
      *
-     * @return array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, expires_at: int, days_left: int, in_grace: bool}
+     * @return array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, domain_verified: bool, expires_at: int, days_left: int, in_grace: bool}
      */
     public function state(): array
     {
@@ -92,24 +92,44 @@ final class LicenseGate
      */
     public function domain(): string
     {
+        return $this->resolveHost()['host'];
+    }
+
+    /**
+     * Der lizenzierte Host und die Frage, ob er ueberhaupt unabhaengig vom Token feststeht.
+     *
+     * In CLI und Cron gibt es keinen Request-Host. Ohne konfigurierte Backend-URL
+     * waere die Domain '' und jede Statusabfrage laese sich als `wrong_domain`;
+     * deshalb faellt die Bestimmung dort auf die Angabe des Tokens zurueck. Das ist
+     * ehrlich gesagt eine Luecke in der Domainbindung: gegen sich selbst geprueft,
+     * passt jede Angabe. Sie betrifft nur Aufrufe ohne Request (etwa
+     * contao:resize-images), und der Lizenzserver prueft bei jeder Erneuerung erneut
+     * - sie ist deshalb hier als `domain_verified` sichtbar, damit Backend und
+     * Konsole dazu auffordern koennen, license_backend_url zu setzen.
+     *
+     * @return array{host: string, verified: bool}
+     */
+    private function resolveHost(): array
+    {
         $host = LicenseToken::resolveDomain(
             $this->backendUrl,
             $this->requestStack->getCurrentRequest()?->getHost(),
         );
 
-        // In CLI und Cron gibt es keinen Request-Host. Ohne konfigurierte Backend-URL
-        // waere die Domain '' und jede Statusabfrage laese sich als `wrong_domain`. Nur
-        // DORT auf die Domain des Tokens zurueckfallen - auf dem Auslieferungspfad gibt
-        // es immer einen echten Request-Host, die Domainbindung bleibt scharf.
-        return '' !== $host ? $host : LicenseToken::peekDomain($this->store->getToken());
+        if ('' !== $host) {
+            return ['host' => $host, 'verified' => true];
+        }
+
+        return ['host' => LicenseToken::peekDomain($this->store->getToken()), 'verified' => false];
     }
 
     /**
-     * @return array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, expires_at: int, days_left: int, in_grace: bool}
+     * @return array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, domain_verified: bool, expires_at: int, days_left: int, in_grace: bool}
      */
     private function evaluate(string $storedToken): array
     {
         $plan = $this->store->getPlan();
+        $host = $this->resolveHost();
 
         if (!$this->token->isArmed()) {
             return [
@@ -118,14 +138,15 @@ final class LicenseGate
                 'type' => '',
                 'plan' => $plan,
                 'reason' => 'not_enforced',
-                'domain' => $this->domain(),
+                'domain' => $host['host'],
+                'domain_verified' => $host['verified'],
                 'expires_at' => 0,
                 'days_left' => 0,
                 'in_grace' => false,
             ];
         }
 
-        $result = $this->token->verify($storedToken, $this->domain(), $this->store->getHwm());
+        $result = $this->token->verify($storedToken, $host['host'], $this->store->getHwm());
         $this->store->bumpHwm($result['now_ref']);
 
         $now = $result['now_ref'];
@@ -146,7 +167,8 @@ final class LicenseGate
             'type' => $result['type'],
             'plan' => $plan,
             'reason' => $result['reason'],
-            'domain' => $this->domain(),
+            'domain' => $host['host'],
+            'domain_verified' => $host['verified'],
             'expires_at' => $expiresAt,
             // Nie negativ: innerhalb der Karenz waere "-1 Tage" im Backend Unsinn.
             'days_left' => $expiresAt > 0 ? max(0, (int) ceil(($expiresAt - $now) / 86400)) : 0,

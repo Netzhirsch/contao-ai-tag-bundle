@@ -145,8 +145,22 @@ class LicenseGateTest extends TestCase
 
         $this->assertSame('kunde.de', $configured->domain());
         $this->assertTrue($configured->state()['active']);
+        $this->assertTrue($configured->state()['domain_verified']);
+
+        // Ohne Request und ohne Konfiguration kommt die Domain aus dem Token selbst, die
+        // Bindung ist dort also nicht pruefbar. Das muss sichtbar sein, sonst liest sich
+        // der Zustand wie eine bestaetigte Bindung.
         $this->assertSame('kunde.de', $fromToken->domain());
         $this->assertTrue($fromToken->state()['active']);
+        $this->assertFalse($fromToken->state()['domain_verified']);
+    }
+
+    public function testWithARequestTheDomainCountsAsVerified(): void
+    {
+        $store = $this->store();
+        $store->setToken($this->token());
+
+        $this->assertTrue($this->gate($this->publicKey, $store)->state()['domain_verified']);
     }
 
     /**

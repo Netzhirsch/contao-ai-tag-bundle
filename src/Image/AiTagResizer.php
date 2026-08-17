@@ -13,6 +13,7 @@ use Contao\Image\ResizeConfiguration;
 use Contao\Image\ResizeOptions;
 use Contao\Image\ResizerInterface;
 use Imagine\Image\ImagineInterface;
+use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -48,6 +49,7 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
         private readonly ResizerInterface&DeferredResizerInterface $inner,
         private readonly AiTagResolver $resolver,
         private readonly TagRenderer $renderer,
+        private readonly LicenseGate $gate,
         private readonly DeferredImageStorageInterface $storage,
         private readonly ScopeMatcher $scopeMatcher,
         private readonly RequestStack $requestStack,
@@ -146,6 +148,16 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
 
     private function resolveTag(ImageInterface $image, ResizeOptions $options): AiTagOptions|null
     {
+        // Der einzige Ort, an dem die Lizenz ueber die Kennzeichnung entscheidet:
+        // Einbrennen ist die lizenzpflichtige Leistung. Markieren, Erkennung, Protokoll,
+        // Nachweis-Export und die Textalternative im Markup bleiben ohne Lizenz nutzbar
+        // - niemand soll den Zugriff auf seine eigenen Nachweise verlieren. Dass gerade
+        // nichts eingebrannt wird, sagen die Dateiverwaltung und das Vorschaufeld
+        // ausdruecklich; stillschweigend ausbleiben darf die Kennzeichnung nicht.
+        if (!$this->gate->isActive()) {
+            return null;
+        }
+
         if (!$this->isForced($options) && !$this->tagBackendImages && $this->isBackendRequest()) {
             return null;
         }

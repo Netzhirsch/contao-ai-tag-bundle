@@ -8,6 +8,7 @@ use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseToken;
 use Netzhirsch\ContaoAiTagBundle\License\RenewalClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -180,12 +181,15 @@ class RenewalClientTest extends TestCase
     }
 
     /**
-     * Bezahlt wird ausschliesslich auf der Stripe-Seite. Gefolgt wird nur https -
-     * eine umgebogene Antwort darf den Kunden nicht auf eine http-Seite schicken.
+     * Bezahlt wird ausschliesslich auf den von Stripe gehosteten Seiten. Am anderen Ende
+     * der Weiterleitung sitzt ein angemeldeter Administrator: waere der Lizenzserver
+     * kompromittiert oder eine Antwort untergeschoben, waere eine beliebige Adresse eine
+     * Weiterleitung auf eine Phishing-Seite. Deshalb https UND Stripe-Host.
      */
-    public function testFollowsOnlyHttpsUrls(): void
+    #[DataProvider('rejectedUrlProvider')]
+    public function testFollowsOnlyStripeUrls(string $url): void
     {
-        $client = $this->client($this->store(), [$this->json(200, ['url' => 'http://phish.example/pay'])]);
+        $client = $this->client($this->store(), [$this->json(200, ['url' => $url])]);
 
         $result = $client->checkoutSession('admin@kunde.de');
 
@@ -194,11 +198,33 @@ class RenewalClientTest extends TestCase
         $this->assertArrayNotHasKey('url', $result);
     }
 
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function rejectedUrlProvider(): iterable
+    {
+        yield 'ohne Verschluesselung' => ['http://checkout.stripe.com/c/pay/abc'];
+        yield 'fremder Host' => ['https://phish.example/pay'];
+        yield 'Stripe im Pfad' => ['https://phish.example/checkout.stripe.com/pay'];
+        yield 'Stripe als Praefix' => ['https://stripe.com.phish.example/pay'];
+        yield 'Stripe als Benutzername' => ['https://checkout.stripe.com@phish.example/pay'];
+        yield 'leer' => [''];
+    }
+
     public function testReturnsTheStripeUrl(): void
     {
         $client = $this->client($this->store(), [$this->json(200, ['url' => 'https://checkout.stripe.com/c/pay/abc'])]);
 
         $this->assertSame('https://checkout.stripe.com/c/pay/abc', $client->checkoutSession('admin@kunde.de')['url']);
+    }
+
+    public function testAcceptsTheStripeCustomerPortal(): void
+    {
+        $store = $this->store();
+        $store->setToken('altes.token');
+        $client = $this->client($store, [$this->json(200, ['url' => 'https://billing.stripe.com/p/session/abc'])]);
+
+        $this->assertSame('https://billing.stripe.com/p/session/abc', $client->portalSession()['url']);
     }
 
     public function testAnswerWithoutATokenIsNotStored(): void

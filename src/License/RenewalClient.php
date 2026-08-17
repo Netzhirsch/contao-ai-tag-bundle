@@ -162,8 +162,8 @@ final class RenewalClient
     }
 
     /**
-     * Aufruf, der eine von Stripe gehostete Adresse zurueckgibt. Die Adresse wird auf
-     * https geprueft, bevor der Aufrufer dorthin weiterleitet.
+     * Aufruf, der eine von Stripe gehostete Adresse zurueckgibt. Geprueft wird https
+     * UND der Host, bevor der Aufrufer den Browser dorthin schickt.
      *
      * @param array<string, mixed> $body
      *
@@ -179,11 +179,33 @@ final class RenewalClient
 
         $url = (string) ($response['data']['url'] ?? '');
 
-        if ('' === $url || !str_starts_with($url, 'https://')) {
-            return ['ok' => false, 'error' => 'bad_response', 'message' => 'Der Lizenzserver hat keine gueltige https-Adresse geliefert.'];
+        if (!self::isStripeUrl($url)) {
+            return ['ok' => false, 'error' => 'bad_response', 'message' => 'Der Lizenzserver hat keine gueltige Stripe-Adresse geliefert.'];
         }
 
         return ['ok' => true, 'url' => $url];
+    }
+
+    /**
+     * Eine Adresse, an die ein angemeldeter Administrator weitergeleitet werden darf.
+     *
+     * Die Antwort des Lizenzservers wird hier nicht blind uebernommen: waere der
+     * Server kompromittiert oder eine Antwort untergeschoben, waere eine beliebige
+     * https-Adresse eine Weiterleitung auf eine Phishing-Seite - mit einem
+     * Administrator am anderen Ende. Deshalb nur die von Stripe gehosteten Domains
+     * (Checkout und Kundenportal). Sollte der Hersteller einmal eine eigene
+     * Stripe-Domain einsetzen, muss sie hier ergaenzt werden; die Zahlung selbst
+     * laeuft immer auf Stripes Seite.
+     */
+    private static function isStripeUrl(string $url): bool
+    {
+        if ('' === $url || !str_starts_with($url, 'https://')) {
+            return false;
+        }
+
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+
+        return 'stripe.com' === $host || str_ends_with($host, '.stripe.com');
     }
 
     /**

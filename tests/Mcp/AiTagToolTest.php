@@ -15,9 +15,6 @@ use Netzhirsch\ContaoAiTagBundle\Image\CornerSelector;
 use Netzhirsch\ContaoAiTagBundle\Image\FontLocator;
 use Netzhirsch\ContaoAiTagBundle\Image\TagRenderer;
 use Netzhirsch\ContaoAiTagBundle\Image\TagStyle;
-use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
-use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
-use Netzhirsch\ContaoAiTagBundle\License\LicenseToken;
 use Netzhirsch\ContaoAiTagBundle\Mcp\AiTagTool;
 use Netzhirsch\ContaoMcpBundle\Server\ExtensionToolRegistrar;
 use PhpMcp\Server\Registry;
@@ -110,15 +107,6 @@ class AiTagToolTest extends TestCase
      * und nur ihre Mitarbeiter attrappiert. Keiner von ihnen wird auf den hier
      * geprueften Pfaden beruehrt.
      */
-    /**
-     * Ein Gate ohne einkompilierten Schluessel: nicht lizenzpflichtig, also immer offen.
-     * Die hier geprueften Wege sind das Setzen des Flags, nicht das Einbrennen.
-     */
-    private function unlicensedGate(string $projectDir): LicenseGate
-    {
-        return new LicenseGate(new LicenseToken(''), new LicenseStore($projectDir), new RequestStack());
-    }
-
     private function tool(): AiTagTool
     {
         $connection = $this->createStub(Connection::class);
@@ -133,7 +121,6 @@ class AiTagToolTest extends TestCase
             $translator,
             new CornerSelector(),
             $style,
-            $this->unlicensedGate('/var/www/project'),
             '/var/www/project',
             'files',
         );

@@ -301,8 +301,10 @@ der Systemuhr steht eine High-Water-Mark.
   Netz- oder Serverstörung niemanden aussperrt. Nur ein ausdrücklicher Widerruf des
   Servers löscht das Token sofort.
 - **Kein Request, kein Host.** In Cron und CLI gibt es keinen Request-Host. Die Domain
-  kommt dann aus dem gespeicherten Token; ist noch keines vorhanden, setzen Sie
-  `license_backend_url`.
+  kommt dann aus dem gespeicherten Token – gegen sich selbst geprüft passt jede Angabe,
+  die Bindung ist dort also nicht prüfbar. `netzhirsch:ai-tag:license status` weist das
+  aus; **im Betrieb `license_backend_url` setzen**, dann wird auch in der Konsole gegen
+  den konfigurierten Host geprüft.
 
 Zustand prüfen oder Token sofort erneuern, ohne Backend:
 
@@ -320,9 +322,10 @@ Risiko für den Betreiber.
 **Sicherheit.** Der Public Key steht im Code und nicht in der Konfiguration – ein
 konfigurierbarer Schlüssel ließe sich gegen einen selbst erzeugten tauschen. Die
 Server-Adresse ist ebenfalls einkompiliert. Bezahlt wird ausschließlich auf den von
-Stripe gehosteten Seiten; **Karten- und SEPA-Daten laufen nie durch Contao**, und es
-wird nur `https://` gefolgt. Token und `instance_secret` erscheinen weder im Protokoll
-noch im Backend.
+Stripe gehosteten Seiten; **Karten- und SEPA-Daten laufen nie durch Contao**. Gefolgt
+wird nur eine `https://`-Adresse auf einer von Stripe gehosteten Domain – am anderen Ende
+der Weiterleitung sitzt ein angemeldeter Administrator. Token und `instance_secret`
+erscheinen weder im Protokoll noch im Backend. Alles Weitere in [SECURITY.md](SECURITY.md).
 
 Ehrliche Grenze: PHP liegt beim Kunden im Klartext, das Gate ist patchbar. Ziel ist,
 bequeme Weitergabe zu verhindern und absichtliche sichtbar und widerrufbar zu machen –
@@ -405,6 +408,13 @@ Code – Rector ist entsprechend auf das PHP-8.1-Set gestellt.
 
 Die CI prüft PHP 8.1 (`lowest` und `highest`) sowie PHP 8.4.
 
+## Sicherheit
+
+Sicherheitslücken bitte nicht über öffentliche Issues melden – der Weg steht in
+[SECURITY.md](SECURITY.md). Dort stehen auch das Sicherheitsmodell, die
+Vertrauensgrenzen (u. a. personenbezogene Daten im Protokoll) und die Empfehlungen für
+den Betrieb.
+
 ## Lizenz
 
-Proprietär, © Netzhirsch GmbH.
+Proprietär, © Netzhirsch GmbH. Siehe [LICENSE](LICENSE).
