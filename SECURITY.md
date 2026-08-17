@@ -6,7 +6,7 @@
 
 1. **GitHub Security Advisory** (bevorzugt): im Repository unter *Security → Report a
    vulnerability*. Die Meldung ist nur für die Maintainer sichtbar.
-2. **E-Mail** an `security@netzhirsch.de`, gern mit dem Betreff
+2. **E-Mail** an `netzhirsch@netzhirsch.de`, gern mit dem Betreff
    *contao-ai-tag-bundle*.
 
 Hilfreich sind: betroffene Version, Contao- und PHP-Version, ein möglichst kleiner

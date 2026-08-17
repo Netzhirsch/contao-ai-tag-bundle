@@ -15,7 +15,6 @@ use Contao\Image\Metadata\MetadataReaderWriter;
 use Contao\Image\ResizeConfiguration;
 use Contao\Image\ResizeOptions;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Result;
 use Imagine\Image\Box;
 use Imagine\Image\ImagineInterface;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
@@ -137,16 +136,13 @@ class AiTagResizerTest extends TestCase
      */
     private function resolver(): AiTagResolver
     {
-        $result = $this->createStub(Result::class);
-        $result
-            ->method('fetchAssociative')
-            ->willReturn(['netzhirschAiTagPosition' => AiTagOptions::POSITION_TOP_RIGHT, 'netzhirschAiTagText' => ''])
-        ;
-
+        // Genau die Methode attrappieren, die der Resolver aufruft: was eine Attrappe
+        // ohne Vorgabe zurueckgibt, haengt an der Signatur - und die unterscheidet sich
+        // zwischen DBAL 3 (Contao 5.3) und DBAL 4 (Contao 5.7).
         $connection = $this->createStub(Connection::class);
         $connection
-            ->method('executeQuery')
-            ->willReturn($result)
+            ->method('fetchAssociative')
+            ->willReturn(['netzhirschAiTagPosition' => AiTagOptions::POSITION_TOP_RIGHT, 'netzhirschAiTagText' => ''])
         ;
 
         $translator = $this->createStub(TranslatorInterface::class);
