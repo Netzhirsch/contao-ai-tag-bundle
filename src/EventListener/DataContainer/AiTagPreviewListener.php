@@ -57,16 +57,17 @@ class AiTagPreviewListener
             return $this->widget($this->translator->trans('netzhirsch_ai_tag.preview.not_taggable', [], 'netzhirsch_ai_tag'), '');
         }
 
-        // Ohne aktive Lizenz wird nicht eingebrannt. Beide Fassungen waeren identisch -
-        // die Gegenueberstellung wuerde das Gegenteil dessen zeigen, was passiert.
-        if (!$this->gate->isActive()) {
-            return $this->widget($this->translator->trans('netzhirsch_ai_tag.license.hint.inactive', [], 'netzhirsch_ai_tag'), '');
-        }
-
         try {
+            // Ohne aktive Lizenz wird nicht eingebrannt. Beide Fassungen waeren identisch -
+            // die Gegenueberstellung wuerde das Gegenteil dessen zeigen, was passiert.
+            if (!$this->gate->isActive()) {
+                return $this->widget($this->translator->trans('netzhirsch_ai_tag.license.hint.inactive', [], 'netzhirsch_ai_tag'), '');
+            }
+
             $plain = $this->url($absolutePath, false);
             $tagged = $this->url($absolutePath, true);
         } catch (\Throwable) {
+            // Ein Fehler im Vorschaufeld darf die Dateibearbeitung nicht unbenutzbar machen.
             return '';
         }
 

@@ -119,13 +119,30 @@ final class LicenseToken
         $signature = self::b64urlDecode($parts[1]);
         $public = base64_decode($this->publicKeyB64, true);
 
-        if (false === $payloadJson || false === $signature || false === $public || SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES !== \strlen($public)) {
+        // Die Laenge der Signatur MUSS vorher geprueft werden: sodium wirft bei einer
+        // unpassenden Laenge eine Ausnahme, statt false zurueckzugeben. Ein
+        // abgeschnittenes Token in license.json wuerde sonst die Bildauslieferung
+        // sprengen, nicht nur die Lizenz verweigern.
+        if (
+            false === $payloadJson
+            || false === $signature
+            || false === $public
+            || SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES !== \strlen($public)
+            || SODIUM_CRYPTO_SIGN_BYTES !== \strlen($signature)
+        ) {
             return $fail('malformed');
         }
 
-        // Der gefaelschte oder veraenderte Fall: den geheimen Schluessel hat nur
-        // der Hersteller.
-        if (!sodium_crypto_sign_verify_detached($signature, $payloadJson, $public)) {
+        // Der gefaelschte oder veraenderte Fall: den geheimen Schluessel hat nur der
+        // Hersteller. Der Aufruf ist zusaetzlich abgesichert - diese Pruefung laeuft bei
+        // jedem Bild, sie darf unter keinen Umstaenden eine Ausnahme durchlassen.
+        try {
+            $signatureIsValid = sodium_crypto_sign_verify_detached($signature, $payloadJson, $public);
+        } catch (\Throwable) {
+            return $fail('malformed');
+        }
+
+        if (!$signatureIsValid) {
             return $fail('bad_signature');
         }
 

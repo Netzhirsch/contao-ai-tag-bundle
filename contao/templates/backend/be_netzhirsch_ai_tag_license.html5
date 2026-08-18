@@ -23,13 +23,17 @@ $type = (string) $license['type'];
 // dort nichts zu verwalten, das Portal koennte nur mit einem Fehler antworten.
 $internal = 'internal' === $plan;
 
-$actionUrl = (string) $this->actionUrl;
-$actionLink = static fn (string $action): string => $actionUrl.'&amp;action='.$action;
 $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES);
+
+// Auch die Adressen werden maskiert. Contao baut beide selbst (Router bzw. eigene
+// Konstante), aber eine Vorlage soll nicht davon abhaengen, dass die Quelle sauber ist.
+$actionUrl = (string) $this->actionUrl;
+$actionLink = static fn (string $action): string => $e($actionUrl.'&action='.$action);
+$referer = $e((string) $this->referer);
 ?>
 
 <div id="tl_buttons">
-    <a href="<?= $this->referer ?>" class="header_back" title="<?= $e((string) $this->backTitle) ?>" accesskey="b" onclick="Backend.getScrollOffset()"><?= $this->backLabel ?></a>
+    <a href="<?= $referer ?>" class="header_back" title="<?= $e((string) $this->backTitle) ?>" accesskey="b" onclick="Backend.getScrollOffset()"><?= $this->backLabel ?></a>
     <?php if ($armed): ?>
         <a href="<?= $actionLink('refresh_license') ?>" class="header_sync" title="<?= $e($labels['help.refresh']) ?>"><?= $e($labels['button.refresh']) ?></a>
         <?php if ($active && $internal): ?>

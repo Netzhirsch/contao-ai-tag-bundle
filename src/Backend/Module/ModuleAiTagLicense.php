@@ -18,6 +18,7 @@ use Netzhirsch\ContaoAiTagBundle\EventListener\BillingReturnListener;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
 use Netzhirsch\ContaoAiTagBundle\License\RenewalClient;
+use Netzhirsch\ContaoAiTagBundle\Security\ContaoAiTagPermissions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Csrf\CsrfToken;
@@ -338,9 +339,16 @@ class ModuleAiTagLicense extends BackendModule
         throw new ResponseException(new RedirectResponse($this->selfUrl()));
     }
 
+    /**
+     * Der Modulname kommt aus der eigenen Konstante und nicht aus der Anfrage. Contao
+     * kodiert Input::get() zwar, aber ein Wert, der ohnehin feststeht, hat in einer
+     * zurueckgespiegelten Adresse nichts zu suchen.
+     */
     private function selfUrl(): string
     {
-        return Environment::get('path').'?do='.(string) Input::get('do').'&rt='.System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
+        return Environment::get('path')
+            .'?do='.ContaoAiTagPermissions::MODULE_LICENSE
+            .'&rt='.System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
     }
 
     private function currentUserEmail(): string

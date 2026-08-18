@@ -86,6 +86,34 @@ class AiTagResizerTest extends TestCase
         $this->assertArrayNotHasKey(AiTagOptions::OPTION_KEY, $captured->getImagineOptions());
     }
 
+    /**
+     * Ein unbrauchbares Token in license.json - abgeschnitten, halb geschrieben, von
+     * Hand verpfuscht - darf die Bildauslieferung nicht anfassen. Es fuehrt zu keiner
+     * Kennzeichnung (die Lizenz gilt nicht), aber das Bild entsteht.
+     */
+    public function testACorruptTokenNeitherLabelsNorBreaksImageDelivery(): void
+    {
+        $store = new LicenseStore($this->projectDir);
+        $store->setToken('kaputt.token');
+
+        $keypair = sodium_crypto_sign_keypair();
+        $gate = new LicenseGate(
+            new LicenseToken(base64_encode(sodium_crypto_sign_publickey($keypair))),
+            $store,
+            new RequestStack(),
+        );
+
+        $captured = null;
+        $image = $this->image();
+        $options = new ResizeOptions();
+
+        $result = $this->resizer($gate, $captured)->resize($image, new ResizeConfiguration(), $options);
+
+        $this->assertSame($image, $result, 'Das Bild muss trotzdem geliefert werden.');
+        $this->assertSame($options, $captured);
+        $this->assertArrayNotHasKey(AiTagOptions::OPTION_KEY, $captured->getImagineOptions());
+    }
+
     private function openGate(): LicenseGate
     {
         // Ohne einkompilierten Schluessel ist die Fassung nicht lizenzpflichtig.

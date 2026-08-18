@@ -154,18 +154,20 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
         // - niemand soll den Zugriff auf seine eigenen Nachweise verlieren. Dass gerade
         // nichts eingebrannt wird, sagen die Dateiverwaltung und das Vorschaufeld
         // ausdruecklich; stillschweigend ausbleiben darf die Kennzeichnung nicht.
-        if (!$this->gate->isActive()) {
-            return null;
-        }
-
-        if (!$this->isForced($options) && !$this->tagBackendImages && $this->isBackendRequest()) {
-            return null;
-        }
-
         try {
+            if (!$this->gate->isActive()) {
+                return null;
+            }
+
+            if (!$this->isForced($options) && !$this->tagBackendImages && $this->isBackendRequest()) {
+                return null;
+            }
+
             return $this->resolver->resolve($image, $this->targetQuality($options->getImagineOptions()));
         } catch (\Throwable $exception) {
-            // Die Bildauslieferung darf an der Kennzeichnung nicht scheitern.
+            // Die Bildauslieferung darf an der Kennzeichnung nicht scheitern - auch nicht an
+            // der Lizenzpruefung. Deshalb liegt sie mit im Schutz: im Zweifel entsteht das
+            // Bild ohne Kennzeichnung, aber es entsteht.
             $this->logger?->error('KI-Kennzeichnung konnte nicht aufgeloest werden: '.$exception->getMessage());
 
             return null;

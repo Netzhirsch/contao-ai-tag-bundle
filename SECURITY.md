@@ -67,6 +67,19 @@ sollte:
   werden nie protokolliert und nie im Backend angezeigt. Die Datei gehört ins Backup und
   nicht ins Repository.
 
+  Was ein Angreifer damit anfangen könnte: das Token allein ist an die Domain gebunden
+  und woanders wertlos. Das `instance_secret` ist der Besitznachweis – wer es **und** die
+  Domain kennt, kann beim Lizenzserver eine Sitzung im Stripe-Kundenportal für diesen
+  Vertrag anfordern (Rechnungen sehen, kündigen, Zahlungsmittel ändern). Die Datei liegt
+  unter `var/` und ist damit nicht über das Web erreichbar; auf Shared Hosting sollte
+  `var/` nicht für andere Systembenutzer lesbar sein.
+
+  Das Bundle setzt die Dateirechte **absichtlich nicht** selbst auf `0600`: in vielen
+  Installationen schreibt der Webserver-Benutzer die Datei, während der Cron unter einem
+  anderen Benutzer läuft. Eine engere Berechtigung würde dort die Erneuerung
+  stillschweigend scheitern lassen – und eine ausbleibende Erneuerung ist der
+  schlechtere Fehler. Wer die Umgebung kennt, kann die Rechte selbst verengen.
+
 ## Was der Code tut, damit es dabei bleibt
 
 - Alle Datenbankzugriffe laufen über vorbereitete Anweisungen; Feldnamen stammen aus

@@ -4,6 +4,36 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.2] - 2026-08-17
+
+### Behoben
+
+- **Ein unbrauchbares Token in `license.json` konnte die Bildauslieferung anhalten.**
+  `sodium_crypto_sign_verify_detached()` wirft eine Ausnahme, wenn die Signatur nicht
+  genau 64 Bytes lang ist, statt `false` zurückzugeben – und der Aufruf des Lizenz-Gates
+  im Resizer lag außerhalb der Absicherung. Ein abgeschnittenes oder halb geschriebenes
+  Token hätte damit jede Seite mit Bild auf einen Fehler 500 gesetzt. Die Signaturlänge
+  wird jetzt vorher geprüft, der Aufruf ist zusätzlich abgesichert, und die
+  Lizenzprüfung liegt im Resizer und im Vorschaufeld mit im Schutz: im Zweifel entsteht
+  das Bild ohne Kennzeichnung, aber es entsteht. Gefunden von einem neuen Fuzz-Test.
+- Die Adressen in der Lizenz-Vorlage werden maskiert, und der Modulname in der
+  zurückgespiegelten Adresse kommt aus der eigenen Konstante statt aus der Anfrage.
+  Beides war durch Contao bereits entschärft (`Input::get()` kodiert, `getReferer()`
+  baut über den Router) – die Vorlage soll sich aber nicht darauf verlassen müssen.
+
+### Hinzugefügt
+
+- Fuzz-Test für die Signaturprüfung: hunderte veränderte Fassungen eines gültigen
+  Tokens (gekippte Zeichen, getauschte Teile, abgeschnitten, angehängt, fremd
+  signiert) müssen alle durchfallen, Zufallseingaben dürfen nie eine Ausnahme
+  auslösen, und unbekannte Payload-Felder müssen toleriert werden. Fester Startwert,
+  damit ein Fehlschlag reproduzierbar bleibt.
+- Test, dass ein kaputtes Token weder kennzeichnet noch die Bildauslieferung
+  beeinträchtigt.
+- `SECURITY.md` benennt jetzt, was ein gestohlenes `instance_secret` erlaubt (Sitzung
+  im Stripe-Kundenportal für diese Domain) und warum das Bundle die Dateirechte nicht
+  selbst verengt.
+
 ## [1.0.1] - 2026-08-17
 
 ### Behoben
