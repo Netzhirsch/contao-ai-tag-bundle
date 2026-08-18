@@ -27,7 +27,12 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
   Tokens (gekippte Zeichen, getauschte Teile, abgeschnitten, angehängt, fremd
   signiert) müssen alle durchfallen, Zufallseingaben dürfen nie eine Ausnahme
   auslösen, und unbekannte Payload-Felder müssen toleriert werden. Fester Startwert,
-  damit ein Fehlschlag reproduzierbar bleibt.
+  damit ein Fehlschlag reproduzierbar bleibt; für breitere Durchgänge über
+  `AI_TAG_FUZZ_SEED` überschreibbar (hier mit zwölf Startwerten gefahren).
+- Das Token-Format wird jetzt streng geprüft: genau zwei base64url-Teile mit einem
+  Punkt dazwischen. `base64_decode()` überspringt Leerraum auch im strikten Modus –
+  ein Token mit eingestreuten Leerzeichen wäre inhaltlich dasselbe, ist aber keines,
+  das der Server ausgestellt hat. Umgebender Leerraum wird weiterhin abgeschnitten.
 - Test, dass ein kaputtes Token weder kennzeichnet noch die Bildauslieferung
   beeinträchtigt.
 - `SECURITY.md` benennt jetzt, was ein gestohlenes `instance_secret` erlaubt (Sitzung

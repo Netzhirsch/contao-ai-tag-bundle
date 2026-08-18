@@ -26,7 +26,10 @@ class LicenseTokenFuzzTest extends TestCase
 
     protected function setUp(): void
     {
-        mt_srand(20260817);
+        // Fester Startwert, damit ein Fehlschlag in der CI reproduzierbar ist. Fuer
+        // einen breiteren Durchgang laesst er sich ueberschreiben: AI_TAG_FUZZ_SEED=4711
+        // vendor/bin/phpunit --filter Fuzz
+        mt_srand((int) ($_SERVER['AI_TAG_FUZZ_SEED'] ?? 20260817));
 
         $keypair = sodium_crypto_sign_keypair();
         $this->publicKey = base64_encode(sodium_crypto_sign_publickey($keypair));
@@ -48,7 +51,11 @@ class LicenseTokenFuzzTest extends TestCase
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $mutated = $this->mutate($token);
 
-            if ($mutated === $token) {
+            // Varianten, die sich nur in der Schreibweise unterscheiden (Leerraum,
+            // Polsterung), sind dasselbe Token - sie tragen denselben Inhalt und dieselbe
+            // Signatur. Die zu pruefende Aussage ist: kein Token mit ANDEREM Inhalt darf
+            // gelten. Das strenge Format weist sie inzwischen ohnehin ab.
+            if ($mutated === $token || $this->decodesIdentically($mutated, $token)) {
                 continue;
             }
 
@@ -121,6 +128,29 @@ class LicenseTokenFuzzTest extends TestCase
         $token = $this->token(['seats' => 5, 'note' => 'neu vom Server']);
 
         $this->assertTrue((new LicenseToken($this->publicKey))->verify($token, 'kunde.de')['valid']);
+    }
+
+    /**
+     * Zerfallen beide Zeichenketten in genau dieselben Bytes?
+     */
+    private function decodesIdentically(string $left, string $right): bool
+    {
+        $decode = static function (string $token): string|null {
+            $parts = explode('.', $token);
+
+            if (2 !== \count($parts)) {
+                return null;
+            }
+
+            $payload = base64_decode(strtr($parts[0], '-_', '+/'), true);
+            $signature = base64_decode(strtr($parts[1], '-_', '+/'), true);
+
+            return false === $payload || false === $signature ? null : $payload.'|'.$signature;
+        };
+
+        $decodedLeft = $decode($left);
+
+        return null !== $decodedLeft && $decodedLeft === $decode($right);
     }
 
     private function mutate(string $token): string

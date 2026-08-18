@@ -139,6 +139,28 @@ class LicenseTokenTest extends TestCase
     }
 
     /**
+     * Der Server stellt Tokens in genau einer Schreibweise aus. Leerraum mitten im
+     * Token laesst base64_decode() auch im strikten Modus durchgehen - inhaltlich
+     * waere es dasselbe Token, ausgegeben haben wir aber nur die kanonische Form.
+     * Umgebender Leerraum wird weiterhin abgeschnitten, sonst scheitert ein Token,
+     * das beim Kopieren einen Zeilenumbruch mitgenommen hat.
+     */
+    public function testRejectsWhitespaceInsideTheTokenButTrimsAroundIt(): void
+    {
+        $token = $this->token();
+        [$payload, $signature] = explode('.', $token);
+
+        $this->assertTrue(
+            $this->verifier()->verify("\n  ".$token."  \t", 'kunde.de')['valid'],
+            'Umgebender Leerraum darf ein Token nicht entwerten.',
+        );
+
+        foreach ([$payload.' .'.$signature, $payload.'. '.$signature, substr($payload, 0, 5).' '.substr($payload, 5).'.'.$signature] as $mangled) {
+            $this->assertSame('malformed', $this->verifier()->verify($mangled, 'kunde.de')['reason']);
+        }
+    }
+
+    /**
      * Ohne einkompilierten Schluessel ist die Fassung nicht lizenzpflichtig - das
      * entscheidet allein der Schluessel und keine Konfiguration.
      */

@@ -62,6 +62,15 @@ final class LicenseToken
     private const PUBLIC_KEY_BYTES = 32;
 
     /**
+     * Genau zwei base64url-Teile, getrennt durch einen Punkt. Bewusst streng:
+     * base64_decode() ueberspringt Leerraum auch im strikten Modus, ein Token mit
+     * eingestreuten Leerzeichen waere also dasselbe Token in anderer Schreibweise.
+     * Der Server stellt ausschliesslich die kanonische Form aus - alles andere ist
+     * keine Lizenz, die wir jemals ausgegeben haben.
+     */
+    private const TOKEN_PATTERN = '/^[A-Za-z0-9_-]+={0,2}\.[A-Za-z0-9_-]+={0,2}$/';
+
+    /**
      * @param string $publicKeyB64 Standard ist der mitgelieferte Herstellerschluessel;
      *                             Tests uebergeben einen eigenen
      */
@@ -109,11 +118,11 @@ final class LicenseToken
             return $fail('no_token');
         }
 
-        $parts = explode('.', $token);
-
-        if (2 !== \count($parts)) {
+        if (1 !== preg_match(self::TOKEN_PATTERN, $token)) {
             return $fail('malformed');
         }
+
+        $parts = explode('.', $token);
 
         $payloadJson = self::b64urlDecode($parts[0]);
         $signature = self::b64urlDecode($parts[1]);
