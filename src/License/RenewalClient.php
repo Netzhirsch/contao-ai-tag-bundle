@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle\License;
 
+use Composer\InstalledVersions;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -11,8 +12,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Spricht mit dem Lizenzserver. Die Basis-URL ist einkompiliert, damit ein Kunde
  * sie nie setzen muss; der Konfigurationsschluessel dient nur der Entwicklung.
  *
- *   POST {server}/trial {product, domain, account_email, instance_secret}
- *   POST {server}/renew {product, domain, token, instance_secret}
+ *   POST {server}/trial {product, domain, account_email, instance_secret, *_version}
+ *   POST {server}/renew {product, domain, token, instance_secret, *_version}
  *   POST {server}/checkout-session {product, domain, account_email, plan?}
  *   POST {server}/portal-session {product, domain, token, instance_secret}
  *
@@ -217,6 +218,18 @@ final class RenewalClient
      */
     private function post(string $endpoint, array $body, int|null $timeoutSeconds = null): array
     {
+        // Drei Angaben zur Umgebung, damit im Supportfall feststeht, welcher Stand laeuft -
+        // und damit der Hersteller sieht, ob eine Uebergangsloesung noch jemanden traegt. `+=`
+        // statt Ueberschreiben: ein Aufrufer koennte die Werte selbst setzen, und `product`
+        // oder `token` lassen sich hier nie versehentlich verdraengen.
+        $body += [
+            'bundle_version' => self::packageVersion(LicenseToken::PRODUCT, 'dev'),
+            'contao_version' => self::packageVersion('contao/core-bundle', 'unknown'),
+            // Ohne die Zusaetze mancher Distributionen (`8.3.14-1+deb12u1`), die Version
+            // allein genuegt und bleibt in der Laenge, die der Server annimmt.
+            'php_version' => PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION,
+        ];
+
         $response = $this->request($endpoint, $body, $timeoutSeconds ?? self::DEFAULT_TIMEOUT_SECONDS);
 
         if (null !== $response['failure']) {
@@ -251,6 +264,22 @@ final class RenewalClient
             'type' => (string) ($data['type'] ?? ''),
             'plan' => $plan,
         ];
+    }
+
+    /**
+     * Version eines installierten Pakets, so wie Composer sie kennt. Fehlt das Paket
+     * (Pfad-Repository ohne Metadaten, Test), bleibt es beim Ersatzwert - gemeldet
+     * wird lieber nichts Genaues als etwas Falsches.
+     */
+    private static function packageVersion(string $package, string $fallback): string
+    {
+        if (!InstalledVersions::isInstalled($package)) {
+            return $fallback;
+        }
+
+        $version = InstalledVersions::getPrettyVersion($package);
+
+        return null !== $version && '' !== $version ? $version : $fallback;
     }
 
     /**

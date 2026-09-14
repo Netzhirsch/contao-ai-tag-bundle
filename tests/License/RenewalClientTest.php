@@ -86,6 +86,60 @@ class RenewalClientTest extends TestCase
         $this->assertSame('geheim', $this->requests[0]['body']['instance_secret']);
     }
 
+    /**
+     * Die Versionsmeldung: der Server soll im Supportfall sehen, welcher Stand
+     * laeuft. Sie haengt an post(), damit sie bei beiden Aufrufen mitgeht und keiner
+     * sie vergessen kann.
+     */
+    public function testSendsBundleContaoAndPhpVersion(): void
+    {
+        $store = $this->store();
+        $client = $this->client($store, [
+            $this->json(200, ['token' => 'neues.token']),
+            $this->json(200, ['token' => 'noch.neuer']),
+        ]);
+
+        $client->renew(true);
+        $client->startTrial('admin@kunde.de');
+
+        foreach ($this->requests as $request) {
+            foreach (['bundle_version', 'contao_version', 'php_version'] as $field) {
+                $this->assertArrayHasKey($field, $request['body']);
+                $this->assertIsString($request['body'][$field]);
+                $this->assertNotSame('', $request['body'][$field]);
+            }
+
+            // Ohne die Zusaetze mancher Distributionen - die verwirft der Server.
+            $this->assertSame(
+                PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION,
+                $request['body']['php_version'],
+            );
+            $this->assertMatchesRegularExpression('/^[A-Za-z0-9._+-]{1,32}$/', $request['body']['php_version']);
+        }
+    }
+
+    /**
+     * Nicht dorthin, wo sie nichts beitragen: eine Sitzung bei Stripe entsteht ohnehin nur
+     * aus einer Installation, die spaetestens alle sechs Stunden erneuert.
+     */
+    public function testSendsNoVersionsWithStripeSessions(): void
+    {
+        $store = $this->store();
+        $client = $this->client($store, [
+            $this->json(200, ['url' => 'https://checkout.stripe.com/c/pay/abc']),
+            $this->json(200, ['url' => 'https://billing.stripe.com/p/session/abc']),
+        ]);
+
+        $client->checkoutSession('admin@kunde.de');
+        $client->portalSession();
+
+        foreach ($this->requests as $request) {
+            $this->assertArrayNotHasKey('bundle_version', $request['body']);
+            $this->assertArrayNotHasKey('contao_version', $request['body']);
+            $this->assertArrayNotHasKey('php_version', $request['body']);
+        }
+    }
+
     public function testThrottlesUnforcedRenewals(): void
     {
         $store = $this->store();

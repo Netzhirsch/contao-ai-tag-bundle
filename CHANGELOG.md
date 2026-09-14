@@ -4,6 +4,19 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Hinzugefügt
+
+- **Versionsmeldung an den Lizenzserver.** Bei `trial` und `renew` gehen jetzt drei
+  zusätzliche Angaben mit: die Version dieses Bundles, die Version von
+  `contao/core-bundle` und die PHP-Version (`8.3.14`, ohne Distributions-Zusätze).
+  Damit steht im Supportfall fest, welcher Stand läuft, ohne nachfragen zu müssen.
+  Mehr wird nicht übertragen – kein Verzeichnis installierter Bundles, keine
+  Seiten- oder Nutzungszahlen, keine Inhalte, keine Benutzerdaten. Die Felder sind
+  additiv: ein älterer Serverstand ignoriert sie, ein ungültiger Wert wird vom
+  Server verworfen statt gespeichert.
+
 ## [1.0.2] - 2026-08-17
 
 ### Behoben

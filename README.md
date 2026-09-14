@@ -290,6 +290,10 @@ der Systemuhr steht eine High-Water-Mark.
   geschrieben, ohne Port, ohne führendes `www.`). Kopieren auf eine andere Domain nützt
   nichts. Kostenlos ohne Lizenz sind serverseitig nur `localhost`, `127.0.0.1`, `::1`
   und `*.localhost` – **`.test`, `.local` und `.ddev.site` nicht.**
+- **Was gemeldet wird.** Mit jeder Anfrage an den Lizenzserver gehen Produkt, Domain und
+  der Besitznachweis mit, dazu die Versionen von Bundle, Contao und PHP – damit im
+  Supportfall feststeht, welcher Stand läuft. Mehr nicht: keine Liste installierter
+  Bundles, keine Seiten- oder Nutzungszahlen, keine Inhalte, keine Benutzerdaten.
 - **Instanzbindung.** `var/netzhirsch-ai-tag/license.json` enthält Token und
   `instance_secret`. Beim Umzug auf einen anderen Server die Datei mitnehmen und
   *Lizenz aktualisieren* klicken, sonst antwortet der Server `instance_mismatch`. Die

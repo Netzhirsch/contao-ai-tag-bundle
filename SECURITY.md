@@ -61,6 +61,10 @@ sollte:
   seinen Antworten wird ausschließlich Folgendes übernommen: ein Token (nur, wenn die
   Signatur passt), das `instance_secret`, der Plan-Name und eine Weiterleitungsadresse,
   die **https** sein und auf einer von **Stripe** gehosteten Domain liegen muss.
+  Hin gehen Produkt, Domain, Token bzw. `instance_secret`, beim Start der Testphase die
+  eingegebene E-Mail-Adresse und – damit im Supportfall feststeht, welcher Stand läuft –
+  die Versionen von Bundle, Contao und PHP. Sonst nichts: kein Verzeichnis installierter
+  Bundles, keine Seiten- oder Nutzungszahlen, keine Inhalte, keine Benutzerdaten.
 - **Zahlungsdaten** werden ausschließlich auf den Seiten von Stripe eingegeben. Karten-
   und SEPA-Daten laufen nie durch Contao und nie durch unseren Server.
 - **Token und `instance_secret`** stehen in `var/netzhirsch-ai-tag/license.json`. Sie
