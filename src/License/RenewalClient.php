@@ -14,6 +14,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *
  *   POST {server}/trial {product, domain, account_email, instance_secret, *_version}
  *   POST {server}/renew {product, domain, token, instance_secret, *_version}
+ *
+ * Erfolgreiche Antworten von /trial und /renew koennen zusaetzlich eine neuere
+ * Fassung ankuendigen (latest_version, release_notes_url, security_release). Die
+ * geht in den LicenseStore und ist reine Anzeige - siehe UpdateNotice.
  *   POST {server}/checkout-session {product, domain, account_email, plan?}
  *   POST {server}/portal-session {product, domain, token, instance_secret}
  *
@@ -257,6 +261,17 @@ final class RenewalClient
         // Serverstaende lassen beides weg.
         $plan = (string) ($data['plan'] ?? '');
         $this->store->setPlan($plan);
+
+        // Optionaler Hinweis auf eine neuere Fassung. Er darf die Lizenz an keiner
+        // Stelle beruehren: fehlen die Felder, sind sie null oder Unsinn, laeuft alles
+        // wie bisher. Gespeichert wird auch die leere Ankuendigung, damit ein
+        // zurueckgezogener Hinweis wieder verschwindet; was nicht passt, verwirft der
+        // Store. Kein Cast auf einen Wert, der auch ein Array sein koennte.
+        $this->store->setUpdateNotice(
+            \is_string($data['latest_version'] ?? null) ? $data['latest_version'] : '',
+            \is_string($data['release_notes_url'] ?? null) ? $data['release_notes_url'] : '',
+            true === ($data['security_release'] ?? false),
+        );
 
         return [
             'ok' => true,

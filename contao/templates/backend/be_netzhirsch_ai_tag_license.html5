@@ -14,6 +14,9 @@ $labels = $this->labels;
 /** @var array{active: bool, armed: bool, type: string, plan: string, reason: string, domain: string, domain_verified: bool, expires_at: int, days_left: int, in_grace: bool} $license */
 $license = $this->license;
 
+/** @var array{text: string, url: string, linkLabel: string, security: bool}|null $update */
+$update = $this->update;
+
 $plan = (string) $this->licensePlan;
 $armed = (bool) $license['armed'];
 $active = (bool) $license['active'];
@@ -58,6 +61,18 @@ $referer = $e((string) $this->referer);
 </div>
 
 <?= $this->messages ?>
+
+<?php if (null !== $update): ?>
+    <?php // Nur ein Hinweis: aktualisiert wird ueber den Contao Manager oder Composer, nicht von hier aus. ?>
+    <div class="tl_message">
+        <p class="<?= $update['security'] ? 'tl_error' : 'tl_info' ?>">
+            <?= $e($update['text']) ?>
+            <?php if ('' !== $update['url']): ?>
+                <a href="<?= $e($update['url']) ?>" target="_blank" rel="noreferrer noopener"><?= $e($update['linkLabel']) ?></a>
+            <?php endif; ?>
+        </p>
+    </div>
+<?php endif; ?>
 
 <?php if (!$armed): ?>
     <div class="tl_message">

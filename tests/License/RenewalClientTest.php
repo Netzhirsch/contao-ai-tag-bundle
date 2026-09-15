@@ -140,6 +140,61 @@ class RenewalClientTest extends TestCase
         }
     }
 
+    /**
+     * Der Hinweis auf eine neuere Fassung kommt aus der Lizenzantwort und wird
+     * gespeichert, damit er auch zwischen zwei Serveraufrufen steht - der Cron laeuft
+     * hoechstens alle sechs Stunden.
+     */
+    public function testKeepsAnAnnouncedVersionFromTheResponse(): void
+    {
+        $store = $this->store();
+
+        $this->client($store, [$this->json(200, [
+            'token' => 'neues.token',
+            'latest_version' => '1.1.0',
+            'release_notes_url' => 'https://example.com/notes',
+            'security_release' => true,
+        ])])->renew(true);
+
+        $this->assertSame('1.1.0', $store->getLatestVersion());
+        $this->assertSame('https://example.com/notes', $store->getReleaseNotesUrl());
+        $this->assertTrue($store->isSecurityRelease());
+    }
+
+    /**
+     * Rueckwaertskompatibilitaet ist hier die Bedingung, nicht der Wunsch: die Felder
+     * duerfen fehlen, null sein oder Unsinn enthalten, ohne dass die Lizenz darunter
+     * leidet. Das Token wird in jedem Fall uebernommen, der Hinweis bleibt leer.
+     *
+     * @param array<string, mixed> $payload
+     */
+    #[DataProvider('unusableAnnouncementProvider')]
+    public function testAnUnusableAnnouncementChangesNothing(array $payload): void
+    {
+        $store = $this->store();
+        $store->setUpdateNotice('1.1.0', 'https://example.com/notes', true);
+
+        $result = $this->client($store, [$this->json(200, ['token' => 'neues.token'] + $payload)])->renew(true);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('neues.token', $store->getToken());
+        $this->assertSame('', $store->getLatestVersion());
+        $this->assertSame('', $store->getReleaseNotesUrl());
+        $this->assertFalse($store->isSecurityRelease());
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function unusableAnnouncementProvider(): iterable
+    {
+        yield 'Felder fehlen' => [[]];
+        yield 'alles null' => [['latest_version' => null, 'release_notes_url' => null, 'security_release' => null]];
+        yield 'Zahl statt Zeichenkette' => [['latest_version' => 110, 'release_notes_url' => 7, 'security_release' => 1]];
+        yield 'Liste statt Zeichenkette' => [['latest_version' => ['1.1.0'], 'release_notes_url' => ['https://example.com'], 'security_release' => []]];
+        yield 'Markup in der Version' => [['latest_version' => '<script>alert(1)</script>', 'release_notes_url' => 'https://example.com/notes', 'security_release' => true]];
+    }
+
     public function testThrottlesUnforcedRenewals(): void
     {
         $store = $this->store();

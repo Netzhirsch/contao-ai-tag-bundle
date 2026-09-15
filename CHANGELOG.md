@@ -8,6 +8,15 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Hinzugefügt
 
+- **Hinweis auf eine neuere Fassung.** Der Lizenzserver kann in der Antwort auf
+  `trial` und `renew` eine Version ankündigen; sie steht dann auf der Lizenzseite im
+  Backend und in `netzhirsch:ai-tag:license`, bei einem sicherheitsrelevanten Release
+  deutlicher dargestellt. Der Contao Manager zeigt Updates zwar auch an, aber nicht,
+  ob eines sicherheitsrelevant ist – das transportiert die Composer-Metadatei nicht.
+  Der Hinweis informiert und sonst nichts: er aktualisiert nichts selbst, blockiert
+  nichts und berührt die Lizenzprüfung nicht. Auf einer Installation aus einem Branch
+  (`dev-main`, `1.0.x-dev`) erscheint er nicht.
+
 - **Versionsmeldung an den Lizenzserver.** Bei `trial` und `renew` gehen jetzt drei
   zusätzliche Angaben mit: die Version dieses Bundles, die Version von
   `contao/core-bundle` und die PHP-Version (`8.3.14`, ohne Distributions-Zusätze).

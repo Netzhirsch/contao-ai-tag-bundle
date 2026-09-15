@@ -7,6 +7,7 @@ namespace Netzhirsch\ContaoAiTagBundle\Command;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
 use Netzhirsch\ContaoAiTagBundle\License\RenewalClient;
+use Netzhirsch\ContaoAiTagBundle\License\UpdateNotice;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -77,6 +78,20 @@ final class AiTagLicenseCommand extends Command
             ['Karenz' => $state['in_grace'] ? 'ja' : 'nein'],
             ['Datei' => $this->store->filePath()],
         );
+
+        $update = UpdateNotice::fromStore($this->store);
+
+        if (null !== $update) {
+            // Nur eine Notiz. Der Rueckgabewert haengt weiter allein am Lizenzzustand - ein
+            // veraltetes Bundle ist kein Fehlschlag.
+            $io->note(\sprintf(
+                '%sVersion %s ist verfuegbar (installiert: %s).%s',
+                $update['security'] ? 'Sicherheitsrelevant: ' : '',
+                $update['version'],
+                UpdateNotice::installedVersion(),
+                '' !== $update['url'] ? ' '.$update['url'] : '',
+            ));
+        }
 
         return $state['active'] ? Command::SUCCESS : Command::FAILURE;
     }

@@ -291,6 +291,18 @@
         <source>netzhirsch_ai_tag.license.hint.inactive</source>
         <target>Ohne aktive Lizenz wird die Kennzeichnung nicht ins Bild gebrannt. Sie erscheint nur als Textalternative im Markup – siehe System, Lizenz KI-Kennzeichnung.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.available">
+        <source>netzhirsch_ai_tag.license.update.available</source>
+        <target>Version %version% dieses Bundles ist verfügbar. Aktualisiert wird über den Contao Manager oder Composer.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.security">
+        <source>netzhirsch_ai_tag.license.update.security</source>
+        <target>Sicherheitsrelevantes Update: Version %version% dieses Bundles steht bereit. Bitte zeitnah über den Contao Manager oder Composer aktualisieren.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.notes">
+        <source>netzhirsch_ai_tag.license.update.notes</source>
+        <target>Was sich geändert hat</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

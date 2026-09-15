@@ -61,6 +61,11 @@ sollte:
   seinen Antworten wird ausschließlich Folgendes übernommen: ein Token (nur, wenn die
   Signatur passt), das `instance_secret`, der Plan-Name und eine Weiterleitungsadresse,
   die **https** sein und auf einer von **Stripe** gehosteten Domain liegen muss.
+  Dazu ein reiner Anzeigewert: der Hinweis auf eine neuere Fassung (Version, Adresse der
+  Release Notes, Kennzeichen „sicherheitsrelevant"). Die Version wird auf ein
+  Versionsmuster geprüft, die Adresse muss **https** sein, sonst wird sie verworfen –
+  beides landet im Backend-Markup. Aktualisiert wird davon nichts: der Hinweis
+  informiert, mehr nicht.
   Hin gehen Produkt, Domain, Token bzw. `instance_secret`, beim Start der Testphase die
   eingegebene E-Mail-Adresse und – damit im Supportfall feststeht, welcher Stand läuft –
   die Versionen von Bundle, Contao und PHP. Sonst nichts: kein Verzeichnis installierter

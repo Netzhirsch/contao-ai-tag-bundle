@@ -290,6 +290,11 @@ der Systemuhr steht eine High-Water-Mark.
   geschrieben, ohne Port, ohne führendes `www.`). Kopieren auf eine andere Domain nützt
   nichts. Kostenlos ohne Lizenz sind serverseitig nur `localhost`, `127.0.0.1`, `::1`
   und `*.localhost` – **`.test`, `.local` und `.ddev.site` nicht.**
+- **Update-Hinweis.** Kündigt der Lizenzserver eine neuere Fassung an, steht das als
+  Hinweis auf der Lizenzseite und in `netzhirsch:ai-tag:license` – bei einem
+  sicherheitsrelevanten Release deutlicher. Aktualisiert wird dadurch nichts: das
+  übernimmt weiterhin der Contao Manager oder Composer. Auf einer Installation aus
+  einem Branch (`dev-main`) erscheint kein Hinweis.
 - **Was gemeldet wird.** Mit jeder Anfrage an den Lizenzserver gehen Produkt, Domain und
   der Besitznachweis mit, dazu die Versionen von Bundle, Contao und PHP – damit im
   Supportfall feststeht, welcher Stand läuft. Mehr nicht: keine Liste installierter

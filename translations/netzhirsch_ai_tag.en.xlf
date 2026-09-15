@@ -291,6 +291,18 @@
         <source>netzhirsch_ai_tag.license.hint.inactive</source>
         <target>Without an active licence the label is not burnt into the image. It only appears as a text alternative in the markup – see System, AI labelling licence.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.available">
+        <source>netzhirsch_ai_tag.license.update.available</source>
+        <target>Version %version% of this bundle is available. Update it through the Contao Manager or Composer.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.security">
+        <source>netzhirsch_ai_tag.license.update.security</source>
+        <target>Security update: version %version% of this bundle is available. Please update soon through the Contao Manager or Composer.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.license.update.notes">
+        <source>netzhirsch_ai_tag.license.update.notes</source>
+        <target>What changed</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

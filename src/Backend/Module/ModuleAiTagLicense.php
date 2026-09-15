@@ -18,6 +18,7 @@ use Netzhirsch\ContaoAiTagBundle\EventListener\BillingReturnListener;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
 use Netzhirsch\ContaoAiTagBundle\License\RenewalClient;
+use Netzhirsch\ContaoAiTagBundle\License\UpdateNotice;
 use Netzhirsch\ContaoAiTagBundle\Security\ContaoAiTagPermissions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -96,11 +97,42 @@ class ModuleAiTagLicense extends BackendModule
         // aufrufbare Objekt beim Lesen sofort auf, eine uebergebene Closure wuerde die
         // Seite mit "Too few arguments" abbrechen. Siehe LicenseLabels.
         $this->Template->labels = LicenseLabels::build($translator, $state);
+        $this->Template->update = $this->updateNotice($container->get(LicenseStore::class), $translator);
         $this->Template->messages = Message::generate();
         $this->Template->referer = $this->getReferer(true);
         $this->Template->backTitle = $GLOBALS['TL_LANG']['MSC']['backBTTitle'] ?? '';
         $this->Template->backLabel = $GLOBALS['TL_LANG']['MSC']['backBT'] ?? 'Back';
         $this->Template->actionUrl = $this->selfUrl();
+    }
+
+    /**
+     * Der Hinweis auf eine neuere Fassung, sofern der Lizenzserver eine angekuendigt
+     * hat und sie hoeher ist als die installierte.
+     *
+     * Er informiert und sonst nichts: kein Composer-Aufruf, kein Anstossen des Contao
+     * Managers, keine Sperre. Ein Bundle, das an seiner eigenen Installation dreht,
+     * richtet mehr Schaden an als eine veraltete Fassung.
+     *
+     * @return array{text: string, url: string, linkLabel: string, security: bool}|null
+     */
+    private function updateNotice(LicenseStore $store, TranslatorInterface $translator): array|null
+    {
+        $update = UpdateNotice::fromStore($store);
+
+        if (null === $update) {
+            return null;
+        }
+
+        return [
+            'text' => $this->message(
+                $translator,
+                $update['security'] ? 'update.security' : 'update.available',
+                ['%version%' => $update['version']],
+            ),
+            'url' => $update['url'],
+            'linkLabel' => $this->message($translator, 'update.notes'),
+            'security' => $update['security'],
+        ];
     }
 
     private function handleAction(string $action, ContainerInterface $container, TranslatorInterface $translator): void

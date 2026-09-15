@@ -111,9 +111,55 @@ class LicenseTemplateTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $license
+     * Der Hinweis auf eine neuere Fassung: sichtbar, verlinkt, und bei einem
+     * sicherheitsrelevanten Release deutlicher dargestellt.
      */
-    private function render(array $license, string $plan): string
+    public function testShowsTheUpdateNotice(): void
+    {
+        $html = $this->render(
+            ['armed' => true, 'active' => true, 'type' => 'full', 'reason' => 'ok', 'domain' => 'kunde.de', 'expires_at' => 1_800_000_000, 'days_left' => 30, 'in_grace' => false],
+            'monthly',
+            ['text' => 'Version 1.1.0 ist verfuegbar.', 'url' => 'https://example.com/notes', 'linkLabel' => 'Was sich geaendert hat', 'security' => false],
+        );
+
+        $this->assertStringContainsString('Version 1.1.0 ist verfuegbar.', $html);
+        $this->assertStringContainsString('https://example.com/notes', $html);
+        $this->assertStringContainsString('tl_info', $html);
+    }
+
+    public function testMarksASecurityReleaseMoreClearly(): void
+    {
+        $html = $this->render(
+            ['armed' => true, 'active' => true, 'type' => 'full', 'reason' => 'ok', 'domain' => 'kunde.de', 'expires_at' => 1_800_000_000, 'days_left' => 30, 'in_grace' => false],
+            'monthly',
+            ['text' => 'Sicherheitsrelevantes Update.', 'url' => '', 'linkLabel' => 'Was sich geaendert hat', 'security' => true],
+        );
+
+        $this->assertStringContainsString('Sicherheitsrelevantes Update.', $html);
+        // Ohne geprueften Verweis steht der Hinweis trotzdem, nur ohne Link.
+        $this->assertStringNotContainsString('Was sich geaendert hat', $html);
+        $this->assertStringContainsString('tl_error', $html);
+    }
+
+    /**
+     * Der Normalfall: nichts angekuendigt, nichts zu sehen. Die Seite darf davon
+     * nicht abhaengen - ein Bundle ohne diese Meldung laeuft unveraendert weiter.
+     */
+    public function testWithoutAnAnnouncementNothingIsShown(): void
+    {
+        $html = $this->render(
+            ['armed' => true, 'active' => true, 'type' => 'full', 'reason' => 'ok', 'domain' => 'kunde.de', 'expires_at' => 1_800_000_000, 'days_left' => 30, 'in_grace' => false],
+            'monthly',
+        );
+
+        $this->assertStringNotContainsString('update.', $html);
+    }
+
+    /**
+     * @param array<string, mixed>                                                     $license
+     * @param array{text: string, url: string, linkLabel: string, security: bool}|null $update
+     */
+    private function render(array $license, string $plan, array|null $update = null): string
     {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator
@@ -159,6 +205,7 @@ class LicenseTemplateTest extends TestCase
         $data->set('backTitle', 'Zurueck');
         $data->set('backLabel', 'Zurueck');
         $data->set('messages', '');
+        $data->set('update', $update);
 
         // Nicht static: eine statische Closure laesst sich nicht an ein Objekt binden,
         // und die Vorlage liest ihre Werte ueber $this. Der Pfad kommt ueber use(), weil

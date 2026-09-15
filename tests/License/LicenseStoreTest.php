@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Netzhirsch\ContaoAiTagBundle\Tests\License;
 
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class LicenseStoreTest extends TestCase
@@ -41,6 +42,9 @@ class LicenseStoreTest extends TestCase
         $this->assertSame('', $store->getPlan());
         $this->assertSame(0, $store->getHwm());
         $this->assertSame(0, $store->getLastRenewAt());
+        $this->assertSame('', $store->getLatestVersion());
+        $this->assertSame('', $store->getReleaseNotesUrl());
+        $this->assertFalse($store->isSecurityRelease());
     }
 
     public function testPersistsAcrossInstances(): void
@@ -92,6 +96,61 @@ class LicenseStoreTest extends TestCase
         $store->bumpHwm($now + 60);
 
         $this->assertSame($now, $store->getHwm());
+    }
+
+    public function testKeepsAnAnnouncedVersion(): void
+    {
+        $store = $this->store();
+
+        $this->assertTrue($store->setUpdateNotice('1.1.0', 'https://example.com/notes', true));
+        $this->assertSame('1.1.0', $store->getLatestVersion());
+        $this->assertSame('https://example.com/notes', $store->getReleaseNotesUrl());
+        $this->assertTrue($store->isSecurityRelease());
+    }
+
+    /**
+     * Eine zurueckgezogene Ankuendigung muss auch wieder verschwinden - sonst haengt
+     * der Hinweis auf eine Fassung, die es vielleicht gar nicht mehr gibt.
+     */
+    public function testAWithdrawnAnnouncementDisappears(): void
+    {
+        $store = $this->store();
+        $store->setUpdateNotice('1.1.0', 'https://example.com/notes', true);
+
+        $store->setUpdateNotice('', '', false);
+
+        $this->assertSame('', $store->getLatestVersion());
+        $this->assertSame('', $store->getReleaseNotesUrl());
+        $this->assertFalse($store->isSecurityRelease());
+    }
+
+    /**
+     * Die Werte kommen vom eigenen Server, landen aber im Backend-Markup. Was nicht wie
+     * eine Version aussieht oder nicht https ist, wird verworfen statt gespeichert.
+     */
+    #[DataProvider('rejectedAnnouncementProvider')]
+    public function testRejectsUnusableAnnouncements(string $version, string $url, string $expectedVersion, string $expectedUrl): void
+    {
+        $store = $this->store();
+        $store->setUpdateNotice($version, $url, true);
+
+        $this->assertSame($expectedVersion, $store->getLatestVersion());
+        $this->assertSame($expectedUrl, $store->getReleaseNotesUrl());
+        $this->assertSame('' !== $expectedVersion, $store->isSecurityRelease());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, string, string}>
+     */
+    public static function rejectedAnnouncementProvider(): iterable
+    {
+        yield 'Markup in der Version' => ['<b>1.1.0</b>', 'https://example.com/notes', '', ''];
+        yield 'Leerzeichen in der Version' => ['1.1.0 oder neuer', 'https://example.com/notes', '', ''];
+        yield 'zu lange Version' => [str_repeat('1', 33), 'https://example.com/notes', '', ''];
+        yield 'Version mit Leerraum aussen' => ['  1.1.0  ', 'https://example.com/notes', '1.1.0', 'https://example.com/notes'];
+        yield 'Adresse ohne https' => ['1.1.0', 'http://example.com/notes', '1.1.0', ''];
+        yield 'Adresse mit javascript' => ['1.1.0', 'javascript:alert(1)', '1.1.0', ''];
+        yield 'Adresse ohne Version' => ['', 'https://example.com/notes', '', ''];
     }
 
     public function testTheFileLivesUnderVar(): void

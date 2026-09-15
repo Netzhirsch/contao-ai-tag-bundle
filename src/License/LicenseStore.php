@@ -14,6 +14,9 @@ namespace Netzhirsch\ContaoAiTagBundle\License;
  *   hwm int hoechster je gesehener Zeitstempel (Schutz gegen
  *                           Zurueckstellen der Uhr), nur vorwaerts
  *   last_renew_at int Zeitpunkt des letzten Erneuerungsversuchs (Drosselung)
+ *   latest_version string vom Server angekuendigte Fassung ('' = keine)
+ *   release_notes_url string Adresse der Release Notes dazu ('' = keine)
+ *   security_release bool ob diese Ankuendigung sicherheitsrelevant ist
  *
  * Die Datei liegt unter var/ und ist damit kein Konfigurationsgegenstand: sie
  * rotiert, wird von Cron und Backend geschrieben und nicht von Hand gepflegt.
@@ -80,6 +83,65 @@ final class LicenseStore
     {
         $data = $this->load();
         $data['plan'] = trim($plan);
+
+        return $this->write($data);
+    }
+
+    /**
+     * Die vom Lizenzserver angekuendigte Fassung ('' = keine Ankuendigung). Reine
+     * Anzeige: sie beruehrt weder das Gate noch das Token. Netzhirsch pflegt sie von
+     * Hand, eine getaggte Version ist also nicht automatisch eine angekuendigte.
+     */
+    public function getLatestVersion(): string
+    {
+        return (string) ($this->load()['latest_version'] ?? '');
+    }
+
+    /**
+     * Adresse der Release Notes zur angekuendigten Fassung ('' = keine). Schon beim
+     * Speichern auf https geprueft, siehe setUpdateNotice().
+     */
+    public function getReleaseNotesUrl(): string
+    {
+        return (string) ($this->load()['release_notes_url'] ?? '');
+    }
+
+    /**
+     * Ob die angekuendigte Fassung sicherheitsrelevant ist. Dieses Signal transportiert die
+     * Composer-Metadatei nicht, es kann nur vom Lizenzserver kommen.
+     */
+    public function isSecurityRelease(): bool
+    {
+        return (bool) ($this->load()['security_release'] ?? false);
+    }
+
+    /**
+     * Uebernimmt die Ankuendigung aus einer Serverantwort - ausdruecklich auch die
+     * leere, damit ein zurueckgezogener Hinweis wieder verschwindet.
+     *
+     * Geprueft wird hier und nicht in der Vorlage: die Werte kommen zwar vom eigenen
+     * Server, aber was hier hereinkommt, landet spaeter im Backend-Markup. Was nicht wie
+     * eine Version aussieht oder nicht https ist, wird verworfen statt gespeichert.
+     */
+    public function setUpdateNotice(string $latestVersion, string $releaseNotesUrl, bool $securityRelease): bool
+    {
+        $version = trim($latestVersion);
+
+        if (!preg_match('/^[A-Za-z0-9._+-]{1,32}$/', $version)) {
+            $version = '';
+        }
+
+        $url = trim($releaseNotesUrl);
+
+        // Ohne angekuendigte Fassung gibt es auch nichts zu verlinken.
+        if ('' === $version || !str_starts_with($url, 'https://')) {
+            $url = '';
+        }
+
+        $data = $this->load();
+        $data['latest_version'] = $version;
+        $data['release_notes_url'] = $url;
+        $data['security_release'] = '' !== $version && $securityRelease;
 
         return $this->write($data);
     }
