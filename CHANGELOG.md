@@ -4,6 +4,21 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Behoben
+
+- **Die Startseite konnte mit einem `TypeError` abstürzen.** Die Twig-Funktion
+  `netzhirsch_ai_tag_hint()` stand in der Figure-Komponente, die fast jede Seite mit Bild
+  rendert, und verlangte als Argument `Figure|string|null`. Übergab ein Template etwas
+  anderes – auf einer Installation ein `stdClass` –, warf sie einen `TypeError`, und die
+  ganze Seite lieferte einen Fehler 500, wegen eines Hinweises, der höchstens hätte fehlen
+  dürfen. Die Funktion nimmt jetzt jeden Wert an und liefert bei einem unbekannten „kein
+  Hinweis“; auch der Zugriff auf den Dateipfad der Figure liegt im Schutz. Der Fehler stand
+  seit der ersten Fassung im Code. Nachgestellt im Produktivmodus von Twig
+  (`strict_variables` aus): mit dem alten Code stirbt der Fall mit genau dieser Meldung,
+  jetzt rendert die Komponente.
+
 ## [1.1.1] - 2026-10-20
 
 ### Behoben

@@ -49,20 +49,29 @@ final class AiTagExtension extends AbstractExtension
     /**
      * Gibt den Kennzeichnungstext zurueck, wenn das Bild als KI-generiert markiert
      * ist - sonst null.
+     *
+     * Nimmt bewusst alles an und wirft nie. Der Typ war frueher `Figure|string|null`: ein
+     * Template, das der Komponente etwas anderes uebergibt (auf einer Installation ein
+     * stdClass), erzeugte einen TypeError und legte die ganze Startseite lahm. Eine
+     * Abbildung darf an der Kennzeichnung nie scheitern - ein unbekannter Wert heisst
+     * schlicht "kein Hinweis". Auch der Zugriff auf den Dateipfad der Figure liegt im
+     * Schutz: eine Figure ohne lesbares Bild wirft dort.
      */
-    public function getHint(Figure|string|null $figure): string|null
+    public function getHint(mixed $figure): string|null
     {
-        if (null === $figure) {
-            return null;
-        }
-
-        $path = $figure instanceof Figure ? $figure->getImage()->getFilePath(true) : $figure;
-
-        if ('' === $path) {
-            return null;
-        }
-
         try {
+            if ($figure instanceof Figure) {
+                $path = $figure->getImage()->getFilePath(true);
+            } elseif (\is_string($figure)) {
+                $path = $figure;
+            } else {
+                return null;
+            }
+
+            if ('' === $path) {
+                return null;
+            }
+
             $tag = $this->resolver->resolve(new Image($path, $this->imagine), 80);
         } catch (\Throwable) {
             return null;
