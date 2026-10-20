@@ -10,6 +10,24 @@ use PHPUnit\Framework\TestCase;
 
 class TagStyleTest extends TestCase
 {
+    /**
+     * Die Render-Revision haengt im Fingerabdruck: ohne sie blieben nach einer Korrektur im
+     * Renderer die falsch erzeugten Bilder unter dem Pfad der richtigen im Cache liegen.
+     * Revision 2 ist die Korrektur der Schriftgroesse (Pixel statt Punkte).
+     */
+    public function testTheRenderRevisionIsPartOfTheFingerprint(): void
+    {
+        $this->assertGreaterThanOrEqual(2, TagStyle::RENDER_REVISION);
+
+        // Dieselbe Konfiguration, aber ein anderer Fingerabdruck als vor der Revision:
+        // der alte Wert war der Hash ueber die Einstellungen allein.
+        $withoutRevision = substr(sha1(implode('|', [
+            TagStyle::STYLE_BOX, 'auto', 'auto', 60, 0.25, 0.45, 0.5, '0', 11, 0.03, 48, 0.65, 0.3, 0, 0,
+        ])), 0, 8);
+
+        $this->assertNotSame($withoutRevision, (new TagStyle())->fingerprint());
+    }
+
     public function testCapsTheFontSizeOnLargeImages(): void
     {
         $style = new TagStyle(minFontSize: 11, relativeFontSize: 0.03, maxFontSize: 48);

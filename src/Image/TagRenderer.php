@@ -8,6 +8,7 @@ use Contao\Image\Metadata\ImageMetadata;
 use Contao\Image\Metadata\MetadataReaderWriter;
 use Imagine\Image\AbstractFont;
 use Imagine\Image\Box;
+use Imagine\Image\FontInterface;
 use Imagine\Image\ImageInterface as ImagineImageInterface;
 use Imagine\Image\ImagineInterface;
 use Imagine\Image\Palette\Color\ColorInterface;
@@ -120,7 +121,7 @@ final class TagRenderer
         }
 
         $fontSize = $this->style->fontSize($width);
-        $box = $this->imagine->font($font, $fontSize, (new RGB())->color('#000000', self::OPAQUE))->box($this->label($text));
+        $box = $this->font($font, $fontSize, (new RGB())->color('#000000', self::OPAQUE))->box($this->label($text));
 
         return $this->fits($box->getWidth(), $box->getHeight(), $fontSize, $width, $height);
     }
@@ -144,7 +145,7 @@ final class TagRenderer
         $isDarkBackground = $this->averageLuminance($image, $corner) < 128;
 
         $textColor = $palette->color($this->style->textColor ?? ($isDarkBackground ? '#ffffff' : '#000000'), self::OPAQUE);
-        $fontObject = $this->imagine->font($font, $fontSize, $textColor);
+        $fontObject = $this->font($font, $fontSize, $textColor);
 
         // Imagines eigene Schnittstellen passen nicht zusammen: font() liefert ein
         // FontInterface, text() verlangt eine AbstractFont. Alle mitgelieferten Treiber
@@ -255,7 +256,7 @@ final class TagRenderer
     private function drawOutline(ImagineImageInterface $image, string $text, string $font, int $fontSize, int $x, int $y, bool $isDarkBackground, mixed $palette): void
     {
         $outlineColor = $palette->color($this->style->boxColor ?? ($isDarkBackground ? '#000000' : '#ffffff'), self::OPAQUE);
-        $outlineFont = $this->imagine->font($font, $fontSize, $outlineColor);
+        $outlineFont = $this->font($font, $fontSize, $outlineColor);
 
         if (!$outlineFont instanceof AbstractFont) {
             return;
@@ -266,6 +267,23 @@ final class TagRenderer
         foreach ([[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]] as [$dx, $dy]) {
             $image->draw()->text($text, $outlineFont, new Point(max(0, $x + $dx * $offset), max(0, $y + $dy * $offset)));
         }
+    }
+
+    /**
+     * Legt eine Schrift an. Die Konfiguration spricht von PIXELN (min_font_size,
+     * max_font_size, relative_font_size), Imagine rechnet aber in PUNKTEN bei 96 dpi
+     * - GD fest, und Imagick wird von Imagine ausdruecklich darauf angeglichen. Ohne
+     * Umrechnung wurde eine Schrift von 39 "Pixeln" als 39 pt, also 52 px,
+     * gezeichnet: ein Drittel zu gross, und das Label deckte gut ein Viertel der
+     * Bildbreite ab.
+     *
+     * Auf ganze Punkte gerundet: Imagicks aeltere Zweige schneiden die Groesse
+     * ohnehin auf eine ganze Zahl ab, und ein Bruchteil wuerde dort je nach
+     * Gleitkommafehler um einen Pixel schwanken.
+     */
+    private function font(string $file, int $pixels, ColorInterface $color): FontInterface
+    {
+        return $this->imagine->font($file, max(1, (int) round($pixels * 72 / 96)), $color);
     }
 
     private function label(string $text): string

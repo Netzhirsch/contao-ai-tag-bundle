@@ -22,6 +22,18 @@ final class TagStyle
 
     public const STYLES = [self::STYLE_BOX, self::STYLE_OUTLINE, self::STYLE_PLAIN];
 
+    /**
+     * Fassung des Zeichnens selbst. Geht in den Fingerabdruck und damit in den
+     * Cache-Schluessel ein und wird hochgezaehlt, wenn sich das Aussehen OHNE Aenderung der
+     * Konfiguration aendert - etwa durch eine Korrektur im Renderer. Sonst blieben die
+     * damit falsch erzeugten Bilder unter genau dem Pfad liegen, den die richtigen
+     * bekaemen, und Contao lieferte sie weiter als Cache-Treffer aus.
+     *
+     * 2: Schriftgroesse in Pixeln statt in Punkten (Label war ein Drittel zu gross); davor
+     *    war ausserdem ein Bild ohne Schrift als gekennzeichnet abgelegt worden.
+     */
+    public const RENDER_REVISION = 2;
+
     private string|null $fingerprint = null;
 
     public function __construct(
@@ -64,6 +76,7 @@ final class TagStyle
                 implode(
                     '|',
                     [
+                        self::RENDER_REVISION,
                         $this->style,
                         $this->textColor ?? 'auto',
                         $this->boxColor ?? 'auto',

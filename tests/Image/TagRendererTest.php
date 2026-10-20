@@ -63,6 +63,36 @@ class TagRendererTest extends TestCase
         );
     }
 
+    /**
+     * Die Schriftgroesse der Konfiguration ist in PIXELN. Imagine rechnet in Punkten
+     * bei 96 dpi, und ohne Umrechnung wurde eine Schrift von 40 "Pixeln" als 40 pt =
+     * 53 px gezeichnet - das Label war ein Drittel zu gross und deckte auf einem
+     * 1296-px-Bild gut ein Viertel der Breite ab.
+     *
+     * "KI-generiert" ist in DejaVu Sans 5,918 em breit, also bei 40 px rund 237 px.
+     * Die Box ist so breit wie der Text plus beidseitig der Innenabstand (0,45 em).
+     */
+    public function testTheFontSizeIsInPixelsNotInPoints(): void
+    {
+        $renderer = $this->renderer(new TagStyle(
+            textColor: '#ffffff',
+            boxColor: '#000000',
+            boxOpacity: 100,
+            cornerRadius: 0.0,
+            minFontSize: 40,
+            maxFontSize: 40,
+        ));
+
+        $image = $this->render($renderer, 800, 300);
+        [$width, $height] = $this->darkBoxSize($image);
+
+        $expectedWidth = 5.918 * 40 + 2 * 0.45 * 40;
+
+        $this->assertEqualsWithDelta($expectedWidth, $width, $expectedWidth * 0.08, \sprintf('Box %d px breit, erwartet etwa %d px (mit Punkten gerechnet waeren es etwa 343).', $width, $expectedWidth));
+        // Zeilenhoehe von DejaVu Sans ist rund 1,16 em; dazu der Innenabstand.
+        $this->assertLessThan(40 * 1.16 + 2 * 0.45 * 40 + 6, $height);
+    }
+
     public function testSquareBoxRemainsAvailable(): void
     {
         $renderer = $this->renderer(new TagStyle(
@@ -141,11 +171,42 @@ class TagRendererTest extends TestCase
         return new TagRenderer(new Imagine(), new MetadataReaderWriter(), new FontLocator(), new Filesystem(), $style);
     }
 
-    private function render(TagRenderer $renderer): string
+    private function render(TagRenderer $renderer, int $width = 400, int $height = 120): string
     {
-        $this->assertTrue($this->renderInto($renderer, 400, 120));
+        $this->assertTrue($this->renderInto($renderer, $width, $height));
 
         return (string) $this->file;
+    }
+
+    /**
+     * Breite und Hoehe der schwarzen Flaeche in einem sonst weissen Bild.
+     *
+     * @return array{int, int}
+     */
+    private function darkBoxSize(string $file): array
+    {
+        // Direkt ueber GD: Imagines getColorAt() je Pixel waere hier um
+        // Groessenordnungen langsamer.
+        $image = imagecreatefrompng($file);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $minX = $width;
+        $maxX = 0;
+        $minY = $height;
+        $maxY = 0;
+
+        for ($x = 0; $x < $width; ++$x) {
+            for ($y = 0; $y < $height; ++$y) {
+                if ((imagecolorat($image, $x, $y) >> 16 & 0xFF) < 60) {
+                    $minX = min($minX, $x);
+                    $maxX = max($maxX, $x);
+                    $minY = min($minY, $y);
+                    $maxY = max($maxY, $y);
+                }
+            }
+        }
+
+        return [$maxX - $minX + 1, $maxY - $minY + 1];
     }
 
     /**

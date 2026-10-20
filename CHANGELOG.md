@@ -4,6 +4,26 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Behoben
+
+- **Das Label war ein Drittel zu groß.** Schriftgrößen sind in der Konfiguration in
+  Pixeln angegeben (`min_font_size`, `relative_font_size`, `max_font_size`), Imagine rechnet
+  aber in Punkten bei 96 dpi – GD fest, Imagick wird von Imagine darauf angeglichen. Eine
+  Schrift von 39 „Pixeln“ wurde deshalb als 39 pt, also 52 px, gezeichnet; auf einem
+  1296 px breiten Bild deckte das Label gut ein Viertel der Breite ab. Jetzt wird vor dem
+  Zeichnen umgerechnet (Pixel × 0,75), an der einen Stelle, an der Schriften angelegt
+  werden. **Alle Labels werden dadurch auf 75 % ihrer bisherigen Schriftgröße schrumpfen**;
+  wer die alte Größe wollte, erhöht `relative_font_size` und `max_font_size` um ein Drittel.
+- **Neu erzeugte Bilder nach einer Korrektur im Renderer.** Der Cache-Schlüssel eines Bildes
+  enthielt bisher nur die Einstellungen, nicht die Fassung des Zeichnens. Eine Korrektur wie
+  die obige – oder die der fehlenden Schrift – änderte den Pfad deshalb nicht: die falsch
+  erzeugten Bilder blieben liegen, und Contao lieferte sie weiter aus. Der Fingerabdruck
+  trägt jetzt eine Render-Revision (`TagStyle::RENDER_REVISION`), die bei jeder solchen
+  Korrektur hochgezählt wird. Damit entstehen die Bilder nach diesem Update von selbst neu;
+  **der Bild-Cache muss nicht mehr von Hand geleert werden.**
+
 ## [1.1.0] - 2026-10-20
 
 ### Geändert
