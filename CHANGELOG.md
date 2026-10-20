@@ -6,6 +6,20 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ## [Unreleased]
 
+### Geändert
+
+- **Das Bundle liefert seine Schrift jetzt selbst mit (DejaVu Sans 2.37).** Bisher suchte es
+  Systemschriften und scheiterte dort, wo es keine gibt oder PHP sie nicht lesen darf:
+  auf Hostern mit `open_basedir` und in schlanken Containern. Die Bilder blieben dann
+  ungekennzeichnet, ohne dass es auffiel. Jetzt braucht es keine Einstellung und kein
+  Schriftpaket mehr, und das Label sieht auf jedem Server gleich aus. Die Suche nach
+  Systemschriften entfällt. `font_path` bleibt für eine eigene Hausschrift; eine dort
+  angegebene, aber fehlende Datei fällt nicht stillschweigend auf DejaVu zurück. Der
+  Lizenztext der Schrift liegt bei (`resources/fonts/DejaVuSans-LICENSE.txt`).
+- **Einmalig nach dem Update den Bild-Cache leeren**, wenn zuvor ohne Schrift
+  gearbeitet wurde: die damals erzeugten Derivate sind ungekennzeichnet und liegen unter
+  genau dem Pfad, den die korrekten bekämen – Contao würde sie als Treffer ausliefern.
+
 ### Behoben
 
 - **Ohne TrueType-Schrift entstand ein ungekennzeichnetes, zu großes Bild – und niemand

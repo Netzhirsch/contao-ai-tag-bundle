@@ -133,9 +133,10 @@ class TagRendererTest extends TestCase
             $this->markTestSkipped('Die Zeichenpruefung braucht die GD-Erweiterung.');
         }
 
-        if (null === (new FontLocator())->locate()) {
-            $this->markTestSkipped('Auf diesem System ist keine TrueType-Schrift auffindbar.');
-        }
+        // Nicht ueberspringen: das Bundle liefert seine Schrift mit. Ein frueherer Fehler
+        // (ohne Schrift ungekennzeichnet) blieb unbemerkt, weil sich genau diese Tests dann
+        // selbst uebersprungen haben - fehlt sie jetzt, soll der Test rot werden.
+        $this->assertNotNull((new FontLocator())->locate(), 'Die mitgelieferte Schrift fehlt.');
 
         return new TagRenderer(new Imagine(), new MetadataReaderWriter(), new FontLocator(), new Filesystem(), $style);
     }

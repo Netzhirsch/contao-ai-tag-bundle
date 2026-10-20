@@ -1,4 +1,5 @@
 * text=auto eol=lf
+*.ttf binary
 
 /.gitattributes export-ignore
 /.github/ export-ignore

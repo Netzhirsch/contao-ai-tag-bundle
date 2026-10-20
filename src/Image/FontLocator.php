@@ -9,34 +9,41 @@ use Psr\Log\LoggerInterface;
 /**
  * Ermittelt die TrueType-Datei fuer das Overlay.
  *
- * Das Bundle liefert bewusst keine Schrift mit (Lizenzfragen bei Webfonts),
- * sondern nimmt die konfigurierte Datei und faellt auf gaengige System-Schriften
- * zurueck. Ist keine Schrift auffindbar, wird NICHT gezeichnet und einmalig
- * gewarnt - ein fehlendes Overlay ist ein Compliance-Problem, ein Fehler 500
- * waere ein Ausfall.
+ * Das Bundle liefert DejaVu Sans mit (resources/fonts/, Lizenztext liegt
+ * daneben). Das ist Absicht und keine Bequemlichkeit: eine Kennzeichnung, die vom
+ * Zufall des Servers abhaengt, ist keine. Wer Systemschriften sucht, scheitert
+ * auf Hostern mit open_basedir (PHP darf /usr/share/fonts nicht lesen) und auf
+ * schlanken Containern ohne Schriftpaket - und genau dort fehlte das Label, ohne
+ * dass es jemand merkte. Mit der mitgelieferten Schrift sieht das Label ausserdem
+ * ueberall gleich aus, und die Lesbarkeitspruefung rechnet mit denselben Massen
+ * wie das Einbrennen.
+ *
+ * Eine eigene Schrift ueberschreibt sie ueber font_path. Eine dort angegebene,
+ * aber fehlende Datei ist ein Fehler und faellt NICHT stillschweigend auf die
+ * mitgelieferte zurueck: der Betreiber wollte eine bestimmte Schrift, und ein
+ * anderes Aussehen als gewaehlt waere eine unbemerkte Abweichung.
+ *
+ * Ist keine Schrift lesbar, wird NICHT gezeichnet und einmalig gewarnt - ein
+ * fehlendes Overlay ist ein Compliance-Problem, ein Fehler 500 waere ein Ausfall.
  */
 final class FontLocator
 {
-    private const CANDIDATES = [
-        // Linux (Debian/Ubuntu, Alpine mit ttf-dejavu)
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-        '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
-        '/usr/share/fonts/dejavu/DejaVuSans.ttf',
-        '/usr/share/fonts/TTF/DejaVuSans.ttf',
-        // macOS
-        '/System/Library/Fonts/Supplemental/Arial.ttf',
-        '/Library/Fonts/Arial.ttf',
-        // Windows
-        'C:/Windows/Fonts/arial.ttf',
-        'C:/Windows/Fonts/segoeui.ttf',
-    ];
+    /**
+     * Die mitgelieferte Schrift. Unveraendert eingebunden: die Lizenz (Bitstream
+     * Vera) verlangt bei Aenderungen eine Umbenennung, und sie darf nur als Teil
+     * eines Softwarepakets verkauft werden - beides ist hier erfuellt.
+     */
+    public const BUNDLED_FONT = __DIR__.'/../../resources/fonts/DejaVuSans.ttf';
 
     private string|false|null $resolved = null;
 
     public function __construct(
         private readonly LoggerInterface|null $logger = null,
         private readonly string|null $configuredPath = null,
+        /**
+         * Nur fuer Tests: eine Installation, bei der die mitgelieferte Datei fehlt.
+         */
+        private readonly string $bundledPath = self::BUNDLED_FONT,
     ) {
     }
 
@@ -61,26 +68,27 @@ final class FontLocator
             return null;
         }
 
-        foreach (self::CANDIDATES as $candidate) {
-            if ($this->isUsable($candidate)) {
-                return $this->resolved = $candidate;
-            }
+        if ($this->isUsable($this->bundledPath)) {
+            return $this->resolved = $this->bundledPath;
         }
 
-        $this->logger?->error(
-            'Fuer die KI-Kennzeichnung wurde keine TrueType-Schrift gefunden. Bitte netzhirsch_contao_ai_tag.font_path setzen, sonst bleiben Bilder ungekennzeichnet.'
-            .self::openBasedirHint((string) \ini_get('open_basedir')),
-        );
+        // Nur bei einer beschaedigten Installation: die Datei gehoert zum Paket. Meist
+        // hat ein Deployment resources/ ausgelassen oder die Rechte verbogen.
+        $this->logger?->error(\sprintf(
+            'Die mitgelieferte Schrift "%s" fuer die KI-Kennzeichnung ist nicht lesbar - das Paket ist unvollstaendig installiert. Bitte netzhirsch_contao_ai_tag.font_path auf eine .ttf-Datei setzen oder das Bundle neu installieren, sonst bleiben Bilder ungekennzeichnet.%s',
+            $this->bundledPath,
+            self::openBasedirHint((string) \ini_get('open_basedir')),
+        ));
         $this->resolved = false;
 
         return null;
     }
 
     /**
-     * Der Zusatz fuer die Fehlermeldung, wenn PHP mit open_basedir laeuft. Auf Shared
-     * Hosting ist das der haeufigste Grund, warum eine vorhandene Systemschrift nicht
-     * gefunden wird: PHP darf /usr/share/fonts schlicht nicht lesen, und die Schrift
-     * muss ins Projektverzeichnis kopiert werden.
+     * Der Zusatz fuer die Fehlermeldung, wenn PHP mit open_basedir laeuft. Eine
+     * konfigurierte Schrift ausserhalb der erlaubten Pfade (etwa unter
+     * /usr/share/fonts) ist fuer PHP nicht lesbar, auch wenn sie existiert - das war
+     * der Grund, warum das Bundle seine Schrift inzwischen selbst mitliefert.
      */
     public static function openBasedirHint(string $openBasedir): string
     {
@@ -88,8 +96,8 @@ final class FontLocator
             return '';
         }
 
-        return ' PHP laeuft mit open_basedir - Systemschriften ausserhalb der erlaubten Pfade sind nicht lesbar.'
-            .' Die .ttf-Datei in das Projektverzeichnis kopieren und font_path darauf setzen.';
+        return ' PHP laeuft mit open_basedir - Dateien ausserhalb der erlaubten Pfade sind nicht lesbar.'
+            .' Die .ttf-Datei in das Projektverzeichnis legen und font_path darauf setzen.';
     }
 
     /**

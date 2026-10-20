@@ -50,21 +50,24 @@ Abonnement abschließen – ohne aktive Lizenz wird die Kennzeichnung nicht eing
 (siehe *Lizenz und Aktivierung*). Voraussetzung ist `ext-sodium` (in üblichen
 PHP-Builds vorhanden) und ein laufender Cron.
 
-Zusätzlich muss eine **TrueType-Schrift** verfügbar sein. Ohne Schrift bleiben Bilder
-ungekennzeichnet – die Bildauslieferung selbst bricht nie ab. Das sagt das Bundle an drei
-Stellen: ein Fehlereintrag im Log, ein roter Hinweis in der Dateiverwaltung bei jedem
-Speichern einer markierten Datei und die Zeile *Schrift* in `netzhirsch:ai-tag:license`.
-Gängige System-Schriften werden automatisch gefunden (DejaVu, Liberation, Arial,
-Segoe UI). Auf schlanken Containern ohne Schriftpaket den Pfad explizit setzen.
-**Ebenso auf Servern mit `open_basedir`** (Shared Hosting, Plesk-ähnliche Umgebungen): dort
-darf PHP `/usr/share/fonts` nicht lesen, auch wenn die Schrift existiert – die `.ttf`-Datei
-muss ins Projektverzeichnis kopiert und `font_path` darauf gesetzt werden:
+Die **Schrift** für das Label (DejaVu Sans) liegt dem Bundle bei – es braucht weder ein
+Schriftpaket auf dem Server noch eine Einstellung, auch nicht auf Hostern mit `open_basedir`
+oder in schlanken Containern. Das ist Absicht: das Label sieht dadurch auf jedem Server
+gleich aus, und die Lesbarkeitsprüfung rechnet mit denselben Maßen wie das Einbrennen.
+Wer eine eigene Hausschrift verwenden will, setzt `font_path`:
 
 ```yaml
 # config/config.yaml
 netzhirsch_contao_ai_tag:
-    font_path: '%kernel.project_dir%/assets/fonts/DejaVuSans.ttf'
+    font_path: '%kernel.project_dir%/assets/fonts/MeineSchrift.ttf'
 ```
+
+Eine dort angegebene, aber nicht lesbare Datei ist ein Fehler und fällt **nicht**
+stillschweigend auf DejaVu zurück. Bei `open_basedir` muss sie innerhalb des Projekts
+liegen. Ist keine Schrift lesbar, bleiben Bilder ungekennzeichnet – die Bildauslieferung
+selbst bricht nie ab –, und das Bundle sagt es an drei Stellen: ein Fehlereintrag im Log,
+ein roter Hinweis in der Dateiverwaltung bei jedem Speichern einer markierten Datei und die
+Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 
 ## Konfiguration
 
@@ -72,7 +75,7 @@ netzhirsch_contao_ai_tag:
 
 | Schlüssel | Standard | Bedeutung |
 |---|---|---|
-| `font_path` | `null` | Absoluter Pfad zur TrueType-Schrift. Ohne Angabe automatische Suche. |
+| `font_path` | `null` | Absoluter Pfad zu einer eigenen TrueType-Schrift. Ohne Angabe die mitgelieferte DejaVu Sans. |
 | `min_font_size` | `11` | Kleinste Schriftgröße in Pixel. |
 | `relative_font_size` | `0.03` | Wunsch-Schriftgröße relativ zur Bildbreite. |
 | `max_font_size` | `48` | Größte Schriftgröße. Ohne Deckel würde das Label auf einem 3000px-Hero 90px groß und damit zum Bildelement. |
@@ -429,3 +432,11 @@ den Betrieb.
 ## Lizenz
 
 Proprietär, © Netzhirsch GmbH. Siehe [LICENSE](LICENSE).
+
+**Mitgelieferte Schrift.** `resources/fonts/DejaVuSans.ttf` ist DejaVu Sans 2.37
+(© Bitstream, Inc. und Tavmjong Bah, Änderungen von DejaVu gemeinfrei) und steht nicht unter
+der Lizenz dieses Bundles, sondern unter der eigenen Schriftlizenz in
+[DejaVuSans-LICENSE.txt](resources/fonts/DejaVuSans-LICENSE.txt). Die Datei ist
+unverändert und muss es bleiben: eine geänderte Fassung dürfte nicht mehr „Bitstream" oder
+„Vera" im Namen tragen. Mit dem Bundle weitergegeben werden darf sie nur zusammen mit diesem
+Lizenztext.

@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.font">
         <source>netzhirsch_ai_tag.hint.font</source>
-        <target>Auf diesem Server wurde keine TrueType-Schrift gefunden. Solange das so ist, wird nichts ins Bild gebrannt - auch nicht mit gültiger Lizenz. Bitte netzhirsch_contao_ai_tag.font_path auf eine .ttf-Datei im Projektverzeichnis setzen. Auf Servern mit open_basedir darf PHP Systemschriften nicht lesen, die Datei muss dann ins Projekt kopiert werden.</target>
+        <target>Die Schrift für die Kennzeichnung ist nicht lesbar. Solange das so ist, wird nichts ins Bild gebrannt - auch nicht mit gültiger Lizenz. Ist netzhirsch_contao_ai_tag.font_path gesetzt, muss die Datei existieren und für PHP lesbar sein (bei open_basedir innerhalb des Projekts). Sonst fehlt die mitgelieferte Schrift: das Bundle neu installieren.</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.size">
         <source>netzhirsch_ai_tag.hint.size</source>
