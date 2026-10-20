@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [1.1.1] - 2026-10-20
 
 ### Behoben
 
