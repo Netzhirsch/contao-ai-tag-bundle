@@ -51,7 +51,9 @@ Abonnement abschließen – ohne aktive Lizenz wird die Kennzeichnung nicht eing
 PHP-Builds vorhanden) und ein laufender Cron.
 
 Zusätzlich muss eine **TrueType-Schrift** verfügbar sein. Ohne Schrift bleiben Bilder
-ungekennzeichnet (mit Fehlereintrag im Log) – die Bildauslieferung selbst bricht nie ab.
+ungekennzeichnet – die Bildauslieferung selbst bricht nie ab. Das sagt das Bundle an drei
+Stellen: ein Fehlereintrag im Log, ein roter Hinweis in der Dateiverwaltung bei jedem
+Speichern einer markierten Datei und die Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 Gängige System-Schriften werden automatisch gefunden (DejaVu, Liberation, Arial,
 Segoe UI). Auf schlanken Containern ohne Schriftpaket den Pfad explizit setzen:
 

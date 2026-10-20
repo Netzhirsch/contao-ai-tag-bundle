@@ -114,6 +114,25 @@ class AiTagResizerTest extends TestCase
         $this->assertArrayNotHasKey(AiTagOptions::OPTION_KEY, $captured->getImagineOptions());
     }
 
+    /**
+     * Auch mit gueltiger Lizenz laesst sich ohne Schrift nichts einbrennen. Dann darf gar
+     * kein "gekennzeichnetes" Bild entstehen: es bekaeme einen eigenen Cache-Pfad und die
+     * angehobene Zwischenqualitaet, waere aber ungekennzeichnet - genau das wurde auf einer
+     * Installation ohne Schrift ausgeliefert (91 KB statt 50 KB, ohne Label).
+     */
+    public function testWithoutAFontNoTaggedImageIsCreated(): void
+    {
+        $captured = null;
+        $resizer = $this->resizer($this->openGate(), $captured, '/gibt/es/nicht.ttf');
+        $options = new ResizeOptions();
+
+        $resizer->resize($this->image(), new ResizeConfiguration(), $options);
+
+        $this->assertSame($options, $captured, 'Die Optionen muessen unveraendert weitergegeben werden.');
+        $this->assertArrayNotHasKey(AiTagOptions::OPTION_KEY, $captured->getImagineOptions());
+        $this->assertArrayNotHasKey('quality', $captured->getImagineOptions(), 'Keine angehobene Zwischenqualitaet ohne Nachbearbeitung.');
+    }
+
     private function openGate(): LicenseGate
     {
         // Ohne einkompilierten Schluessel ist die Fassung nicht lizenzpflichtig.
@@ -129,7 +148,7 @@ class AiTagResizerTest extends TestCase
         return new LicenseGate(new LicenseToken($publicKey), new LicenseStore($this->projectDir), new RequestStack());
     }
 
-    private function resizer(LicenseGate $gate, ResizeOptions|null &$captured): AiTagResizer
+    private function resizer(LicenseGate $gate, ResizeOptions|null &$captured, string $fontPath = __FILE__): AiTagResizer
     {
         // DeferredResizerInterface erweitert ResizerInterface, eine Attrappe davon
         // erfuellt also den Schnittmengen-Typ des Decorators.
@@ -148,7 +167,7 @@ class AiTagResizerTest extends TestCase
         return new AiTagResizer(
             $inner,
             $this->resolver(),
-            $this->renderer(),
+            $this->renderer($fontPath),
             $gate,
             $this->createStub(DeferredImageStorageInterface::class),
             $this->createStub(ScopeMatcher::class),
@@ -191,12 +210,17 @@ class AiTagResizerTest extends TestCase
         );
     }
 
-    private function renderer(): TagRenderer
+    /**
+     * Der FontLocator prueft nur, dass die Datei existiert und lesbar ist - eine
+     * beliebige vorhandene Datei genuegt, damit der Test nicht davon abhaengt, ob das
+     * System eine Schrift installiert hat.
+     */
+    private function renderer(string $fontPath = __FILE__): TagRenderer
     {
         return new TagRenderer(
             $this->createStub(ImagineInterface::class),
             $this->createStub(MetadataReaderWriter::class),
-            new FontLocator(),
+            new FontLocator(null, $fontPath),
             new Filesystem(),
             new TagStyle(),
         );

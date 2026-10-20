@@ -159,6 +159,14 @@ final class AiTagResizer implements ResizerInterface, DeferredResizerInterface
                 return null;
             }
 
+            // Ohne Schrift laesst sich nichts einbrennen. Dann gar nicht erst ein
+            // "gekennzeichnetes" Bild anlegen: es bekaeme einen eigenen Cache-Pfad und die
+            // angehobene Zwischenqualitaet, waere aber ungekennzeichnet. Die Warnung gibt
+            // der FontLocator einmalig ab, das Backend meldet es beim Markieren.
+            if (!$this->renderer->canDraw()) {
+                return null;
+            }
+
             if (!$this->isForced($options) && !$this->tagBackendImages && $this->isBackendRequest()) {
                 return null;
             }

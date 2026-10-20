@@ -27,6 +27,10 @@
         <source>netzhirsch_ai_tag.hint.format</source>
         <target>"%file%" ist kein Rasterbild (z. B. SVG). Die Kennzeichnung kann nicht ins Bild gebrannt werden und erscheint nur als Textalternative im Markup.</target>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.font">
+        <source>netzhirsch_ai_tag.hint.font</source>
+        <target>Auf diesem Server wurde keine TrueType-Schrift gefunden. Solange das so ist, wird nichts ins Bild gebrannt - auch nicht mit gültiger Lizenz. Bitte netzhirsch_contao_ai_tag.font_path auf eine .ttf-Datei setzen oder eine System-Schrift (z. B. DejaVu Sans) installieren.</target>
+      </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.size">
         <source>netzhirsch_ai_tag.hint.size</source>
         <target>"%file%" ist mit %width%×%height% Pixeln zu klein fuer eine lesbare Kennzeichnung. Sie erscheint nur als Textalternative im Markup.</target>

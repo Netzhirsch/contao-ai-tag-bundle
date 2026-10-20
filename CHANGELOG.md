@@ -6,7 +6,29 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ## [Unreleased]
 
+### Behoben
+
+- **Ohne TrueType-Schrift entstand ein ungekennzeichnetes, zu großes Bild – und niemand
+  erfuhr es.** Fehlte die Schrift, stieg `TagRenderer::apply()` vor dem Neuspeichern aus:
+  die Datei blieb bei der angehobenen ersten Kodierung (Qualität 95) liegen, trug aber
+  durch die eingefrorene Kennzeichnung einen eigenen Cache-Pfad. Gemeldet wurde das nur im
+  Log. Jetzt legt der Resizer ohne Schrift gar kein „gekennzeichnetes" Bild mehr an, und
+  `apply()` speichert auch ohne Schrift auf die Zielqualität. Der Fall war nirgends
+  getestet: die Tests überspringen sich auf einem System ohne Schrift.
+- **Der rote Lizenz-Hinweis in der Dateiverwaltung kam nur beim Umschalten der
+  Markierung.** Wer eine bereits markierte Datei erneut speicherte, sah nichts und musste
+  annehmen, es sei alles in Ordnung – obwohl nichts eingebrannt wurde. Die Hinweise
+  erscheinen jetzt bei jedem Speichern einer markierten Datei; protokolliert wird weiterhin
+  nur eine echte Änderung.
+- Fehlte die Schrift, behauptete die Dateiverwaltung stattdessen, das Bild sei „zu klein"
+  (`isLegible()` liefert ohne Schrift immer `false`). Dafür gibt es jetzt einen eigenen
+  Hinweis.
+
 ### Hinzugefügt
+
+- `netzhirsch:ai-tag:license` zeigt die verwendete Schrift und sagt bei fehlender Schrift
+  „wird NICHT eingebrannt (keine Schrift)" statt bei offenem Lizenz-Gate „wird
+  eingebrannt" zuzusichern. Der Rückgabewert ist dann ebenfalls nicht mehr 0.
 
 - **Hinweis auf eine neuere Fassung.** Der Lizenzserver kann in der Antwort auf
   `trial` und `renew` eine Version ankündigen; sie steht dann auf der Lizenzseite im

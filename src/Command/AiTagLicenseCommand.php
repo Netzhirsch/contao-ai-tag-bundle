@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle\Command;
 
+use Netzhirsch\ContaoAiTagBundle\Image\TagRenderer;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseStore;
 use Netzhirsch\ContaoAiTagBundle\License\RenewalClient;
@@ -36,6 +37,7 @@ final class AiTagLicenseCommand extends Command
         private readonly LicenseGate $gate,
         private readonly LicenseStore $store,
         private readonly RenewalClient $renewalClient,
+        private readonly TagRenderer $renderer,
     ) {
         parent::__construct();
     }
@@ -69,13 +71,14 @@ final class AiTagLicenseCommand extends Command
 
         $io->definitionList(
             ['Durchsetzung' => $state['armed'] ? 'aktiv' : 'nicht lizenzpflichtig (kein Schluessel einkompiliert)'],
-            ['Kennzeichnung' => $state['active'] ? 'wird eingebrannt' : 'wird NICHT eingebrannt'],
+            ['Kennzeichnung' => $this->burnLine($state['active'])],
             ['Grund' => $state['reason']],
             ['Art' => '' !== $state['type'] ? $state['type'] : '-'],
             ['Plan' => '' !== $state['plan'] ? $state['plan'] : '-'],
             ['Domain' => $this->domainLine($state)],
             ['Laeuft ab' => $state['expires_at'] > 0 ? date('Y-m-d H:i', $state['expires_at']).' ('.$state['days_left'].' Tage)' : '-'],
             ['Karenz' => $state['in_grace'] ? 'ja' : 'nein'],
+            ['Schrift' => $this->renderer->canDraw() ? $this->renderer->fontPath() : 'KEINE gefunden - font_path setzen, sonst wird nichts eingebrannt'],
             ['Datei' => $this->store->filePath()],
         );
 
@@ -93,7 +96,20 @@ final class AiTagLicenseCommand extends Command
             ));
         }
 
-        return $state['active'] ? Command::SUCCESS : Command::FAILURE;
+        return $state['active'] && $this->renderer->canDraw() ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    /**
+     * "Wird eingebrannt" gilt nur, wenn Lizenz UND Schrift da sind - sonst wuerde die
+     * Zeile bei offenem Gate etwas zusichern, das ohne Schrift nicht eintritt.
+     */
+    private function burnLine(bool $licenseActive): string
+    {
+        if (!$licenseActive) {
+            return 'wird NICHT eingebrannt (Lizenz)';
+        }
+
+        return $this->renderer->canDraw() ? 'wird eingebrannt' : 'wird NICHT eingebrannt (keine Schrift)';
     }
 
     /**

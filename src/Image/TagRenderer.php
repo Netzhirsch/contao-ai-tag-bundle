@@ -63,10 +63,6 @@ final class TagRenderer
     {
         $font = $this->fontLocator->locate();
 
-        if (null === $font) {
-            return false;
-        }
-
         if (!is_file($path) || !is_writable($path)) {
             $this->logger?->warning(\sprintf('Bilddatei "%s" ist fuer die KI-Kennzeichnung nicht schreibbar.', $path));
 
@@ -81,13 +77,34 @@ final class TagRenderer
             return false;
         }
 
-        $drawn = $this->draw($image, $tag, $font, $path);
+        // Ohne Schrift wird nicht gezeichnet, aber trotzdem neu gespeichert: frueher
+        // stieg die Methode hier vorzeitig aus, und die Datei blieb bei der angehobenen
+        // ersten Kodierung liegen - ungekennzeichnet UND deutlich groesser als noetig.
+        $drawn = null !== $font && $this->draw($image, $tag, $font, $path);
 
         // Auch ohne Overlay neu speichern: die Datei traegt sonst die angehobene erste
         // Kodierung statt der Zielqualitaet der Bildgroesse.
         $this->save($image, $path, $tag, $imagineOptions, $preserveCopyright);
 
         return $drawn;
+    }
+
+    /**
+     * Ob ueberhaupt eine TrueType-Schrift zur Verfuegung steht. Ohne sie kann nichts
+     * eingebrannt werden - unabhaengig von Lizenz und Bildgroesse. Das Backend und
+     * der Resizer fragen hier, statt es aus einem stillen Fehlschlag abzuleiten.
+     */
+    public function canDraw(): bool
+    {
+        return null !== $this->fontLocator->locate();
+    }
+
+    /**
+     * Pfad der verwendeten Schrift, fuer die Konsolenausgabe ('' = keine gefunden).
+     */
+    public function fontPath(): string
+    {
+        return $this->fontLocator->locate() ?? '';
     }
 
     /**

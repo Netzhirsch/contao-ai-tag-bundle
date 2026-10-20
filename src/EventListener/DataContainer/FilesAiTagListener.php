@@ -43,18 +43,23 @@ class FilesAiTagListener
         $path = (string) $dc->id;
         $isEnabled = '1' === (string) $value;
 
-        if ($isEnabled === $this->currentFlag($path)) {
-            return $value;
+        // Protokolliert wird nur eine echte Aenderung - ein erneutes Speichern ist kein
+        // Vorgang, den der Nachweis festhalten soll.
+        if ($isEnabled !== $this->currentFlag($path)) {
+            $this->auditLogger->log(
+                $isEnabled ? AiTagAuditLogger::ACTION_FLAG_SET : AiTagAuditLogger::ACTION_FLAG_UNSET,
+                $path,
+                $this->isFolder($path),
+            );
         }
 
-        $this->auditLogger->log(
-            $isEnabled ? AiTagAuditLogger::ACTION_FLAG_SET : AiTagAuditLogger::ACTION_FLAG_UNSET,
-            $path,
-            $this->isFolder($path),
-        );
-
+        // Die Warnungen dagegen bei JEDEM Speichern einer markierten Datei. Frueher
+        // kamen sie nur beim Umschalten: wer eine bereits markierte Datei noch einmal
+        // speicherte (etwa nachdem er die Ursache vermutete), sah nichts und musste
+        // annehmen, es sei alles in Ordnung - dabei wurde weiter nichts eingebrannt.
         if ($isEnabled) {
             $this->addLicenseWarning();
+            $this->addFontWarning();
             $this->addCoverageHints($path);
         }
 
@@ -121,6 +126,20 @@ class FilesAiTagListener
     }
 
     /**
+     * Ohne TrueType-Schrift wird nichts eingebrannt, auch mit gueltiger Lizenz. Das
+     * stand bisher nur im Log - die Redaktion sah ein markiertes Bild, das
+     * ungekennzeichnet ausgeliefert wurde.
+     */
+    private function addFontWarning(): void
+    {
+        if ($this->renderer->canDraw()) {
+            return;
+        }
+
+        $this->addFlash(self::FLASH_ERROR, 'netzhirsch_ai_tag.hint.font', []);
+    }
+
+    /**
      * Sagt der Redaktion sofort, wenn die Kennzeichnung nicht ins Bild gebrannt
      * werden kann - dann traegt sie nur die Textalternative im Markup.
      */
@@ -133,6 +152,12 @@ class FilesAiTagListener
         if (!$this->resolver->isTaggableFormat($path)) {
             $this->addFlash(self::FLASH_INFO, 'netzhirsch_ai_tag.hint.format', ['%file%' => basename($path)]);
 
+            return;
+        }
+
+        // isLegible() liefert ohne Schrift immer false - das hiesse dann "zu klein",
+        // obwohl das Bild gross genug ist. Die richtige Meldung gibt addFontWarning().
+        if (!$this->renderer->canDraw()) {
             return;
         }
 
