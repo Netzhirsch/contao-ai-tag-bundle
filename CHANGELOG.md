@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-20
 
 ### Geändert
 
@@ -22,6 +22,16 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 
 ### Behoben
 
+- **Der Hinweis im Alt-Text fehlte in Templates, die nicht über die Figure-Komponente
+  laufen.** Auf einer Übersichtsseite (Nachrichtenliste mit eigenem Projekt-Template) hatte
+  dasselbe Bild keinen Hinweis, im Artikel dagegen schon. Das Bundle baute den Hinweis in
+  `@Contao/component/_figure.html.twig` ein; ein Template, das seinen Alt-Text über
+  `Figure::applyLegacyTemplateData()` bekommt und selbst ausgibt, läuft daran nie vorbei.
+  Der Hinweis wird jetzt dort gesetzt, wo Contao die Metadaten einer Datei bestimmt
+  (`FileMetadataEvent`, in 5.3 und 5.7 gleich) – und gilt damit in jedem Template, das den
+  Alt-Text aus den Metadaten nimmt. Das Twig-Override bleibt als zweiter Weg erhalten und
+  hängt nichts mehr an, was schon dasteht. Geprüft gegen den echten `FigureBuilder` unter
+  Contao 5.7.11, in beiden Sprachen.
 - **Ohne TrueType-Schrift entstand ein ungekennzeichnetes, zu großes Bild – und niemand
   erfuhr es.** Fehlte die Schrift, stieg `TagRenderer::apply()` vor dem Neuspeichern aus:
   die Datei blieb bei der angehobenen ersten Kodierung (Qualität 95) liegen, trug aber

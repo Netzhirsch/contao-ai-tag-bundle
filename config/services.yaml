@@ -77,6 +77,11 @@ services:
             $placement: '%netzhirsch_contao_ai_tag.hint_placement%'
             $separator: '%netzhirsch_contao_ai_tag.hint_separator%'
 
+    # Setzt den Hinweis in den Alt-Text jeder Abbildung, unabhaengig vom Template.
+    Netzhirsch\ContaoAiTagBundle\EventListener\FileMetadataHintListener:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     Netzhirsch\ContaoAiTagBundle\EventListener\DataContainer\FilesAiTagListener:
         arguments:
             $projectDir: '%kernel.project_dir%'

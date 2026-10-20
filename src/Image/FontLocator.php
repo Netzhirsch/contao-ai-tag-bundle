@@ -69,7 +69,8 @@ final class FontLocator
         }
 
         if ($this->isUsable($this->bundledPath)) {
-            return $this->resolved = $this->bundledPath;
+            // Ohne "src/Image/../../" im Pfad: so steht er lesbar in Log und Konsolenausgabe.
+            return $this->resolved = @realpath($this->bundledPath) ?: $this->bundledPath;
         }
 
         // Nur bei einer beschaedigten Installation: die Datei gehoert zum Paket. Meist

@@ -30,7 +30,10 @@ Bildbereichs.
 - **Kontrast automatisch**: heller Text auf halbtransparent dunkler Fläche oder
   umgekehrt, je nach Untergrund.
 - **Barrierefreie Textalternative**: Der Hinweis wird an den `alt`-Text angehängt,
-  weil eingebrannte Pixel für Screenreader unsichtbar sind.
+  weil eingebrannte Pixel für Screenreader unsichtbar sind. Das passiert dort, wo Contao
+  die Metadaten einer Datei bestimmt – und gilt damit in **jedem** Template, das seinen
+  Alt-Text aus den Metadaten nimmt: Inhaltselemente, Nachrichtenlisten, eigene
+  Projekt-Templates, Legacy-Templates. Am Template ist nichts anzupassen.
 - **Nachweisprotokoll** unter *System → Protokoll KI-Kennzeichnung*: wer wann welche
   Datei markiert hat. Nur lesbar, nicht editierbar; zusätzlich erscheint jede Änderung
   im Contao-Systemprotokoll.
@@ -365,11 +368,11 @@ kein DRM.
 - **Direkte Aufrufe der Originaldatei** (`/files/...`, Download-Element, Hotlink)
   liefern das unbearbeitete Original. Gekennzeichnet werden die von Contao erzeugten
   Bildgrößen. Das Original wird nie verändert.
-- **Deprecated-Templates**: Abbildungen, die über
-  `@ContaoCore/Image/Studio/figure.html.twig` gerendert werden (in Contao 5 als
-  veraltet markiert, entfällt in Contao 6), erhalten die eingebrannte Kennzeichnung,
-  aber keine Textalternative. Die Standard-Inhaltselemente nutzen
-  `@Contao/component/_figure.html.twig` und sind vollständig abgedeckt.
+- **Templates mit selbst gebautem Alt-Text**: Der Hinweis hängt an den Metadaten der
+  Datei. Ein Template, das den Alt-Text selbst bildet – etwa aus der Überschrift des
+  Beitrags statt aus `figure.metadata.alt` –, bekommt ihn nicht. Dort die Twig-Funktion
+  `netzhirsch_ai_tag_hint(figure)` aufrufen und das Ergebnis an den Alt-Text anhängen.
+  Die eingebrannte Kennzeichnung ist davon unabhängig und gilt immer.
 - **Schreibzugriffe ohne Backend-Benutzer** (Console, DC-API, MCP-Werkzeuge) können die
   Kennzeichnungsfelder nicht ändern – der Voter verlangt ein Recht, das nur Benutzer
   haben. Automatisierte Massenmarkierung ist damit bewusst nicht über den

@@ -34,13 +34,21 @@
     {% set netzhirsch_ai_tag_config = netzhirsch_ai_tag_hint_config() %}
     {% set netzhirsch_ai_tag_in_figure = true %}
 
+    {#
+        Der Alt-Text bekommt den Hinweis in der Regel schon beim Bestimmen der Metadaten
+        (FileMetadataHintListener) - dann steht er hier bereits am Ende, und es wird nichts
+        mehr angehaengt. Dieser Zweig faengt Abbildungen auf, die nicht ueber den
+        FigureBuilder entstanden sind; ohne die Pruefung stuende der Hinweis doppelt.
+    #}
     {% if netzhirsch_ai_tag and netzhirsch_ai_tag_config.placement in ['alt', 'both'] %}
         {% set netzhirsch_base_alt = figure.hasMetadata ? figure.metadata.alt|insert_tag : '' %}
-        {% set img_attributes = attrs(img_attributes|default({}))
-            .set('alt', netzhirsch_base_alt
-                ? netzhirsch_base_alt ~ netzhirsch_ai_tag_config.separator ~ netzhirsch_ai_tag
-                : netzhirsch_ai_tag)
-        %}
+        {% if not (netzhirsch_base_alt ends with netzhirsch_ai_tag) %}
+            {% set img_attributes = attrs(img_attributes|default({}))
+                .set('alt', netzhirsch_base_alt
+                    ? netzhirsch_base_alt ~ netzhirsch_ai_tag_config.separator ~ netzhirsch_ai_tag
+                    : netzhirsch_ai_tag)
+            %}
+        {% endif %}
     {% endif %}
 
     {{ block('base_figure_component') }}
