@@ -20,6 +20,11 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
   annehmen, es sei alles in Ordnung – obwohl nichts eingebrannt wurde. Die Hinweise
   erscheinen jetzt bei jedem Speichern einer markierten Datei; protokolliert wird weiterhin
   nur eine echte Änderung.
+- **Die Schriftsuche scheiterte unter `open_basedir` lautstark und ohne Grund.** Jeder der
+  Kandidatenpfade löste eine PHP-Warnung aus (Logflut), die eigentliche Fehlermeldung ging
+  darin unter und nannte die Ursache nicht. Die Warnungen sind unterdrückt; die Meldung
+  weist bei aktivem `open_basedir` darauf hin, dass die Schrift ins Projektverzeichnis
+  muss. Gefunden auf einem Server, dessen Systemschrift für PHP gesperrt war.
 - Fehlte die Schrift, behauptete die Dateiverwaltung stattdessen, das Bild sei „zu klein"
   (`isLegible()` liefert ohne Schrift immer `false`). Dafür gibt es jetzt einen eigenen
   Hinweis.

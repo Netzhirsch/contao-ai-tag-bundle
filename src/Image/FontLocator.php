@@ -47,25 +47,59 @@ final class FontLocator
         }
 
         if (null !== $this->configuredPath && '' !== $this->configuredPath) {
-            if (is_file($this->configuredPath) && is_readable($this->configuredPath)) {
+            if ($this->isUsable($this->configuredPath)) {
                 return $this->resolved = $this->configuredPath;
             }
 
-            $this->logger?->error(\sprintf('Die konfigurierte Schrift "%s" fuer die KI-Kennzeichnung ist nicht lesbar.', $this->configuredPath));
+            $this->logger?->error(\sprintf(
+                'Die konfigurierte Schrift "%s" fuer die KI-Kennzeichnung ist nicht lesbar.%s',
+                $this->configuredPath,
+                self::openBasedirHint((string) \ini_get('open_basedir')),
+            ));
             $this->resolved = false;
 
             return null;
         }
 
         foreach (self::CANDIDATES as $candidate) {
-            if (is_file($candidate) && is_readable($candidate)) {
+            if ($this->isUsable($candidate)) {
                 return $this->resolved = $candidate;
             }
         }
 
-        $this->logger?->error('Fuer die KI-Kennzeichnung wurde keine TrueType-Schrift gefunden. Bitte netzhirsch_contao_ai_tag.font_path setzen, sonst bleiben Bilder ungekennzeichnet.');
+        $this->logger?->error(
+            'Fuer die KI-Kennzeichnung wurde keine TrueType-Schrift gefunden. Bitte netzhirsch_contao_ai_tag.font_path setzen, sonst bleiben Bilder ungekennzeichnet.'
+            .self::openBasedirHint((string) \ini_get('open_basedir')),
+        );
         $this->resolved = false;
 
         return null;
+    }
+
+    /**
+     * Der Zusatz fuer die Fehlermeldung, wenn PHP mit open_basedir laeuft. Auf Shared
+     * Hosting ist das der haeufigste Grund, warum eine vorhandene Systemschrift nicht
+     * gefunden wird: PHP darf /usr/share/fonts schlicht nicht lesen, und die Schrift
+     * muss ins Projektverzeichnis kopiert werden.
+     */
+    public static function openBasedirHint(string $openBasedir): string
+    {
+        if ('' === trim($openBasedir)) {
+            return '';
+        }
+
+        return ' PHP laeuft mit open_basedir - Systemschriften ausserhalb der erlaubten Pfade sind nicht lesbar.'
+            .' Die .ttf-Datei in das Projektverzeichnis kopieren und font_path darauf setzen.';
+    }
+
+    /**
+     * Mit Unterdrueckung der Warnung: unter open_basedir meldet is_file() fuer jeden
+     * Pfad ausserhalb der erlaubten Verzeichnisse eine PHP-Warnung. Die
+     * Kandidatenliste ist absichtlich lang; jeder Fehlschlag waere sonst ein eigener
+     * Logeintrag - und die eigentliche Fehlermeldung ginge darin unter.
+     */
+    private function isUsable(string $path): bool
+    {
+        return @is_file($path) && @is_readable($path);
     }
 }

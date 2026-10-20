@@ -55,7 +55,10 @@ ungekennzeichnet – die Bildauslieferung selbst bricht nie ab. Das sagt das Bun
 Stellen: ein Fehlereintrag im Log, ein roter Hinweis in der Dateiverwaltung bei jedem
 Speichern einer markierten Datei und die Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 Gängige System-Schriften werden automatisch gefunden (DejaVu, Liberation, Arial,
-Segoe UI). Auf schlanken Containern ohne Schriftpaket den Pfad explizit setzen:
+Segoe UI). Auf schlanken Containern ohne Schriftpaket den Pfad explizit setzen.
+**Ebenso auf Servern mit `open_basedir`** (Shared Hosting, Plesk-ähnliche Umgebungen): dort
+darf PHP `/usr/share/fonts` nicht lesen, auch wenn die Schrift existiert – die `.ttf`-Datei
+muss ins Projektverzeichnis kopiert und `font_path` darauf gesetzt werden:
 
 ```yaml
 # config/config.yaml

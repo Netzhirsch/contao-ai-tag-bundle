@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.font">
         <source>netzhirsch_ai_tag.hint.font</source>
-        <target>No TrueType font was found on this server. As long as that is the case, nothing is burnt into the image, even with a valid licence. Please set netzhirsch_contao_ai_tag.font_path to a .ttf file or install a system font (e.g. DejaVu Sans).</target>
+        <target>No TrueType font was found on this server. As long as that is the case, nothing is burnt into the image, even with a valid licence. Please set netzhirsch_contao_ai_tag.font_path to a .ttf file inside the project directory. On servers with open_basedir PHP cannot read system fonts, so the file has to be copied into the project.</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.size">
         <source>netzhirsch_ai_tag.hint.size</source>
