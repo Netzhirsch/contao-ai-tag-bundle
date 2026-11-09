@@ -93,6 +93,54 @@ class TagRendererTest extends TestCase
         $this->assertLessThan(40 * 1.16 + 2 * 0.45 * 40 + 6, $height);
     }
 
+    /**
+     * Ein schmales Banner (1920 x 240 px) bekam gar kein Label: mit der Wunschgroesse
+     * waere es 91 px hoch und damit ueber der Grenze von 30 % der Bildhoehe, und
+     * statt zu verkleinern entfiel es. Erfahren hat es niemand - ein Bild ohne
+     * Kennzeichnung ist das groessere Risiko als ein kleineres Label.
+     */
+    public function testAWideBannerGetsASmallerLabelInsteadOfNone(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+
+        $file = $this->render($renderer, 1920, 240);
+        [$width, $height] = $this->darkBoxSize($file);
+
+        $this->assertLessThanOrEqual(240 * 0.3 + 1, $height, 'Das Label muss unter der Grenze von 30 % der Bildhoehe bleiben.');
+        $this->assertLessThan(324, $width, 'Es muss kleiner sein als das Label in Wunschgroesse (324 px).');
+        $this->assertTrue($renderer->isLegible(1920, 240, 'KI-generiert'), 'Die Backend-Pruefung muss dasselbe entscheiden wie das Zeichnen.');
+    }
+
+    /**
+     * Laengerer Wortlaut (etwa ein eigener Text je Datei) wird ebenfalls verkleinert,
+     * bis er hineinpasst - und bleibt unter 65 % der Bildbreite.
+     */
+    public function testALongWordingIsShrunkToFit(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+        $text = 'Mit KI erzeugt und nachträglich bearbeitet';
+
+        $file = $this->render($renderer, 1296, 707, $text);
+        [$width] = $this->darkBoxSize($file);
+
+        $this->assertLessThanOrEqual(1296 * 0.65 + 1, $width);
+        $this->assertTrue($renderer->isLegible(1296, 707, $text));
+    }
+
+    /**
+     * Die Untergrenze bleibt: passt das Label auch in der kleinsten Schriftgroesse
+     * nicht, wird weiterhin nichts gezeichnet - und die Backend-Pruefung sagt
+     * dasselbe. Eine winzige Kennzeichnung, die niemand lesen kann, waere schlimmer
+     * als keine.
+     */
+    public function testNothingIsDrawnWhenEvenTheSmallestSizeDoesNotFit(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+
+        $this->assertFalse($this->renderInto($renderer, 100, 40));
+        $this->assertFalse($renderer->isLegible(100, 40, 'KI-generiert'));
+    }
+
     public function testSquareBoxRemainsAvailable(): void
     {
         $renderer = $this->renderer(new TagStyle(
@@ -157,6 +205,16 @@ class TagRendererTest extends TestCase
         $this->assertFalse($this->renderInto($renderer, 400, 200));
     }
 
+    private function solidStyle(): TagStyle
+    {
+        return new TagStyle(
+            textColor: '#ffffff',
+            boxColor: '#000000',
+            boxOpacity: 100,
+            cornerRadius: 0.0,
+        );
+    }
+
     private function renderer(TagStyle $style): TagRenderer
     {
         if (!\extension_loaded('gd')) {
@@ -171,9 +229,9 @@ class TagRendererTest extends TestCase
         return new TagRenderer(new Imagine(), new MetadataReaderWriter(), new FontLocator(), new Filesystem(), $style);
     }
 
-    private function render(TagRenderer $renderer, int $width = 400, int $height = 120): string
+    private function render(TagRenderer $renderer, int $width = 400, int $height = 120, string $text = 'KI-generiert'): string
     {
-        $this->assertTrue($this->renderInto($renderer, $width, $height));
+        $this->assertTrue($this->renderInto($renderer, $width, $height, $text));
 
         return (string) $this->file;
     }
@@ -231,7 +289,7 @@ class TagRendererTest extends TestCase
         return $image;
     }
 
-    private function renderInto(TagRenderer $renderer, int $width, int $height): bool
+    private function renderInto(TagRenderer $renderer, int $width, int $height, string $text = 'KI-generiert'): bool
     {
         $imagine = new Imagine();
         $this->file = tempnam(sys_get_temp_dir(), 'aitag').'.png';
@@ -239,7 +297,7 @@ class TagRendererTest extends TestCase
 
         return $renderer->apply(
             $this->file,
-            new AiTagOptions('de', AiTagOptions::POSITION_TOP_LEFT, 'KI-generiert', 90, 'test'),
+            new AiTagOptions('de', AiTagOptions::POSITION_TOP_LEFT, $text, 90, 'test'),
             [],
         );
     }

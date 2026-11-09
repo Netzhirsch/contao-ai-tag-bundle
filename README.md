@@ -243,7 +243,10 @@ manuelles Leeren des Bild-Caches ist nicht nötig.
 
 ## Zu kleine Bildgrößen
 
-Passt das Label nicht lesbar ins Bild (Grenzwerte siehe Konfiguration), wird **nichts
+Das Label darf höchstens `max_box_width` der Bildbreite und `max_box_height` der Bildhöhe
+belegen. Wird es mit der Wunschgröße größer – bei einem schmalen Banner (1920 × 240 px) oder
+einem längeren Wortlaut –, wird die Schrift **schrittweise verkleinert**, bis es passt,
+höchstens bis `min_font_size`. Erst wenn es auch dort nicht passt, wird **nichts
 eingebrannt**, statt eine unlesbare Kennzeichnung zu erzeugen. Beim Markieren weist das
 Backend darauf hin, wenn das Bild selbst dafür zu klein ist. In diesen Fällen trägt nur
 die Textalternative im Markup die Information – eine sichtbare Kennzeichnung muss dann

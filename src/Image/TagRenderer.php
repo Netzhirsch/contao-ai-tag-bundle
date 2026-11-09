@@ -120,10 +120,34 @@ final class TagRenderer
             return false;
         }
 
-        $fontSize = $this->style->fontSize($width);
-        $box = $this->font($font, $fontSize, (new RGB())->color('#000000', self::OPAQUE))->box($this->label($text));
+        return null !== $this->fitFontSize($font, $this->label($text), $width, $height);
+    }
 
-        return $this->fits($box->getWidth(), $box->getHeight(), $fontSize, $width, $height);
+    /**
+     * Die Schriftgroesse in Pixeln, mit der das Label ins Bild passt: die
+     * Wunschgroesse, wenn es damit passt, sonst schrittweise kleiner bis zur
+     * Untergrenze (min_font_size). null, wenn es auch dort nicht passt.
+     *
+     * Frueher entfiel das Label ganz, sobald es mit der Wunschgroesse zu breit oder
+     * zu hoch geworden waere. Auf einem schmalen Banner (1920 x 240 px) oder bei
+     * laengerem Wortlaut ("Mit KI erzeugt und nachtraeglich bearbeitet") stand dann
+     * gar nichts im Bild, und erfahren hat es niemand. Ein kleineres Label ist besser
+     * als keines: die Grenzen max_box_width und max_box_height bleiben, sie
+     * verkleinern jetzt statt zu streichen.
+     */
+    private function fitFontSize(string $fontFile, string $label, int $width, int $height): int|null
+    {
+        $color = (new RGB())->color('#000000', self::OPAQUE);
+
+        for ($size = $this->style->fontSize($width); $size >= max(1, $this->style->minFontSize); --$size) {
+            $box = $this->font($fontFile, $size, $color)->box($label);
+
+            if ($this->fits($box->getWidth(), $box->getHeight(), $size, $width, $height)) {
+                return $size;
+            }
+        }
+
+        return null;
     }
 
     private function draw(ImagineImageInterface $image, AiTagOptions $tag, string $font, string $path): bool
@@ -138,7 +162,20 @@ final class TagRenderer
         }
 
         $text = $this->label($tag->text);
-        $fontSize = $this->style->fontSize($width);
+        $fontSize = $this->fitFontSize($font, $text, $width, $height);
+
+        if (null === $fontSize) {
+            $this->logger?->info(\sprintf(
+                'KI-Kennzeichnung fuer "%s" ausgelassen: bei %dx%d px passt das Label auch in der kleinsten Schriftgroesse (%d px) nicht ins Bild.',
+                $path,
+                $width,
+                $height,
+                $this->style->minFontSize,
+            ));
+
+            return false;
+        }
+
         $corner = AiTagOptions::POSITION_AUTO === $tag->corner ? AiTagOptions::POSITION_TOP_RIGHT : $tag->corner;
 
         $palette = $image->palette();
@@ -158,17 +195,6 @@ final class TagRenderer
 
         $textBox = $fontObject->box($text);
         $padding = $this->padding($fontSize);
-
-        if (!$this->fits($textBox->getWidth(), $textBox->getHeight(), $fontSize, $width, $height)) {
-            $this->logger?->info(\sprintf(
-                'KI-Kennzeichnung fuer "%s" ausgelassen: bei %dx%d px passt das Label nicht lesbar ins Bild.',
-                $path,
-                $width,
-                $height,
-            ));
-
-            return false;
-        }
 
         $boxWidth = $textBox->getWidth() + 2 * $padding;
         $boxHeight = $textBox->getHeight() + 2 * $padding;

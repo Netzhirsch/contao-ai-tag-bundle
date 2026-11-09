@@ -4,6 +4,20 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Behoben
+
+- **Auf schmalen Bannern und bei längerem Wortlaut entfiel das Label ganz.** Wurde es mit der
+  Wunschgröße breiter als `max_box_width` oder höher als `max_box_height`, wurde es nicht
+  verkleinert, sondern gestrichen: auf einem 1920 × 240 px breiten Banner stand nichts im
+  Bild, ebenso bei einem eigenen Text wie „Mit KI erzeugt und nachträglich bearbeitet“, und
+  erfahren hat es niemand – ein Bild ohne Kennzeichnung ist das größere Risiko als ein
+  kleineres Label. Jetzt wird die Schrift schrittweise verkleinert, höchstens bis
+  `min_font_size`; erst wenn es auch dort nicht passt, entfällt das Label. Die Prüfung im
+  Backend (`isLegible()`) entscheidet nach derselben Regel wie das Zeichnen. Die Bilder
+  entstehen von selbst neu (Render-Revision 3).
+
 ## [1.1.2] - 2026-10-20
 
 ### Behoben
