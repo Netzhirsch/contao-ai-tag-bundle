@@ -65,7 +65,7 @@ final class AiTagAuditLogger
 
         try {
             $this->connection->insert('tl_netzhirsch_ai_tag_log', $row);
-        } catch (DbalException $exception) {
+        } catch (DbalException) {
             // Nach einem Update fehlt die Spalte "kind", bis die Datenbank aktualisiert ist
             // (contao:migrate). Ein Protokolleintrag ohne die Art ist besser als gar keiner:
             // der Nachweis darf an einer fehlenden Spalte nicht ausfallen.
