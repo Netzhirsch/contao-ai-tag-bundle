@@ -57,6 +57,20 @@ class AiTagOptionsTest extends TestCase
         $this->assertNotSame(implode(',', $with->toArray()), implode(',', $without->toArray()));
     }
 
+    /**
+     * Leer und Unbekanntes gelten als "generiert": so war jede Markierung vor der
+     * Art, und ein unbekannter Wert darf nie eine Bearbeitung vortaeuschen.
+     */
+    public function testNormalisesTheKindTowardsGenerated(): void
+    {
+        $this->assertSame(AiTagOptions::KIND_MODIFIED, AiTagOptions::normaliseKind('modified'));
+        $this->assertSame(AiTagOptions::KIND_GENERATED, AiTagOptions::normaliseKind('generated'));
+        $this->assertSame(AiTagOptions::KIND_GENERATED, AiTagOptions::normaliseKind(''));
+        $this->assertSame(AiTagOptions::KIND_GENERATED, AiTagOptions::normaliseKind(null));
+        $this->assertSame(AiTagOptions::KIND_GENERATED, AiTagOptions::normaliseKind('Modified'));
+        $this->assertSame(AiTagOptions::KIND_GENERATED, AiTagOptions::normaliseKind(['modified']));
+    }
+
     public function testTextIsPartOfTheCacheKeyPayload(): void
     {
         $german = new AiTagOptions('de', AiTagOptions::POSITION_TOP_RIGHT, 'KI-generiert', 80);

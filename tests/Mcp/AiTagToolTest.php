@@ -64,6 +64,14 @@ class AiTagToolTest extends TestCase
         $this->assertStringContainsString('position must be one of', (string) $result['message']);
     }
 
+    public function testRejectsUnknownKind(): void
+    {
+        $result = $this->tool()->set('files/demo.jpg', true, null, null, false, 'sideways');
+
+        $this->assertSame('invalid_input', $result['error'] ?? null);
+        $this->assertStringContainsString('kind must be one of', (string) $result['message']);
+    }
+
     public function testRejectsOverlongText(): void
     {
         $result = $this->tool()->set('files/demo.jpg', true, null, str_repeat('a', 129));

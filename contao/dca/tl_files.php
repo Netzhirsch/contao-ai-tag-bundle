@@ -23,6 +23,20 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiGenerated'] = [
     'sql' => ['type' => 'string', 'length' => 1, 'default' => ''],
 ];
 
+/*
+ * Art der KI-Beteiligung: vollstaendig generiert oder mit KI bearbeitet. Bestimmt den
+ * Standardwortlaut ("KI-generiert" / "KI-bearbeitet"). Die Spalte hat den Standard
+ * "generated", damit jede bestehende Markierung ohne Zutun gleich bleibt.
+ */
+$GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiKind'] = [
+    'exclude' => true,
+    'inputType' => 'select',
+    'options' => AiTagOptions::KINDS,
+    'reference' => &$GLOBALS['TL_LANG']['tl_files']['netzhirschAiKindRef'],
+    'eval' => ['includeBlankOption' => false, 'tl_class' => 'w50'],
+    'sql' => ['type' => 'string', 'length' => 16, 'default' => AiTagOptions::KIND_GENERATED],
+];
+
 $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagPosition'] = [
     'exclude' => true,
     'inputType' => 'select',
@@ -70,7 +84,7 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagCoverage'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_files']['palettes']['__selector__'][] = 'netzhirschAiGenerated';
-$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview,netzhirschAiTagCoverage';
+$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiKind,netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview,netzhirschAiTagCoverage';
 
 PaletteManipulator::create()
     ->addField('netzhirschAiTagDetection', 'syncExclude', PaletteManipulator::POSITION_AFTER)

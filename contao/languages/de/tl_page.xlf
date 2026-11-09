@@ -14,6 +14,14 @@
         <source>Wording burnt into AI-generated images of this website. Leave empty to use the default wording of this language. As short as necessary so it stays legible in small image sizes.</source>
         <target>Wortlaut, der in KI-generierte Bilder dieser Website gebrannt wird. Leer lassen, um die Standardformulierung dieser Sprache zu verwenden. So kurz wie nötig, damit die Kennzeichnung auch in kleinen Bildgrößen lesbar bleibt.</target>
       </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagTextModified.0">
+        <source>Wording of the AI label (modified)</source>
+        <target>Wortlaut der KI-Kennzeichnung (bearbeitet)</target>
+      </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagTextModified.1">
+        <source>Wording burnt into images of this website that were partially modified with AI. Leave empty to use the default wording of this language. Separate from the wording for generated images, so a modified image is not labelled as entirely generated.</source>
+        <target>Wortlaut, der in Bilder dieser Website gebrannt wird, die teilweise mit KI bearbeitet wurden. Leer lassen, um die Standardformulierung dieser Sprache zu verwenden. Getrennt vom Wortlaut für generierte Bilder, damit ein nur bearbeitetes Bild nicht als vollständig generiert gekennzeichnet wird.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

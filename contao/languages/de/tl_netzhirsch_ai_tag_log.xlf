@@ -22,6 +22,10 @@
         <source>Details</source>
         <target>Details</target>
       </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kind.0">
+        <source>AI involvement</source>
+        <target>KI-Beteiligung</target>
+      </trans-unit>
       <trans-unit id="tl_netzhirsch_ai_tag_log.username.0">
         <source>User</source>
         <target>Benutzer</target>
@@ -45,6 +49,18 @@
       <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.position_changed">
         <source>Position changed</source>
         <target>Position geändert</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.kind_changed">
+        <source>Type changed</source>
+        <target>Art geändert</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kindRef.generated">
+        <source>generated</source>
+        <target>generiert</target>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kindRef.modified">
+        <source>modified</source>
+        <target>bearbeitet</target>
       </trans-unit>
       <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.file">
         <source>File</source>

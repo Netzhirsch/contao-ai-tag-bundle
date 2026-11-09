@@ -31,12 +31,14 @@ final class AiTagResolver
 
     private const FALLBACK_TRANSLATION_KEY = 'netzhirsch_ai_tag.label';
 
+    private const MODIFIED_TRANSLATION_KEY = 'netzhirsch_ai_tag.label_modified';
+
     private const SHORT_TRANSLATION_KEY = 'netzhirsch_ai_tag.label_short';
 
     private const TRANSLATION_DOMAIN = 'netzhirsch_ai_tag';
 
     /**
-     * @var array<string, array{position: string, text: string}|false>
+     * @var array<string, array{position: string, text: string, kind: string}|false>
      */
     private array $cache = [];
 
@@ -78,7 +80,7 @@ final class AiTagResolver
         }
 
         $locale = $this->resolveLocale();
-        $text = '' !== $record['text'] ? $record['text'] : $this->resolveText($locale);
+        $text = '' !== $record['text'] ? $record['text'] : $this->resolveText($locale, $record['kind']);
 
         if ('' === $text) {
             return null;
@@ -100,12 +102,30 @@ final class AiTagResolver
      * Die gesetzliche Standardformulierung der angeforderten Sprache. Wird auch im
      * Backend fuer die Lesbarkeitspruefung benutzt, wo es keinen Seitenkontext gibt.
      */
-    public function defaultText(string|null $locale = null): string
+    public function defaultText(string|null $locale = null, string $kind = AiTagOptions::KIND_GENERATED): string
     {
         $locale ??= $this->resolveLocale();
-        $fallback = $this->translator->trans(self::FALLBACK_TRANSLATION_KEY, [], self::TRANSLATION_DOMAIN, $locale);
+        $key = AiTagOptions::KIND_MODIFIED === $kind ? self::MODIFIED_TRANSLATION_KEY : self::FALLBACK_TRANSLATION_KEY;
+        $text = $this->translator->trans($key, [], self::TRANSLATION_DOMAIN, $locale);
 
-        return self::FALLBACK_TRANSLATION_KEY === $fallback ? '' : trim($fallback);
+        return $key === $text ? '' : trim($text);
+    }
+
+    /**
+     * Wortlaut, Kurzform und Art, die fuer diese Datei gelten - auch wenn sie noch
+     * nicht markiert ist (dann der Standard "generiert"). Grundlage der Ampel und der
+     * Hinweise im Backend, die wissen muessen, was in welcher Groesse ins Bild kaeme.
+     *
+     * @return array{text: string, short: string, kind: string}
+     */
+    public function texts(string $absolutePath): array
+    {
+        $record = $this->findMarkedRecord($absolutePath);
+        $kind = $record['kind'] ?? AiTagOptions::KIND_GENERATED;
+        $locale = $this->resolveLocale();
+        $text = '' !== ($record['text'] ?? '') ? $record['text'] : $this->resolveText($locale, $kind);
+
+        return ['text' => $text, 'short' => $this->shortText($locale), 'kind' => $kind];
     }
 
     /**
@@ -133,7 +153,7 @@ final class AiTagResolver
      * Sucht den naechstliegenden als KI markierten Datensatz: zuerst die Datei
      * selbst, dann - fuer die Ordner-Vererbung - die uebergeordneten Ordner.
      *
-     * @return array{position: string, text: string}|null
+     * @return array{position: string, text: string, kind: string}|null
      */
     private function findMarkedRecord(string $absolutePath): array|null
     {
@@ -154,15 +174,7 @@ final class AiTagResolver
         $paths = $this->pathWithAncestors($relativePath);
 
         try {
-            /** @var array{netzhirschAiTagPosition: string|null, netzhirschAiTagText: string|null}|false $row */
-            $row = $this->connection->fetchAssociative(
-                "SELECT netzhirschAiTagPosition, netzhirschAiTagText
-                 FROM tl_files
-                 WHERE path IN (?) AND netzhirschAiGenerated = '1'
-                 ORDER BY CHAR_LENGTH(path) DESC",
-                [$paths],
-                [ArrayParameterType::STRING],
-            );
+            $row = $this->fetchMarkedRow($paths);
         } catch (DbalException $exception) {
             // Kein Schema (Installation, CLI vor der Migration): nicht kennzeichnen, aber
             // auch nicht die Bildauslieferung sprengen.
@@ -182,7 +194,45 @@ final class AiTagResolver
         return $this->cache[$relativePath] = [
             'position' => \in_array($position, AiTagOptions::POSITIONS, true) ? $position : AiTagOptions::POSITION_AUTO,
             'text' => trim((string) ($row['netzhirschAiTagText'] ?? '')),
+            'kind' => AiTagOptions::normaliseKind($row['netzhirschAiKind'] ?? null),
         ];
+    }
+
+    /**
+     * Fragt den naechstliegenden markierten Eintrag ab. Faellt auf eine Abfrage ohne
+     * die Spalte der Art zurueck, wenn es sie noch nicht gibt: nach einem Update des
+     * Bundles fehlt sie, bis die Datenbank aktualisiert ist (contao:migrate). Ohne
+     * den Rueckfall wuerde die Abfrage scheitern, und JEDES Bild verlore bis dahin
+     * seine Kennzeichnung - und der Alt-Text seinen Hinweis. Dann gilt eben
+     * "generiert", wie vor der Einfuehrung der Art.
+     *
+     * @param list<string> $paths
+     *
+     * @return array<string, mixed>|false
+     */
+    private function fetchMarkedRow(array $paths): array|false
+    {
+        try {
+            return $this->connection->fetchAssociative(
+                "SELECT netzhirschAiTagPosition, netzhirschAiTagText, netzhirschAiKind
+                 FROM tl_files
+                 WHERE path IN (?) AND netzhirschAiGenerated = '1'
+                 ORDER BY CHAR_LENGTH(path) DESC",
+                [$paths],
+                [ArrayParameterType::STRING],
+            );
+        } catch (DbalException $exception) {
+            $this->logger?->debug('KI-Kennzeichnung: Spalte netzhirschAiKind fehlt, Datenbank noch nicht aktualisiert: '.$exception->getMessage());
+
+            return $this->connection->fetchAssociative(
+                "SELECT netzhirschAiTagPosition, netzhirschAiTagText
+                 FROM tl_files
+                 WHERE path IN (?) AND netzhirschAiGenerated = '1'
+                 ORDER BY CHAR_LENGTH(path) DESC",
+                [$paths],
+                [ArrayParameterType::STRING],
+            );
+        }
     }
 
     private function relativePath(string $absolutePath): string|null
@@ -226,7 +276,7 @@ final class AiTagResolver
         return $request?->getLocale() ?? $this->translator->getLocale();
     }
 
-    private function resolveText(string $locale): string
+    private function resolveText(string $locale, string $kind = AiTagOptions::KIND_GENERATED): string
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -235,13 +285,14 @@ final class AiTagResolver
         if (null !== $rootPage) {
             // Ueber row() statt der magischen Property: das eigene Feld ist in den
             // @property-Annotationen von PageModel naturgemaess nicht deklariert.
-            $configured = trim((string) ($rootPage->row()['netzhirschAiTagText'] ?? ''));
+            $field = AiTagOptions::KIND_MODIFIED === $kind ? 'netzhirschAiTagTextModified' : 'netzhirschAiTagText';
+            $configured = trim((string) ($rootPage->row()[$field] ?? ''));
 
             if ('' !== $configured) {
                 return $configured;
             }
         }
 
-        return $this->defaultText($locale);
+        return $this->defaultText($locale, $kind);
     }
 }

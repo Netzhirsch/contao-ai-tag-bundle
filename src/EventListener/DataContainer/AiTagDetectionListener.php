@@ -10,6 +10,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Netzhirsch\ContaoAiTagBundle\Detection\AiSourceInspector;
 use Netzhirsch\ContaoAiTagBundle\Detection\AiSourceSignal;
+use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -53,7 +54,11 @@ class AiTagDetectionListener
             return '';
         }
 
-        $key = $signal->isDeclared() ? 'declared' : 'hint';
+        // Eine Datei, die sich als mit KI bearbeitet ausweist, ist nicht "KI-generiert":
+        // die Meldung nennt das, damit die Redaktion die richtige Art waehlt.
+        $key = $signal->isDeclared()
+            ? (AiTagOptions::KIND_MODIFIED === $signal->kind() ? 'declared_modified' : 'declared')
+            : 'hint';
         $message = $this->translator->trans(
             'netzhirsch_ai_tag.detection.'.$key,
             ['%source%' => $signal->source, '%detail%' => $signal->detail],

@@ -21,8 +21,15 @@ Bildbereichs.
 
 - **Markierung pro Datei und pro Ordner** in der Dateiverwaltung. Bei verschachtelten
   Markierungen gewinnt der nächstliegende markierte Eintrag.
+- **Art der KI-Beteiligung**: *KI-generiert* (vollständig von KI erzeugt) oder
+  *KI-bearbeitet* (vorhandenes, von Menschen erstelltes Material wurde teilweise mit KI
+  verändert, etwa Retusche oder generative Füllung). Das ist dieselbe Unterscheidung, die die
+  EU-Kommission bei ihren Icons trifft („Fully AI-Generated“ / „Partially AI-Modified“). Ein
+  nur bearbeitetes Foto als „generiert“ zu kennzeichnen behauptet mehr, als stimmt.
 - **Eingebrannte Kennzeichnung in jeder Bildgröße** – die Schriftgröße richtet sich
-  nach der ausgelieferten Größe, nicht nach dem Original.
+  nach der ausgelieferten Größe, nicht nach dem Original. Wird das Bild zu klein, wird
+  zuerst verkleinert und dann auf die Kurzform „KI“ / „AI“ zurückgegriffen, statt das Label
+  wegzulassen.
 - **Sprachsensitiv**: Der Wortlaut kommt aus dem Startpunkt der jeweiligen Website
   (in Contao je Sprache vorhanden), mit gesetzlicher Standardformulierung als Fallback.
 - **Position automatisch** anhand des in Contao gepflegten wichtigen Bildbereichs,
@@ -102,6 +109,7 @@ Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 |---|---|---|
 | `max_box_width` | `0.65` | Maximaler Anteil der Bildbreite für das Label. |
 | `max_box_height` | `0.3` | Maximaler Anteil der Bildhöhe für das Label. |
+| `short_text_fallback` | `true` | Passt der volle Wortlaut auch in der kleinsten Schriftgröße nicht ins Bild, wird „KI“ bzw. „AI“ eingebrannt, statt das Label wegzulassen. `false` lässt es dann weg. |
 | `min_width` / `min_height` | `0` | Bildgrößen darunter werden nicht gekennzeichnet. `0` schaltet die Prüfung ab. |
 | `excluded_paths` | `[]` | Pfade, die nie gekennzeichnet werden – auch nicht über die Ordner-Vererbung. |
 
@@ -135,7 +143,8 @@ eine Datei neu in `tl_files` landet, und unterscheidet zwei Stufen:
 
 | Signal | Aussage |
 |---|---|
-| XMP `Iptc4xmpExt:DigitalSourceType` = `trainedAlgorithmicMedia` (oder `compositeWith…`) | **Erklärung** – der IPTC-Standard, den C2PA und die großen Generatoren schreiben |
+| XMP `Iptc4xmpExt:DigitalSourceType` = `trainedAlgorithmicMedia` | **Erklärung** – der IPTC-Standard, den C2PA und die großen Generatoren schreiben. Schlägt die Art *KI-generiert* vor. |
+| XMP `Iptc4xmpExt:DigitalSourceType` = `compositeWithTrainedAlgorithmicMedia` | **Erklärung** – ein Bild, in das KI-Material eingefügt wurde (Inpainting, Outpainting, generative Füllung). Schlägt die Art *KI-bearbeitet* vor, nicht „generiert“. |
 | `xmp:CreatorTool`, `photoshop:Credit`, `dc:creator`, EXIF `Software` mit bekanntem Generatornamen | Indiz |
 | PNG-Textblock `parameters` (Stable Diffusion legt dort den Prompt ab) | Indiz |
 
@@ -143,7 +152,8 @@ eine Datei neu in `tl_files` landet, und unterscheidet zwei Stufen:
 die beim Bearbeiten erscheint; die Entscheidung bleibt bei der Redaktion, weil sie vom
 Inhalt abhängt – ein Deepfake ist kennzeichnungspflichtig, eine Illustration nicht. Mit
 `detection: auto` setzt das Bundle die Kennzeichnung bei einer echten Erklärung selbst
-und protokolliert das mit der Quelle; `off` schaltet die Prüfung ab.
+und protokolliert das mit der Quelle und der Art, die die Datei nahelegt; `off` schaltet die
+Prüfung ab.
 
 Angebunden ist die Erkennung an `DbafsChangeEvent` – damit erreicht sie **jeden** Weg in
 die Dateiverwaltung: Upload, Drag and Drop, `contao:filesync`, MCP, per FTP nachgeschobene
@@ -189,7 +199,9 @@ Lesbarkeitsgrenze bleibt es ganz weg.
 Jede Änderung landet an zwei Stellen:
 
 - **`tl_netzhirsch_ai_tag_log`** (*System → Protokoll KI-Kennzeichnung*) als belastbarer
-  Nachweis, mit filterbaren Spalten (Aktion, Datei/Ordner, Datei­pfad, Benutzer).
+  Nachweis, mit filterbaren Spalten (Aktion, Datei/Ordner, Datei­pfad, Benutzer, KI-Beteiligung).
+  Beim Setzen steht die Art im Eintrag; wer die Art einer bestehenden Markierung ändert
+  (aus „generiert“ wird „bearbeitet“), hinterlässt den Eintrag *Art geändert*.
 - **Contao-Systemprotokoll** (`tl_log`, Aktion *FILES*) als Hinweis am gewohnten Ort.
 
 Warum eine eigene Tabelle, obwohl es das Systemprotokoll gibt: Contao räumt `tl_log`
@@ -211,6 +223,10 @@ Im Protokoll-Modul liegt eine Schaltfläche **CSV-Export**. Zwei Fassungen:
   waren, rekonstruiert aus dem Protokoll (je Pfad zählt der letzte Eintrag bis dahin).
 - `&anonymous=1` lässt die Benutzernamen weg – für Vorlagen an Dritte.
 
+Die Spalte **KI-Beteiligung** (*generiert* / *bearbeitet*) steht am Ende, damit sich nichts
+verschiebt, wer die Spalten nach Position liest. Der Stichtag nennt die Art, die an diesem Tag
+galt; Einträge aus der Zeit vor Version 1.2.0 tragen keine und gelten als „generiert“.
+
 Zur Sicherheit: der Export prüft dieselbe Modulberechtigung wie die Ansicht, verlangt
 das Contao-Anfrage-Token (ein untergeschobener Link läuft ins Leere), streamt zeilenweise
 statt alles in den Speicher zu laden, und **neutralisiert Formeln** – ein Dateiname wie
@@ -228,10 +244,14 @@ angehängt.
 
 Reihenfolge, die greift:
 
-1. **Text an der Datei** (Feld *Text der Kennzeichnung* in der Dateiverwaltung)
-2. **Text am Startpunkt der Website** (`tl_page`, Palette *Startpunkt einer Website*)
-3. **Standardformulierung** aus den Bundle-Übersetzungen – `KI-generiert` (de) bzw.
-   `AI-generated` (en)
+1. **Text an der Datei** (Feld *Text der Kennzeichnung* in der Dateiverwaltung) – gilt für
+   beide Arten
+2. **Text am Startpunkt der Website** (`tl_page`, Palette *Startpunkt einer Website*) – je Art
+   ein eigenes Feld: *Wortlaut der KI-Kennzeichnung* für „generiert“, *… (bearbeitet)* für
+   „bearbeitet“. Getrennt, damit der Wortlaut für „generiert“ nie auf ein nur bearbeitetes Bild
+   gerät.
+3. **Standardformulierung** aus den Bundle-Übersetzungen – `KI-generiert` / `KI-bearbeitet`
+   (de) bzw. `AI-generated` / `AI-modified` (en)
 
 Der Standard ist absichtlich kurz: er muss auch in kleinen Bildgrößen lesbar bleiben.
 Weitere Sprachen ergänzen, indem eine Datei `translations/netzhirsch_ai_tag.<locale>.xlf`
@@ -246,11 +266,17 @@ manuelles Leeren des Bild-Caches ist nicht nötig.
 Das Label darf höchstens `max_box_width` der Bildbreite und `max_box_height` der Bildhöhe
 belegen. Wird es mit der Wunschgröße größer – bei einem schmalen Banner (1920 × 240 px) oder
 einem längeren Wortlaut –, wird die Schrift **schrittweise verkleinert**, bis es passt,
-höchstens bis `min_font_size`. Erst wenn es auch dort nicht passt, wird **nichts
-eingebrannt**, statt eine unlesbare Kennzeichnung zu erzeugen. Beim Markieren weist das
-Backend darauf hin, wenn das Bild selbst dafür zu klein ist. In diesen Fällen trägt nur
-die Textalternative im Markup die Information – eine sichtbare Kennzeichnung muss dann
-im Layout gelöst werden (z. B. größere Bildgröße oder Bildunterschrift).
+höchstens bis `min_font_size`. Passt der volle Wortlaut auch dort nicht, steht die
+**Kurzform „KI“ bzw. „AI“** im Bild – die Abkürzung, die die EU-Kommission für Labels
+ausdrücklich vorsieht (`short_text_fallback`). Erst wenn auch die nicht passt, wird **nichts
+eingebrannt**, statt eine unlesbare Kennzeichnung zu erzeugen. Wer die Kurzform früher haben
+will, erhöht `min_font_size`.
+
+Die Ampel in der Dateiverwaltung zeigt das je Bildgröße: *lesbar* (grün), *nur Kurzform*
+(orange) oder *zu klein* (rot); beim Markieren weist das Backend darauf hin. Wo nichts
+eingebrannt wird, trägt nur die Textalternative im Markup die Information – eine sichtbare
+Kennzeichnung muss dann im Layout gelöst werden (z. B. größere Bildgröße oder
+Bildunterschrift). Der volle Wortlaut steht auch bei der Kurzform in der Textalternative.
 
 ## MCP-Werkzeuge (optional)
 
@@ -260,9 +286,9 @@ besteht keine harte Abhängigkeit.
 
 | Werkzeug | Zweck |
 |---|---|
-| `netzhirsch_ai_tag_get` | Liest den Kennzeichnungsstand einer Datei oder eines Ordners, inklusive Vererbung (`inherited_from`), wirksamem Text und ob das Format überhaupt einbrennbar ist. Nur lesend. |
-| `netzhirsch_ai_tag_list` | Listet die als KI-generiert markierten Dateien und Ordner, optional auf einen Ordner begrenzt. Nur lesend. |
-| `netzhirsch_ai_tag_set` | Setzt oder entfernt die Kennzeichnung, optional mit Position und Wortlaut. |
+| `netzhirsch_ai_tag_get` | Liest den Kennzeichnungsstand einer Datei oder eines Ordners, inklusive Art (`kind`, `effective_kind`), Vererbung (`inherited_from`), wirksamem Text und ob das Format überhaupt einbrennbar ist. Nur lesend. |
+| `netzhirsch_ai_tag_list` | Listet die als KI markierten Dateien und Ordner mit ihrer Art, optional auf einen Ordner begrenzt. Nur lesend. |
+| `netzhirsch_ai_tag_set` | Setzt oder entfernt die Kennzeichnung, optional mit Art (`kind`: `generated` oder `modified`), Position und Wortlaut. Ohne `kind` bleibt die bisherige Art, bei einer neuen Markierung gilt `generated`. |
 
 Wichtig für den Betrieb:
 

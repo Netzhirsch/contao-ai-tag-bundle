@@ -7,6 +7,10 @@
         <target>AI-generated</target>
         <note>Default legal wording for image labelling. As short as possible so it stays legible in small image sizes.</note>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.label_modified">
+        <source>netzhirsch_ai_tag.label_modified</source>
+        <target>AI-modified</target>
+      </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.label_short">
         <source>netzhirsch_ai_tag.label_short</source>
         <target>AI</target>
@@ -27,6 +31,10 @@
       <trans-unit id="netzhirsch_ai_tag.log.position_changed">
         <source>netzhirsch_ai_tag.log.position_changed</source>
         <target>AI label position changed: %path%</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.log.kind_changed">
+        <source>netzhirsch_ai_tag.log.kind_changed</source>
+        <target>Type of AI label changed: %path%</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.format">
         <source>netzhirsch_ai_tag.hint.format</source>
@@ -67,6 +75,10 @@
       <trans-unit id="netzhirsch_ai_tag.detection.declared">
         <source>netzhirsch_ai_tag.detection.declared</source>
         <target>This file declares itself as AI-generated in its metadata (%source%: %detail%).</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.detection.declared_modified">
+        <source>netzhirsch_ai_tag.detection.declared_modified</source>
+        <target>This file declares itself in its metadata as modified with AI (%source%: %detail%) – not as entirely generated. Choose the type "AI-modified".</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.detection.hint">
         <source>netzhirsch_ai_tag.detection.hint</source>

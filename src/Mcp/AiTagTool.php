@@ -69,7 +69,7 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
      */
     #[McpTool(
         name: 'netzhirsch_ai_tag_get',
-        description: 'Reads the AI labelling state of a file or folder from tl_files — no writes. Returns the own flag, the inherited flag including the folder it comes from, the effective label text, and whether the label can actually be burnt into this format.',
+        description: 'Reads the AI labelling state of a file or folder from tl_files — no writes. Returns the own flag, the kind of AI involvement ("generated" or "modified"), the inherited flag including the folder it comes from, the effective label text, and whether the label can actually be burnt into this format.',
     )]
     public function get(string $path): array
     {
@@ -88,16 +88,21 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
         }
 
         $inherited = $this->findMarkedAncestor($dbafsPath);
+        $ownKind = AiTagOptions::normaliseKind($row['netzhirschAiKind']);
+        // Gilt die eigene Markierung, zaehlt ihre Art; sonst die des naechstliegenden Ordners.
+        $effectiveKind = '1' === $row['netzhirschAiGenerated'] ? $ownKind : ($inherited['kind'] ?? AiTagOptions::KIND_GENERATED);
 
         return [
             'path' => $dbafsPath,
             'type' => $row['type'],
             'ai_generated' => '1' === $row['netzhirschAiGenerated'],
-            'inherited_from' => $inherited,
+            'kind' => $ownKind,
+            'effective_kind' => $effectiveKind,
+            'inherited_from' => $inherited['path'] ?? null,
             'effective' => '1' === $row['netzhirschAiGenerated'] || null !== $inherited,
             'position' => $row['netzhirschAiTagPosition'],
             'text' => $row['netzhirschAiTagText'],
-            'effective_text' => '' !== $row['netzhirschAiTagText'] ? $row['netzhirschAiTagText'] : $this->resolver->defaultText(),
+            'effective_text' => '' !== $row['netzhirschAiTagText'] ? $row['netzhirschAiTagText'] : $this->resolver->defaultText(null, $effectiveKind),
             'taggable_format' => 'folder' === $row['type'] || $this->resolver->isTaggableFormat($dbafsPath),
         ];
     }
@@ -114,7 +119,7 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
         $this->framework->initialize();
 
         $limit = max(1, min(self::MAX_LIST_LIMIT, $limit));
-        $sql = "SELECT path, type, netzhirschAiTagPosition, netzhirschAiTagText FROM tl_files WHERE netzhirschAiGenerated = '1'";
+        $sql = "SELECT path, type, netzhirschAiKind, netzhirschAiTagPosition, netzhirschAiTagText FROM tl_files WHERE netzhirschAiGenerated = '1'";
         $parameters = [];
 
         if (null !== $folder && '' !== trim($folder)) {
@@ -141,6 +146,7 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
                 static fn (array $row): array => [
                     'path' => (string) $row['path'],
                     'type' => (string) $row['type'],
+                    'kind' => AiTagOptions::normaliseKind($row['netzhirschAiKind'] ?? null),
                     'position' => (string) $row['netzhirschAiTagPosition'],
                     'text' => (string) $row['netzhirschAiTagText'],
                 ],
@@ -154,9 +160,9 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
      */
     #[McpTool(
         name: 'netzhirsch_ai_tag_set',
-        description: 'Sets or removes the AI labelling of a file or folder in tl_files. On a folder it applies to every image inside. Removing a label is destructive and requires confirm_destructive=true, because the label may be legally required. Logged to the AI labelling log and tl_log.',
+        description: 'Sets or removes the AI labelling of a file or folder in tl_files. On a folder it applies to every image inside. kind is "generated" (created entirely by AI) or "modified" (existing, human-made content partially altered with AI, e.g. retouching or generative fill); it defaults to the current kind, and to "generated" for a new label. Removing a label is destructive and requires confirm_destructive=true, because the label may be legally required. Logged to the AI labelling log and tl_log.',
     )]
-    public function set(string $path, bool $ai_generated, string|null $position = null, string|null $text = null, bool $confirm_destructive = false): array
+    public function set(string $path, bool $ai_generated, string|null $position = null, string|null $text = null, bool $confirm_destructive = false, string|null $kind = null): array
     {
         // Entfernen kann eine Rechtspflicht verletzen: nur mit Bestaetigung.
         if (!$ai_generated && ($error = $this->requireConfirmation($confirm_destructive))) {
@@ -167,6 +173,7 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             $dbafsPath = $this->normalisePath($path);
             $position = $this->normalisePosition($position);
             $text = $this->normaliseText($text);
+            $kind = $this->normaliseKindInput($kind);
         } catch (\InvalidArgumentException $exception) {
             return ['error' => 'invalid_input', 'message' => $exception->getMessage()];
         }
@@ -189,6 +196,10 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             $fields['netzhirschAiTagText'] = $text;
         }
 
+        if (null !== $kind) {
+            $fields['netzhirschAiKind'] = $kind;
+        }
+
         // Backend-Paritaet: Modulzugriff, Voter und Feldrechte wie im Formular.
         if ($denial = $this->permissionGuard()->ensureCan('tl_files', 'update', null, $fields)) {
             return $denial;
@@ -209,6 +220,7 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             'path' => $dbafsPath,
             'type' => $row['type'],
             'ai_generated' => $ai_generated,
+            'kind' => AiTagOptions::normaliseKind($fields['netzhirschAiKind'] ?? $row['netzhirschAiKind']),
             'position' => $fields['netzhirschAiTagPosition'] ?? $row['netzhirschAiTagPosition'],
             'text' => $fields['netzhirschAiTagText'] ?? $row['netzhirschAiTagText'],
             'warnings' => $ai_generated ? $this->coverageWarnings($dbafsPath, $row['type']) : [],
@@ -227,6 +239,9 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             $this->authorResolver()->getLogSource(),
         );
 
+        $oldKind = AiTagOptions::normaliseKind($row['netzhirschAiKind']);
+        $newKind = AiTagOptions::normaliseKind($fields['netzhirschAiKind'] ?? $row['netzhirschAiKind']);
+
         if ($wasEnabled !== $isEnabled) {
             $this->auditLogger->log(
                 $isEnabled ? AiTagAuditLogger::ACTION_FLAG_SET : AiTagAuditLogger::ACTION_FLAG_UNSET,
@@ -234,6 +249,17 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
                 $isFolder,
                 null,
                 $actor,
+                $isEnabled ? $newKind : '',
+            );
+        } elseif ($isEnabled && $newKind !== $oldKind) {
+            // Die Art einer bereits gesetzten Markierung hat sich geaendert.
+            $this->auditLogger->log(
+                AiTagAuditLogger::ACTION_KIND_CHANGED,
+                $dbafsPath,
+                $isFolder,
+                null,
+                $actor,
+                $newKind,
             );
         }
 
@@ -278,8 +304,8 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             return [];
         }
 
-        $text = $this->resolver->defaultText();
-        $short = $this->resolver->shortText();
+        // Mit Art und eigenem Text der Datei: "KI-bearbeitet" ist breiter als "KI-generiert".
+        ['text' => $text, 'short' => $short] = $this->resolver->texts($absolute);
 
         if ('' === $text) {
             return [];
@@ -293,12 +319,12 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
     }
 
     /**
-     * @return array{path: string, type: string, netzhirschAiGenerated: string, netzhirschAiTagPosition: string, netzhirschAiTagText: string}|null
+     * @return array{path: string, type: string, netzhirschAiGenerated: string, netzhirschAiKind: string, netzhirschAiTagPosition: string, netzhirschAiTagText: string}|null
      */
     private function loadRow(string $dbafsPath): array|null
     {
         $row = $this->connection->fetchAssociative(
-            'SELECT path, type, netzhirschAiGenerated, netzhirschAiTagPosition, netzhirschAiTagText FROM tl_files WHERE path = ?',
+            'SELECT path, type, netzhirschAiGenerated, netzhirschAiKind, netzhirschAiTagPosition, netzhirschAiTagText FROM tl_files WHERE path = ?',
             [$dbafsPath],
         );
 
@@ -310,12 +336,16 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             'path' => (string) $row['path'],
             'type' => (string) $row['type'],
             'netzhirschAiGenerated' => (string) $row['netzhirschAiGenerated'],
+            'netzhirschAiKind' => (string) ($row['netzhirschAiKind'] ?? ''),
             'netzhirschAiTagPosition' => (string) $row['netzhirschAiTagPosition'],
             'netzhirschAiTagText' => (string) $row['netzhirschAiTagText'],
         ];
     }
 
-    private function findMarkedAncestor(string $dbafsPath): string|null
+    /**
+     * @return array{path: string, kind: string}|null
+     */
+    private function findMarkedAncestor(string $dbafsPath): array|null
     {
         $paths = [];
         $current = $dbafsPath;
@@ -329,15 +359,34 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
             return null;
         }
 
-        $marked = $this->connection->fetchOne(
+        $marked = $this->connection->fetchAssociative(
             \sprintf(
-                "SELECT path FROM tl_files WHERE netzhirschAiGenerated = '1' AND path IN (%s) ORDER BY CHAR_LENGTH(path) DESC",
+                "SELECT path, netzhirschAiKind FROM tl_files WHERE netzhirschAiGenerated = '1' AND path IN (%s) ORDER BY CHAR_LENGTH(path) DESC",
                 implode(',', array_fill(0, \count($paths), '?')),
             ),
             $paths,
         );
 
-        return false === $marked || null === $marked ? null : (string) $marked;
+        if (false === $marked) {
+            return null;
+        }
+
+        return ['path' => (string) $marked['path'], 'kind' => AiTagOptions::normaliseKind($marked['netzhirschAiKind'] ?? null)];
+    }
+
+    private function normaliseKindInput(string|null $kind): string|null
+    {
+        if (null === $kind || '' === trim($kind)) {
+            return null;
+        }
+
+        $kind = strtolower(trim($kind));
+
+        if (!\in_array($kind, AiTagOptions::KINDS, true)) {
+            throw new \InvalidArgumentException(\sprintf('kind must be one of: %s.', implode(', ', AiTagOptions::KINDS)));
+        }
+
+        return $kind;
     }
 
     /**

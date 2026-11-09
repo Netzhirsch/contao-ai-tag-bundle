@@ -17,6 +17,9 @@
       <trans-unit id="tl_netzhirsch_ai_tag_log.detail.0">
         <source>Details</source>
       </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kind.0">
+        <source>AI involvement</source>
+      </trans-unit>
       <trans-unit id="tl_netzhirsch_ai_tag_log.username.0">
         <source>User</source>
       </trans-unit>
@@ -34,6 +37,15 @@
       </trans-unit>
       <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.position_changed">
         <source>Position changed</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.actionRef.kind_changed">
+        <source>Type changed</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kindRef.generated">
+        <source>generated</source>
+      </trans-unit>
+      <trans-unit id="tl_netzhirsch_ai_tag_log.kindRef.modified">
+        <source>modified</source>
       </trans-unit>
       <trans-unit id="tl_netzhirsch_ai_tag_log.scopeRef.file">
         <source>File</source>

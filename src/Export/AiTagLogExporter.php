@@ -6,6 +6,7 @@ namespace Netzhirsch\ContaoAiTagBundle\Export;
 
 use Doctrine\DBAL\Connection;
 use Netzhirsch\ContaoAiTagBundle\Audit\AiTagAuditLogger;
+use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
 
 /**
  * Erzeugt den Nachweis als CSV.
@@ -25,6 +26,15 @@ final class AiTagLogExporter
 
     private const DELIMITER = ';';
 
+    /**
+     * Beschriftung der Art in der CSV. Leer bleibt leer: nur die Eintraege, die eine
+     * Art betreffen (Setzen, Art aendern), tragen eine.
+     */
+    private const KIND_LABELS = [
+        'generated' => 'generiert',
+        'modified' => 'bearbeitet',
+    ];
+
     public function __construct(private readonly Connection $connection)
     {
     }
@@ -41,10 +51,13 @@ final class AiTagLogExporter
             'Datei oder Ordner',
             'Details',
             $withUsernames ? 'Benutzer' : null,
+            // Am Ende angehaengt: wer die Spalten nach Position liest, findet alles an der
+            // gewohnten Stelle.
+            'KI-Beteiligung',
         ]));
 
         $result = $this->connection->executeQuery(
-            'SELECT tstamp, action, scope, filePath, detail, username FROM tl_netzhirsch_ai_tag_log ORDER BY id',
+            'SELECT tstamp, action, scope, filePath, detail, username, kind FROM tl_netzhirsch_ai_tag_log ORDER BY id',
         );
 
         while (false !== $row = $result->fetchAssociative()) {
@@ -55,6 +68,7 @@ final class AiTagLogExporter
                 (string) $row['filePath'],
                 (string) $row['detail'],
                 $withUsernames ? (string) $row['username'] : null,
+                self::KIND_LABELS[(string) ($row['kind'] ?? '')] ?? '',
             ], static fn (mixed $value): bool => null !== $value));
         }
     }
@@ -73,11 +87,16 @@ final class AiTagLogExporter
             'Gekennzeichnet seit',
             'Art',
             $withUsernames ? 'Benutzer' : null,
+            'KI-Beteiligung',
         ]));
 
+        // Gekennzeichnet war eine Datei, wenn der letzte Eintrag aus (gesetzt, entfernt)
+        // ein "gesetzt" ist. Die Art dazu ist die des letzten Eintrags aus (gesetzt, Art
+        // geaendert) bis zum Stichtag: bei einer spaeter geaenderten Art zaehlt der
+        // Stand zum Stichtag, nicht der heutige.
         $result = $this->connection->executeQuery(
             <<<'SQL'
-                SELECT l.filePath, l.tstamp, l.scope, l.username
+                SELECT l.filePath, l.tstamp, l.scope, l.username, k.kind AS kind
                 FROM tl_netzhirsch_ai_tag_log l
                 INNER JOIN (
                     SELECT filePath, MAX(id) AS latest
@@ -85,6 +104,13 @@ final class AiTagLogExporter
                     WHERE tstamp <= :moment AND action IN (:set, :unset)
                     GROUP BY filePath
                 ) newest ON newest.latest = l.id
+                LEFT JOIN (
+                    SELECT filePath, MAX(id) AS lastkind
+                    FROM tl_netzhirsch_ai_tag_log
+                    WHERE tstamp <= :moment AND action IN (:set, :kindChanged)
+                    GROUP BY filePath
+                ) newestkind ON newestkind.filePath = l.filePath
+                LEFT JOIN tl_netzhirsch_ai_tag_log k ON k.id = newestkind.lastkind
                 WHERE l.action = :set
                 ORDER BY l.filePath
                 SQL,
@@ -92,6 +118,7 @@ final class AiTagLogExporter
                 'moment' => $moment->getTimestamp(),
                 'set' => AiTagAuditLogger::ACTION_FLAG_SET,
                 'unset' => AiTagAuditLogger::ACTION_FLAG_UNSET,
+                'kindChanged' => AiTagAuditLogger::ACTION_KIND_CHANGED,
             ],
         );
 
@@ -101,6 +128,8 @@ final class AiTagLogExporter
                 $this->date((int) $row['tstamp']),
                 (string) $row['scope'],
                 $withUsernames ? (string) $row['username'] : null,
+                // Eintraege aus der Zeit vor der Art tragen keine: dort galt "generiert".
+                self::KIND_LABELS[AiTagOptions::normaliseKind($row['kind'] ?? null)],
             ], static fn (mixed $value): bool => null !== $value));
         }
     }

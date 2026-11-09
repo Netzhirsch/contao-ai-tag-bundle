@@ -11,6 +11,12 @@
       <trans-unit id="tl_page.netzhirschAiTagText.1">
         <source>Wording burnt into AI-generated images of this website. Leave empty to use the default wording of this language. As short as necessary so it stays legible in small image sizes.</source>
       </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagTextModified.0">
+        <source>Wording of the AI label (modified)</source>
+      </trans-unit>
+      <trans-unit id="tl_page.netzhirschAiTagTextModified.1">
+        <source>Wording burnt into images of this website that were partially modified with AI. Leave empty to use the default wording of this language. Separate from the wording for generated images, so a modified image is not labelled as entirely generated.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

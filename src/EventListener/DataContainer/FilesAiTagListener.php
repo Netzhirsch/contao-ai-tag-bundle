@@ -25,6 +25,16 @@ class FilesAiTagListener
 
     private const FLASH_ERROR = 'contao.BE.error';
 
+    /**
+     * Pfade, fuer die in dieser Anfrage schon ein Eintrag "gesetzt" geschrieben
+     * wurde. Contao speichert die Felder nacheinander; die Art, die im selben
+     * Formular mitkommt, steht dann bereits in diesem Eintrag und soll nicht als
+     * eigene Aenderung doppelt im Protokoll stehen.
+     *
+     * @var array<string, true>
+     */
+    private array $flagLogged = [];
+
     public function __construct(
         private readonly Connection $connection,
         private readonly AiTagAuditLogger $auditLogger,
@@ -50,7 +60,13 @@ class FilesAiTagListener
                 $isEnabled ? AiTagAuditLogger::ACTION_FLAG_SET : AiTagAuditLogger::ACTION_FLAG_UNSET,
                 $path,
                 $this->isFolder($path),
+                null,
+                null,
+                // Beim Setzen die Art, die mit diesem Formular kommt - sonst stuende im Nachweis
+                // nicht, ob "generiert" oder "bearbeitet" gekennzeichnet wurde.
+                $isEnabled ? $this->submittedKind($path) : '',
             );
+            $this->flagLogged[$path] = true;
         }
 
         // Die Warnungen dagegen bei JEDEM Speichern einer markierten Datei. Frueher
@@ -64,6 +80,28 @@ class FilesAiTagListener
         }
 
         return $value;
+    }
+
+    #[AsCallback(table: 'tl_files', target: 'fields.netzhirschAiKind.save')]
+    public function onSaveKind(mixed $value, DataContainer $dc): mixed
+    {
+        $path = (string) $dc->id;
+        $new = AiTagOptions::normaliseKind($value);
+
+        // Nur die Art einer bereits gesetzten Markierung kann sich "aendern". Beim
+        // Setzen steht sie schon im Eintrag "gesetzt" (flagLogged).
+        if (!isset($this->flagLogged[$path]) && $this->currentFlag($path) && $new !== $this->currentKind($path)) {
+            $this->auditLogger->log(
+                AiTagAuditLogger::ACTION_KIND_CHANGED,
+                $path,
+                $this->isFolder($path),
+                null,
+                null,
+                $new,
+            );
+        }
+
+        return $new;
     }
 
     #[AsCallback(table: 'tl_files', target: 'fields.netzhirschAiTagText.save')]
@@ -168,10 +206,9 @@ class FilesAiTagListener
             return;
         }
 
-        $text = $this->currentValue($path, 'netzhirschAiTagText');
-        $text = '' !== $text ? $text : $this->resolver->defaultText();
-
-        $short = $this->resolver->shortText();
+        // Wortlaut und Kurzform, die fuer diese Datei gelten wuerden - mit der Art und
+        // dem eigenen Text der Datei, nicht nur dem Standard.
+        ['text' => $text, 'short' => $short] = $this->resolver->texts($absolutePath);
         $fit = '' === $text ? TagRenderer::FIT_FULL : $this->renderer->fit($size[0], $size[1], $text, $short);
 
         if (TagRenderer::FIT_FULL === $fit) {
@@ -188,6 +225,23 @@ class FilesAiTagListener
                 '%short%' => $short,
             ],
         );
+    }
+
+    private function currentKind(string $path): string
+    {
+        return AiTagOptions::normaliseKind($this->currentValue($path, 'netzhirschAiKind'));
+    }
+
+    /**
+     * Die Art, die mit dem Formular abgeschickt wurde - sonst die gespeicherte. Beim
+     * Setzen der Markierung laeuft der Callback des Schalters vor dem der Art, die
+     * gewaehlte Art steht also noch nicht in der Datenbank.
+     */
+    private function submittedKind(string $path): string
+    {
+        $submitted = $this->requestStack->getCurrentRequest()?->request->get('netzhirschAiKind');
+
+        return AiTagOptions::normaliseKind(\is_string($submitted) && '' !== $submitted ? $submitted : $this->currentKind($path));
     }
 
     private function currentFlag(string $path): bool

@@ -58,8 +58,9 @@ class AiTagCoverageListener
             return '';
         }
 
-        $text = $this->resolver->defaultText();
-        $short = $this->resolver->shortText();
+        // Mit Art und eigenem Text der Datei: "KI-bearbeitet" ist breiter als "KI-generiert",
+        // die Ampel muss mit dem rechnen, was wirklich eingebrannt wuerde.
+        ['text' => $text, 'short' => $short] = $this->resolver->texts($absolutePath);
         $rows = [];
 
         foreach ($sizes as $imageSize) {

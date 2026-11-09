@@ -122,7 +122,7 @@ final class AiSourceInspector
         try {
             $this->connection->update(
                 'tl_files',
-                ['netzhirschAiGenerated' => '1', 'tstamp' => time()],
+                ['netzhirschAiGenerated' => '1', 'netzhirschAiKind' => $signal->kind(), 'tstamp' => time()],
                 ['path' => $path],
             );
         } catch (DbalException $exception) {
@@ -137,6 +137,7 @@ final class AiSourceInspector
             false,
             $signal->toStorage(),
             new AuditActor(0, 'detection'),
+            $signal->kind(),
         );
     }
 }

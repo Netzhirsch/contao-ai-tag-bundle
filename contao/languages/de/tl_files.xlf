@@ -3,12 +3,20 @@
   <file source-language="en" target-language="de" datatype="plaintext" original="tl_files">
     <body>
       <trans-unit id="tl_files.netzhirschAiGenerated.0">
-        <source>AI-generated content</source>
-        <target>KI-generierter Inhalt</target>
+        <source>AI-generated or AI-modified content</source>
+        <target>KI-generierter oder mit KI bearbeiteter Inhalt</target>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiGenerated.1">
-        <source>Label this image as AI-generated. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
-        <target>Dieses Bild als KI-generiert kennzeichnen. Bei Ordnern gilt die Einstellung für alle enthaltenen Bilder; der nächstliegende gekennzeichnete Eintrag gewinnt.</target>
+        <source>Label this image as AI content. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
+        <target>Dieses Bild als KI-Inhalt kennzeichnen. Bei Ordnern gilt die Einstellung für alle enthaltenen Bilder; der nächstliegende gekennzeichnete Eintrag gewinnt.</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKind.0">
+        <source>Type of AI involvement</source>
+        <target>Art der KI-Beteiligung</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKind.1">
+        <source>Generated: created entirely by AI. Modified: existing, human-made content was partially altered with AI (e.g. retouching, generative fill). Decides the default wording.</source>
+        <target>Generiert: vollständig von KI erzeugt. Bearbeitet: vorhandenes, von Menschen erstelltes Material wurde teilweise mit KI verändert (z. B. Retusche, generative Füllung). Bestimmt den Standardwortlaut.</target>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiTagPosition.0">
         <source>Label position</source>
@@ -25,6 +33,14 @@
       <trans-unit id="tl_files.netzhirschAiTagText.1">
         <source>Overrides the website and default wording for this file only. Keep it short so it stays legible in small image sizes.</source>
         <target>Überschreibt den Wortlaut der Website und den Standard nur für diese Datei. Kurz halten, damit die Kennzeichnung auch in kleinen Bildgrößen lesbar bleibt.</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKindRef.generated">
+        <source>AI-generated</source>
+        <target>KI-generiert</target>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKindRef.modified">
+        <source>AI-modified</source>
+        <target>KI-bearbeitet</target>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiTagPositionRef.auto">
         <source>Automatic (avoid important part)</source>

@@ -31,8 +31,10 @@ final class TagStyle
      *
      * 2: Schriftgroesse in Pixeln statt in Punkten (Label war ein Drittel zu gross); davor
      *    war ausserdem ein Bild ohne Schrift als gekennzeichnet abgelegt worden.
-     * 3: Das Label wird verkleinert, bis es ins Bild passt, statt ganz zu entfallen; auf
-     *    schmalen Bannern und bei laengerem Wortlaut stand vorher gar nichts im Bild.
+     * 3: Das Label wird verkleinert, bis es ins Bild passt, und faellt dann auf
+     * die Kurzform
+     *    zurueck, statt ganz zu entfallen; auf schmalen Bannern und bei laengerem Wortlaut
+     *    stand vorher gar nichts im Bild.
      */
     public const RENDER_REVISION = 3;
 

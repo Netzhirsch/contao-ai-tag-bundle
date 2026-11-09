@@ -28,6 +28,7 @@ class FilesAiTagVoter extends AbstractDataContainerVoter
 {
     private const GUARDED_FIELDS = [
         'netzhirschAiGenerated',
+        'netzhirschAiKind',
         'netzhirschAiTagPosition',
         'netzhirschAiTagText',
     ];

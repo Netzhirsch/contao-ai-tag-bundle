@@ -4,7 +4,46 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [1.2.0] - 2026-11-09
+
+**Update:** nach `composer update` die Datenbank aktualisieren (`contao:migrate` bzw. im Contao
+Manager *Datenbank aktualisieren*) – drei neue Spalten, nur additiv. Bis dahin liefert das
+Bundle weiter aus: Kennzeichnung und Alt-Text-Hinweis bleiben, es gilt „generiert“, und das
+Protokoll schreibt ohne die Art. Der CSV-Export und das Bearbeiten der Markierung im Backend
+brauchen die Spalten. Alle Labels werden beim nächsten Abruf neu erzeugt (kleiner, siehe unten).
+
+### Hinzugefügt
+
+- **Art der KI-Beteiligung: „generiert“ oder „bearbeitet“.** Die EU-Kommission unterscheidet bei
+  ihren Icons zwischen „Fully AI-Generated“ (vollständig von KI erzeugt) und „Partially
+  AI-Modified“ (vorhandenes, von Menschen erstelltes Material wurde teilweise mit KI verändert).
+  „KI-generiert“ auf ein nur bearbeitetes Foto zu setzen behauptet mehr, als stimmt. Neu pro
+  Datei und Ordner das Feld *Art der KI-Beteiligung*; der Standardwortlaut folgt der Art
+  (`KI-generiert` / `KI-bearbeitet`, `AI-generated` / `AI-modified`), der Startpunkt der Website
+  hat je Art ein eigenes Wortfeld, und die Art gilt auch für die Ordner-Vererbung. Bestehende
+  Markierungen bleiben „generiert“ – die Spalte hat diesen Standard.
+  - **Protokoll und Export** halten die Art fest: beim Setzen im Eintrag, bei einer Änderung als
+    *Art geändert*. Der CSV-Export hat am Ende die Spalte *KI-Beteiligung*; der Stichtag nennt die
+    Art, die an diesem Tag galt.
+  - **Erkennung:** der IPTC-Wert `compositeWithTrainedAlgorithmicMedia` (KI-Material in ein
+    vorhandenes Bild eingefügt) schlägt „bearbeitet“ vor, alles andere „generiert“; mit
+    `detection: auto` wird die Art mitgesetzt und protokolliert.
+  - **MCP:** `netzhirsch_ai_tag_set` nimmt `kind`, `get` und `list` nennen die Art.
+  - Die Art ist durch den Voter und die Feldrechte geschützt wie die übrigen Felder.
+- **Kurzform „KI“ / „AI“, wenn das Bild zu klein wird.** Passt der volle Wortlaut auch in der
+  kleinsten Schriftgröße nicht, wird die Kurzform eingebrannt, statt das Label wegzulassen. „AI“
+  ist die einzige Abkürzung, die die EU-Kommission für Labels vorsieht. Abschaltbar mit
+  `short_text_fallback: false`; wer sie früher haben will, erhöht `min_font_size`. Die Ampel in
+  der Dateiverwaltung zeigt dafür eine orange Stufe *nur Kurzform*, der Hinweis beim Markieren und
+  die MCP-Warnung unterscheiden sie von „zu klein“.
+
+### Geändert
+
+- **Standardgröße 2,2 % statt 3 %** (`relative_font_size`). Mit dem Standardwortlaut belegt das
+  Label damit etwa 15 % der Bildbreite statt gut einem Fünftel. Wer die alte Größe will, setzt
+  `relative_font_size: 0.03`.
+- Die Beschreibungen von `font_path` und `min_font_size` in der Konfiguration waren seit der
+  mitgelieferten Schrift und dem Verkleinern veraltet.
 
 ### Behoben
 

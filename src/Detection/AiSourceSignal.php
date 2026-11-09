@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Netzhirsch\ContaoAiTagBundle\Detection;
 
+use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
+
 /**
  * Was eine Datei ueber ihre eigene Herkunft aussagt.
  *
@@ -28,6 +30,20 @@ final class AiSourceSignal
     public function isDeclared(): bool
     {
         return self::DECLARED === $this->confidence;
+    }
+
+    /**
+     * Die Art der KI-Beteiligung, die das Signal nahelegt. Der IPTC-Wert
+     * compositeWithTrainedAlgorithmicMedia beschreibt ein Bild, in das KI-Material
+     * eingefuegt wurde (Inpainting, Outpainting, generative Fuellung): vorhandenes
+     * Material, teilweise mit KI bearbeitet - nicht vollstaendig generiert. Alles
+     * andere gilt als generiert.
+     */
+    public function kind(): string
+    {
+        return 'DigitalSourceType' === $this->source && 'compositeWithTrainedAlgorithmicMedia' === $this->detail
+            ? AiTagOptions::KIND_MODIFIED
+            : AiTagOptions::KIND_GENERATED;
     }
 
     /**

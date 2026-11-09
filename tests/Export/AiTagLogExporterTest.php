@@ -60,6 +60,76 @@ class AiTagLogExporterTest extends TestCase
         $this->assertStringContainsString('k.jones', $lines[1]);
     }
 
+    /**
+     * Die Art steht als eigene Spalte am Ende: wer die Spalten nach Position liest,
+     * findet alles an der gewohnten Stelle. "bearbeitet" und "generiert" sind das,
+     * was der Nachweis festhalten muss - ob ein Bild als vollstaendig erzeugt oder
+     * nur als bearbeitet gekennzeichnet wurde.
+     */
+    public function testTheLogCarriesTheKindAsTheLastColumn(): void
+    {
+        $lines = iterator_to_array($this->exporter([
+            $this->logRow(['kind' => 'modified']),
+            $this->logRow(['kind' => 'generated']),
+        ])->streamLog());
+
+        $this->assertStringEndsWith('"KI-Beteiligung"'."\r\n", $lines[0]);
+        $this->assertStringEndsWith('"bearbeitet"'."\r\n", $lines[1]);
+        $this->assertStringEndsWith('"generiert"'."\r\n", $lines[2]);
+    }
+
+    /**
+     * Eintraege, die keine Art betreffen (Wortlaut geaendert, Eintraege aus der Zeit
+     * davor), bleiben leer - nicht "generiert" erfunden.
+     */
+    public function testEntriesThatDoNotConcernAKindStayBlank(): void
+    {
+        $line = $this->firstDataLine($this->exporter([$this->logRow(['action' => 'text_changed', 'kind' => ''])])->streamLog());
+
+        $this->assertStringEndsWith('""'."\r\n", $line);
+    }
+
+    public function testTheKindColumnStaysLastWithoutUserNames(): void
+    {
+        $lines = iterator_to_array($this->exporter([$this->logRow(['kind' => 'modified'])])->streamLog(false));
+
+        $this->assertStringEndsWith('"KI-Beteiligung"'."\r\n", $lines[0]);
+        $this->assertStringEndsWith('"bearbeitet"'."\r\n", $lines[1]);
+    }
+
+    /**
+     * Der Stichtag nennt die Art, die an diesem Tag galt - bei einer spaeter
+     * geaenderten Art zaehlt der Stand zum Stichtag. Eintraege aus der Zeit vor der
+     * Art galten als "generiert".
+     */
+    public function testTheAsOfExportNamesTheKindAtThatMoment(): void
+    {
+        $moment = new \DateTimeImmutable('2026-03-12 23:59:59');
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->expects($this->once())
+            ->method('executeQuery')
+            ->with(
+                $this->logicalAnd($this->stringContains(':kindChanged'), $this->stringContains('LEFT JOIN')),
+                $this->callback(static fn (array $parameters): bool => 'kind_changed' === $parameters['kindChanged']),
+            )
+            ->willReturn($this->dbalResult([
+                ['filePath' => 'files/a.jpg', 'tstamp' => 1_772_000_000, 'scope' => 'file', 'username' => 'admin', 'kind' => 'modified'],
+                ['filePath' => 'files/b.jpg', 'tstamp' => 1_772_000_001, 'scope' => 'file', 'username' => 'admin', 'kind' => 'generated'],
+                ['filePath' => 'files/c.jpg', 'tstamp' => 1_772_000_002, 'scope' => 'file', 'username' => 'admin', 'kind' => ''],
+                ['filePath' => 'files/d.jpg', 'tstamp' => 1_772_000_003, 'scope' => 'file', 'username' => 'admin', 'kind' => null],
+            ]))
+        ;
+
+        $lines = iterator_to_array((new AiTagLogExporter($connection))->streamStateAt($moment));
+
+        $this->assertStringEndsWith('"KI-Beteiligung"'."\r\n", $lines[0]);
+        $this->assertStringEndsWith('"bearbeitet"'."\r\n", $lines[1]);
+        $this->assertStringEndsWith('"generiert"'."\r\n", $lines[2]);
+        $this->assertStringEndsWith('"generiert"'."\r\n", $lines[3], 'Vor der Einfuehrung der Art galt "generiert".');
+        $this->assertStringEndsWith('"generiert"'."\r\n", $lines[4]);
+    }
+
     public function testTheAsOfExportAsksForTheStateAtThatMoment(): void
     {
         $moment = new \DateTimeImmutable('2026-03-12 23:59:59');
@@ -125,6 +195,7 @@ class AiTagLogExporterTest extends TestCase
             'filePath' => 'files/bild.jpg',
             'detail' => '',
             'username' => 'admin',
+            'kind' => '',
             ...$overrides,
         ];
     }

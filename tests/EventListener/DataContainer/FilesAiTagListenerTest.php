@@ -135,6 +135,122 @@ class FilesAiTagListenerTest extends TestCase
     }
 
     /**
+     * Beim Setzen der Markierung muss das Protokoll festhalten, WELCHE Art
+     * gekennzeichnet wurde: die, die mit dem Formular kommt. Der Callback des
+     * Schalters laeuft vor dem der Art, sie steht also noch nicht in der Datenbank.
+     */
+    public function testSettingTheFlagLogsTheKindFromTheForm(): void
+    {
+        $connection = $this->connection('0', AiTagOptions::KIND_GENERATED);
+        $connection
+            ->expects($this->once())
+            ->method('insert')
+            ->with(
+                'tl_netzhirsch_ai_tag_log',
+                $this->callback(static fn (array $row): bool => 'flag_set' === $row['action'] && 'modified' === $row['kind']),
+            )
+        ;
+
+        $this->listener($this->openGate(), __FILE__, '0', $connection, ['netzhirschAiKind' => 'modified'])->onSaveFlag('1', $this->container());
+    }
+
+    /**
+     * Ohne mitgeschickte Art gilt die gespeicherte - und ein Unbekanntes wird "generiert".
+     */
+    public function testSettingTheFlagFallsBackToTheStoredKind(): void
+    {
+        $connection = $this->connection('0', AiTagOptions::KIND_MODIFIED);
+        $connection
+            ->expects($this->once())
+            ->method('insert')
+            ->with(
+                'tl_netzhirsch_ai_tag_log',
+                $this->callback(static fn (array $row): bool => 'modified' === $row['kind']),
+            )
+        ;
+
+        $this->listener($this->openGate(), __FILE__, '0', $connection)->onSaveFlag('1', $this->container());
+    }
+
+    /**
+     * Wer die Art einer bereits gesetzten Markierung aendert, hinterlaesst einen
+     * eigenen Eintrag: aus "generiert" wird "bearbeitet" - das ist eine Aussage ueber
+     * das Bild, die der Nachweis festhalten muss.
+     */
+    public function testChangingTheKindOfAnExistingLabelIsLogged(): void
+    {
+        $connection = $this->connection('1', AiTagOptions::KIND_GENERATED);
+        $connection
+            ->expects($this->once())
+            ->method('insert')
+            ->with(
+                'tl_netzhirsch_ai_tag_log',
+                $this->callback(static fn (array $row): bool => 'kind_changed' === $row['action'] && 'modified' === $row['kind']),
+            )
+        ;
+
+        $listener = $this->listener($this->openGate(), __FILE__, '1', $connection);
+
+        $listener->onSaveFlag('1', $this->container());
+        $this->assertSame('modified', $listener->onSaveKind('modified', $this->container()));
+    }
+
+    /**
+     * Setzt dasselbe Formular Schalter UND Art, steht die Art schon im Eintrag
+     * "gesetzt" - ein zweiter Eintrag "Art geaendert" haelte dasselbe doppelt fest.
+     */
+    public function testSettingFlagAndKindTogetherWritesOnlyOneEntry(): void
+    {
+        $connection = $this->connection('0', AiTagOptions::KIND_GENERATED);
+        $connection
+            ->expects($this->once())
+            ->method('insert')
+            ->with(
+                'tl_netzhirsch_ai_tag_log',
+                $this->callback(static fn (array $row): bool => 'flag_set' === $row['action'] && 'modified' === $row['kind']),
+            )
+        ;
+
+        $listener = $this->listener($this->openGate(), __FILE__, '0', $connection, ['netzhirschAiKind' => 'modified']);
+
+        $listener->onSaveFlag('1', $this->container());
+        $listener->onSaveKind('modified', $this->container());
+    }
+
+    public function testAnUnchangedKindIsNotLogged(): void
+    {
+        $connection = $this->connection('1', AiTagOptions::KIND_MODIFIED);
+        $connection
+            ->expects($this->never())
+            ->method('insert')
+        ;
+
+        $this->listener($this->openGate(), __FILE__, '1', $connection)->onSaveKind('modified', $this->container());
+    }
+
+    /**
+     * Die Art einer Datei ohne Markierung ist keine Aenderung, die der Nachweis
+     * festhalten muss.
+     */
+    public function testTheKindOfAnUnlabelledFileIsNotLogged(): void
+    {
+        $connection = $this->connection('0', AiTagOptions::KIND_GENERATED);
+        $connection
+            ->expects($this->never())
+            ->method('insert')
+        ;
+
+        $this->listener($this->openGate(), __FILE__, '0', $connection)->onSaveKind('modified', $this->container());
+    }
+
+    public function testASubmittedUnknownKindIsStoredAsGenerated(): void
+    {
+        $listener = $this->listener($this->openGate(), __FILE__, '1');
+
+        $this->assertSame('generated', $listener->onSaveKind('banane', $this->container()));
+    }
+
+    /**
      * @return list<string>
      */
     private function errors(): array
@@ -150,12 +266,22 @@ class FilesAiTagListenerTest extends TestCase
         return $container;
     }
 
-    private function connection(string $currentFlag): Connection&MockObject
+    private function connection(string $currentFlag, string $currentKind = AiTagOptions::KIND_GENERATED): Connection&MockObject
     {
         $connection = $this->createMock(Connection::class);
+
+        // currentValue() baut das SQL mit quoteIdentifier(); eine Attrappe gibt dafuer
+        // sonst nichts zurueck, und die Spalte stuende nie im SQL - dann liessen sich
+        // Schalter und Art nicht unterscheiden.
+        $connection
+            ->method('quoteIdentifier')
+            ->willReturnArgument(0)
+        ;
+
+        // Die Abfragen nach dem Schalter und nach der Art laufen beide ueber fetchOne().
         $connection
             ->method('fetchOne')
-            ->willReturn($currentFlag)
+            ->willReturnCallback(static fn (string $sql): string => str_contains($sql, 'netzhirschAiKind') ? $currentKind : $currentFlag)
         ;
 
         $connection
@@ -166,7 +292,10 @@ class FilesAiTagListenerTest extends TestCase
         return $connection;
     }
 
-    private function listener(LicenseGate $gate, string $fontPath, string $currentFlag, Connection|null $connection = null): FilesAiTagListener
+    /**
+     * @param array<string, string> $post was das Formular mitschickt (z. B. die gewaehlte Art)
+     */
+    private function listener(LicenseGate $gate, string $fontPath, string $currentFlag, Connection|null $connection = null, array $post = []): FilesAiTagListener
     {
         $connection ??= $this->connection($currentFlag);
 
@@ -177,7 +306,7 @@ class FilesAiTagListenerTest extends TestCase
         ;
 
         $this->session = new Session(new MockArraySessionStorage());
-        $request = new Request();
+        $request = new Request([], $post);
         $request->setSession($this->session);
         $requestStack = new RequestStack();
         $requestStack->push($request);

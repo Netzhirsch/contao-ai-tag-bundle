@@ -3,10 +3,16 @@
   <file source-language="en" datatype="plaintext" original="tl_files">
     <body>
       <trans-unit id="tl_files.netzhirschAiGenerated.0">
-        <source>AI-generated content</source>
+        <source>AI-generated or AI-modified content</source>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiGenerated.1">
-        <source>Label this image as AI-generated. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
+        <source>Label this image as AI content. For folders the setting applies to all images inside; the closest labelled entry wins.</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKind.0">
+        <source>Type of AI involvement</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKind.1">
+        <source>Generated: created entirely by AI. Modified: existing, human-made content was partially altered with AI (e.g. retouching, generative fill). Decides the default wording.</source>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiTagPosition.0">
         <source>Label position</source>
@@ -19,6 +25,12 @@
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiTagText.1">
         <source>Overrides the website and default wording for this file only. Keep it short so it stays legible in small image sizes.</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKindRef.generated">
+        <source>AI-generated</source>
+      </trans-unit>
+      <trans-unit id="tl_files.netzhirschAiKindRef.modified">
+        <source>AI-modified</source>
       </trans-unit>
       <trans-unit id="tl_files.netzhirschAiTagPositionRef.auto">
         <source>Automatic (avoid important part)</source>

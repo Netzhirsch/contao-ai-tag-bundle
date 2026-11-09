@@ -31,6 +31,22 @@ final class AiTagOptions
 
     public const POSITION_BOTTOM_LEFT = 'bottom-left';
 
+    /**
+     * Art der KI-Beteiligung. Die EU unterscheidet bei ihren Icons "Fully
+     * AI-Generated" (vollstaendig von KI erzeugt) und "Partially AI-Modified"
+     * (vorhandenes, von Menschen erstelltes Material wurde teilweise mit KI
+     * veraendert) - "KI-generiert" auf ein nur bearbeitetes Foto zu setzen behauptet
+     * mehr, als stimmt.
+     */
+    public const KIND_GENERATED = 'generated';
+
+    public const KIND_MODIFIED = 'modified';
+
+    public const KINDS = [
+        self::KIND_GENERATED,
+        self::KIND_MODIFIED,
+    ];
+
     public const POSITIONS = [
         self::POSITION_AUTO,
         self::POSITION_TOP_RIGHT,
@@ -57,6 +73,16 @@ final class AiTagOptions
          */
         public readonly string $shortText = '',
     ) {
+    }
+
+    /**
+     * Normalisiert eine gespeicherte Art. Leer und Unbekanntes gelten als
+     * "generiert": so war jede Markierung vor der Einfuehrung der Art, und so bleibt
+     * sie lesbar.
+     */
+    public static function normaliseKind(mixed $kind): string
+    {
+        return self::KIND_MODIFIED === $kind ? self::KIND_MODIFIED : self::KIND_GENERATED;
     }
 
     /**

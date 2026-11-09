@@ -81,6 +81,14 @@ $GLOBALS['TL_DCA']['tl_netzhirsch_ai_tag_log'] = [
         'detail' => [
             'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
         ],
+        // Art der KI-Beteiligung zum Zeitpunkt des Eintrags (generated / modified). Leer bei den
+        // Eintraegen, die sie nicht betreffen, und bei allen aus der Zeit davor - dort galt
+        // "generiert".
+        'kind' => [
+            'filter' => true,
+            'reference' => &$GLOBALS['TL_LANG']['tl_netzhirsch_ai_tag_log']['kindRef'],
+            'sql' => ['type' => 'string', 'length' => 16, 'default' => ''],
+        ],
         'userId' => [
             'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
         ],

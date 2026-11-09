@@ -33,6 +33,8 @@ final class AiTagAuditLogger
 
     public const ACTION_POSITION_CHANGED = 'position_changed';
 
+    public const ACTION_KIND_CHANGED = 'kind_changed';
+
     public function __construct(
         private readonly Connection $connection,
         private readonly Security $security,
@@ -46,24 +48,36 @@ final class AiTagAuditLogger
      * @param AuditActor|null $actor Abweichender Verursacher, etwa ein MCP-Aufrufer
      *                               ohne Backend-Login
      */
-    public function log(string $action, string $path, bool $isFolder, string|null $detail = null, AuditActor|null $actor = null): void
+    public function log(string $action, string $path, bool $isFolder, string|null $detail = null, AuditActor|null $actor = null, string $kind = ''): void
     {
         $actor ??= $this->currentBackendActor();
 
+        $row = [
+            'tstamp' => time(),
+            'action' => $action,
+            'scope' => $isFolder ? 'folder' : 'file',
+            'filePath' => $path,
+            'detail' => $detail ?? '',
+            'userId' => $actor->userId,
+            'username' => $actor->username,
+            'kind' => $kind,
+        ];
+
         try {
-            $this->connection->insert('tl_netzhirsch_ai_tag_log', [
-                'tstamp' => time(),
-                'action' => $action,
-                'scope' => $isFolder ? 'folder' : 'file',
-                'filePath' => $path,
-                'detail' => $detail ?? '',
-                'userId' => $actor->userId,
-                'username' => $actor->username,
-            ]);
+            $this->connection->insert('tl_netzhirsch_ai_tag_log', $row);
         } catch (DbalException $exception) {
-            // Ein fehlgeschlagenes Protokoll darf die Redaktion nicht blockieren, muss aber
-            // sichtbar bleiben.
-            $this->logger?->error('Kennzeichnungs-Protokoll konnte nicht geschrieben werden: '.$exception->getMessage());
+            // Nach einem Update fehlt die Spalte "kind", bis die Datenbank aktualisiert ist
+            // (contao:migrate). Ein Protokolleintrag ohne die Art ist besser als gar keiner:
+            // der Nachweis darf an einer fehlenden Spalte nicht ausfallen.
+            unset($row['kind']);
+
+            try {
+                $this->connection->insert('tl_netzhirsch_ai_tag_log', $row);
+            } catch (DbalException $second) {
+                // Ein fehlgeschlagenes Protokoll darf die Redaktion nicht blockieren, muss aber
+                // sichtbar bleiben.
+                $this->logger?->error('Kennzeichnungs-Protokoll konnte nicht geschrieben werden: '.$second->getMessage());
+            }
         }
 
         $this->mirrorToSystemLog($action, $path, $actor);
