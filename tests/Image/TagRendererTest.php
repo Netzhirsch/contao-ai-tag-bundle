@@ -205,6 +205,59 @@ class TagRendererTest extends TestCase
         $this->assertFalse($this->renderInto($renderer, 400, 200));
     }
 
+    /**
+     * Wo der volle Wortlaut auch in der kleinsten Schriftgroesse nicht passt, steht
+     * die Kurzform ("KI") im Bild, statt dass das Label ganz entfaellt: ein kurzes
+     * Label ist besser als gar keines, und "AI" ist die einzige Abkuerzung, die die
+     * EU-Kommission vorsieht. 100 x 80 px ist so ein Fall - der volle Text braeuchte
+     * mindestens 77 px bei hoechstens 65 px erlaubter Breite, die Kurzform braucht
+     * rund 30 px.
+     */
+    public function testTheShortFormIsDrawnWhereTheFullWordingDoesNotFit(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+
+        $this->assertFalse($this->renderInto($renderer, 100, 80), 'Ohne Kurzform entfaellt das Label.');
+        $this->assertTrue($this->renderInto($renderer, 100, 80, 'KI-generiert', 'KI'));
+
+        [$width, $height] = $this->darkBoxSize((string) $this->file);
+
+        $this->assertLessThanOrEqual(100 * 0.65 + 1, $width);
+        $this->assertLessThanOrEqual(80 * 0.3 + 1, $height);
+        $this->assertLessThan(40, $width, 'Es ist die Kurzform und nicht der verkleinerte volle Text.');
+    }
+
+    /**
+     * Die Kurzform kommt erst, wenn der volle Wortlaut nicht passt - sonst wuerde ein
+     * Bild, auf dem der volle Text passt, unnoetig verkuerzt.
+     */
+    public function testTheFullWordingWinsWhereItFits(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+
+        $this->assertTrue($this->renderInto($renderer, 800, 450, 'KI-generiert', 'KI'));
+        [$width] = $this->darkBoxSize((string) $this->file);
+
+        $this->assertGreaterThan(100, $width, 'Auf 800 px Breite passt der volle Wortlaut, er darf nicht verkuerzt werden.');
+    }
+
+    /**
+     * Die Ampel im Backend und das Zeichnen entscheiden nach derselben Regel; fit()
+     * sagt, was in einer Groesse eingebrannt wuerde.
+     */
+    public function testFitReportsFullShortOrNone(): void
+    {
+        $renderer = $this->renderer($this->solidStyle());
+
+        $this->assertSame(TagRenderer::FIT_FULL, $renderer->fit(800, 450, 'KI-generiert', 'KI'));
+        $this->assertSame(TagRenderer::FIT_SHORT, $renderer->fit(100, 80, 'KI-generiert', 'KI'));
+        $this->assertSame(TagRenderer::FIT_NONE, $renderer->fit(100, 80, 'KI-generiert', ''), 'Ohne Kurzform bleibt nichts.');
+        $this->assertSame(TagRenderer::FIT_NONE, $renderer->fit(20, 10, 'KI-generiert', 'KI'), 'Auch die Kurzform hat eine Untergrenze.');
+
+        $this->assertTrue($renderer->isLegible(100, 80, 'KI-generiert', 'KI'));
+        $this->assertFalse($renderer->isLegible(100, 80, 'KI-generiert'));
+    }
+
     private function solidStyle(): TagStyle
     {
         return new TagStyle(
@@ -289,7 +342,7 @@ class TagRendererTest extends TestCase
         return $image;
     }
 
-    private function renderInto(TagRenderer $renderer, int $width, int $height, string $text = 'KI-generiert'): bool
+    private function renderInto(TagRenderer $renderer, int $width, int $height, string $text = 'KI-generiert', string $shortText = ''): bool
     {
         $imagine = new Imagine();
         $this->file = tempnam(sys_get_temp_dir(), 'aitag').'.png';
@@ -297,7 +350,7 @@ class TagRendererTest extends TestCase
 
         return $renderer->apply(
             $this->file,
-            new AiTagOptions('de', AiTagOptions::POSITION_TOP_LEFT, $text, 90, 'test'),
+            new AiTagOptions('de', AiTagOptions::POSITION_TOP_LEFT, $text, 90, 'test', $shortText),
             [],
         );
     }

@@ -59,20 +59,24 @@ class AiTagCoverageListener
         }
 
         $text = $this->resolver->defaultText();
+        $short = $this->resolver->shortText();
         $rows = [];
 
         foreach ($sizes as $imageSize) {
             [$width, $height] = $this->targetDimensions($size[0], $size[1], $imageSize);
-            $legible = $this->renderer->isLegible($width, $height, $text);
+            $fit = $this->renderer->fit($width, $height, $text, $short);
 
             $rows[] = \sprintf(
                 '<tr><td style="padding:.15rem .75rem .15rem 0">%s</td><td style="padding:.15rem .75rem .15rem 0">%d×%d</td><td style="padding:.15rem 0">%s</td></tr>',
                 htmlspecialchars($imageSize['name'], ENT_QUOTES),
                 $width,
                 $height,
-                $legible
-                    ? '<span style="color:var(--green,#49840b)">'.htmlspecialchars($this->translator->trans('netzhirsch_ai_tag.coverage.legible', [], 'netzhirsch_ai_tag'), ENT_QUOTES).'</span>'
-                    : '<span style="color:var(--red,#c7241f)">'.htmlspecialchars($this->translator->trans('netzhirsch_ai_tag.coverage.too_small', [], 'netzhirsch_ai_tag'), ENT_QUOTES).'</span>',
+                match ($fit) {
+                    TagRenderer::FIT_FULL => '<span style="color:var(--green,#49840b)">'.htmlspecialchars($this->translator->trans('netzhirsch_ai_tag.coverage.legible', [], 'netzhirsch_ai_tag'), ENT_QUOTES).'</span>',
+                    // Orange: das Label steht im Bild, aber verkuerzt - nicht dasselbe wie "lesbar".
+                    TagRenderer::FIT_SHORT => '<span style="color:var(--orange,#d97706)">'.htmlspecialchars($this->translator->trans('netzhirsch_ai_tag.coverage.short', ['%short%' => $short], 'netzhirsch_ai_tag'), ENT_QUOTES).'</span>',
+                    default => '<span style="color:var(--red,#c7241f)">'.htmlspecialchars($this->translator->trans('netzhirsch_ai_tag.coverage.too_small', [], 'netzhirsch_ai_tag'), ENT_QUOTES).'</span>',
+                },
             );
         }
 

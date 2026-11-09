@@ -48,7 +48,7 @@ final class TagStyle
         public readonly float $marginRatio = 0.5,
         public readonly bool $uppercase = false,
         public readonly int $minFontSize = 11,
-        public readonly float $relativeFontSize = 0.03,
+        public readonly float $relativeFontSize = 0.022,
         public readonly int $maxFontSize = 48,
         public readonly float $maxBoxWidth = 0.65,
         public readonly float $maxBoxHeight = 0.3,

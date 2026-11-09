@@ -56,6 +56,7 @@ services:
             $projectDir: '%kernel.project_dir%'
             $uploadPath: '%contao.upload_path%'
             $excludedPaths: '%netzhirsch_contao_ai_tag.excluded_paths%'
+            $shortTextFallback: '%netzhirsch_contao_ai_tag.short_text_fallback%'
 
     # Dekoriert statt ersetzt: alle Verbraucher im Core typisieren gegen
     # ResizerInterface bzw. DeferredResizerInterface, nicht gegen die Klasse.

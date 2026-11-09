@@ -23,6 +23,40 @@ class AiTagOptionsTest extends TestCase
         $this->assertSame(80, $restored->quality);
     }
 
+    /**
+     * Die Kurzform steht in den Nutzdaten: beim spaeteren (deferred) Erzeugen gibt es
+     * keinen Request und damit keine Sprache mehr, aus der sie sich ableiten liesse.
+     */
+    public function testTheShortFormSurvivesTheRoundTrip(): void
+    {
+        $options = new AiTagOptions('de', AiTagOptions::POSITION_TOP_RIGHT, 'KI-generiert', 80, 'stil', 'KI');
+
+        $restored = AiTagOptions::fromArray(json_decode(json_encode($options->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR));
+
+        $this->assertNotNull($restored);
+        $this->assertSame('KI', $restored->shortText);
+    }
+
+    /**
+     * Bilder, die eine aeltere Fassung eingefroren hat, tragen kein "short" - sie
+     * muessen weiter lesbar sein, nur eben ohne Kurzform.
+     */
+    public function testPayloadsFromBeforeTheShortFormStillLoad(): void
+    {
+        $restored = AiTagOptions::fromArray(['v' => 1, 'locale' => 'de', 'corner' => 'top-right', 'text' => 'KI-generiert', 'quality' => 80, 'style' => 'x']);
+
+        $this->assertNotNull($restored);
+        $this->assertSame('', $restored->shortText);
+    }
+
+    public function testTheShortFormIsPartOfTheCacheKeyPayload(): void
+    {
+        $with = new AiTagOptions('de', AiTagOptions::POSITION_TOP_RIGHT, 'KI-generiert', 80, 'stil', 'KI');
+        $without = new AiTagOptions('de', AiTagOptions::POSITION_TOP_RIGHT, 'KI-generiert', 80, 'stil', '');
+
+        $this->assertNotSame(implode(',', $with->toArray()), implode(',', $without->toArray()));
+    }
+
     public function testTextIsPartOfTheCacheKeyPayload(): void
     {
         $german = new AiTagOptions('de', AiTagOptions::POSITION_TOP_RIGHT, 'KI-generiert', 80);

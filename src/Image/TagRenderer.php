@@ -28,6 +28,15 @@ use Symfony\Component\Filesystem\Filesystem;
 final class TagRenderer
 {
     /**
+     * Ergebnis von fit(): der volle Wortlaut passt, nur die Kurzform passt, nichts passt.
+     */
+    public const FIT_FULL = 'full';
+
+    public const FIT_SHORT = 'short';
+
+    public const FIT_NONE = 'none';
+
+    /**
      * Qualitaets-Schluessel, die vor dem zweiten Speichern zurueckgesetzt werden,
      * damit die Zielqualitaet der Bildgroesse und nicht die angehobene erste
      * Kodierung greift.
@@ -112,15 +121,33 @@ final class TagRenderer
      * Prueft ohne zu zeichnen, ob die Kennzeichnung in der angegebenen Groesse lesbar
      * waere. Grundlage fuer die Backend-Warnung bei zu kleinen Bildgroessen.
      */
-    public function isLegible(int $width, int $height, string $text): bool
+    public function isLegible(int $width, int $height, string $text, string $shortText = ''): bool
+    {
+        return self::FIT_NONE !== $this->fit($width, $height, $text, $shortText);
+    }
+
+    /**
+     * Was in dieser Bildgroesse eingebrannt wuerde: der volle Wortlaut, nur die
+     * Kurzform (FIT_SHORT) oder nichts. Grundlage der Ampel im Backend; entscheidet
+     * nach derselben Regel wie das Zeichnen.
+     */
+    public function fit(int $width, int $height, string $text, string $shortText = ''): string
     {
         $font = $this->fontLocator->locate();
 
         if (null === $font || $this->style->isTooSmall($width, $height)) {
-            return false;
+            return self::FIT_NONE;
         }
 
-        return null !== $this->fitFontSize($font, $this->label($text), $width, $height);
+        if (null !== $this->fitFontSize($font, $this->label($text), $width, $height)) {
+            return self::FIT_FULL;
+        }
+
+        if ('' !== $shortText && null !== $this->fitFontSize($font, $this->label($shortText), $width, $height)) {
+            return self::FIT_SHORT;
+        }
+
+        return self::FIT_NONE;
     }
 
     /**
@@ -163,6 +190,18 @@ final class TagRenderer
 
         $text = $this->label($tag->text);
         $fontSize = $this->fitFontSize($font, $text, $width, $height);
+
+        // Passt der volle Wortlaut auch in der kleinsten Schriftgroesse nicht, kommt vor dem
+        // Weglassen noch die Kurzform ("KI"): ein kurzes Label ist besser als gar keines.
+        if (null === $fontSize && '' !== $tag->shortText) {
+            $shortLabel = $this->label($tag->shortText);
+            $fontSize = $this->fitFontSize($font, $shortLabel, $width, $height);
+
+            if (null !== $fontSize) {
+                $text = $shortLabel;
+                $this->logger?->info(\sprintf('KI-Kennzeichnung fuer "%s": bei %dx%d px nur die Kurzform "%s".', $path, $width, $height, $text));
+            }
+        }
 
         if (null === $fontSize) {
             $this->logger?->info(\sprintf(

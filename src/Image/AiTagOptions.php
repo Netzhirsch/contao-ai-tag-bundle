@@ -51,6 +51,11 @@ final class AiTagOptions
         public readonly string $text,
         public readonly int $quality,
         public readonly string $styleFingerprint = '',
+        /**
+         * Kurzfassung ("KI"), auf die zurueckgegriffen wird, wenn der volle Wortlaut auch
+         * in der kleinsten Schriftgroesse nicht ins Bild passt. Leer = keine Kurzform.
+         */
+        public readonly string $shortText = '',
     ) {
     }
 
@@ -66,6 +71,7 @@ final class AiTagOptions
             'text' => $this->text,
             'quality' => $this->quality,
             'style' => $this->styleFingerprint,
+            'short' => $this->shortText,
         ];
     }
 
@@ -88,6 +94,8 @@ final class AiTagOptions
             (string) $payload['text'],
             (int) $payload['quality'],
             (string) ($payload['style'] ?? ''),
+            // Fehlt bei Bildern, die eine aeltere Fassung eingefroren hat: dann keine Kurzform.
+            (string) ($payload['short'] ?? ''),
         );
     }
 }

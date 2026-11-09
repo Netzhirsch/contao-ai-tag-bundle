@@ -80,7 +80,7 @@ Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 |---|---|---|
 | `font_path` | `null` | Absoluter Pfad zu einer eigenen TrueType-Schrift. Ohne Angabe die mitgelieferte DejaVu Sans. |
 | `min_font_size` | `11` | Kleinste Schriftgröße in Pixel. |
-| `relative_font_size` | `0.03` | Wunsch-Schriftgröße relativ zur Bildbreite. |
+| `relative_font_size` | `0.022` | Wunsch-Schriftgröße relativ zur Bildbreite. Mit dem Standardwortlaut belegt das Label damit etwa 15 % der Bildbreite (bei `0.03` wären es gut 20 %). |
 | `max_font_size` | `48` | Größte Schriftgröße. Ohne Deckel würde das Label auf einem 3000px-Hero 90px groß und damit zum Bildelement. |
 
 **Gestaltung**

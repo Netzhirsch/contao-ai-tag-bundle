@@ -279,12 +279,17 @@ final class AiTagTool extends AbstractMcpTool implements McpToolPermissionProvid
         }
 
         $text = $this->resolver->defaultText();
+        $short = $this->resolver->shortText();
 
-        if ('' !== $text && !$this->renderer->isLegible($size[0], $size[1], $text)) {
-            return [\sprintf('image_too_small: at %dx%d px no legible label fits; only the text alternative in the markup applies.', $size[0], $size[1])];
+        if ('' === $text) {
+            return [];
         }
 
-        return [];
+        return match ($this->renderer->fit($size[0], $size[1], $text, $short)) {
+            TagRenderer::FIT_SHORT => [\sprintf('label_shortened: at %dx%d px only the short form "%s" fits.', $size[0], $size[1], $short)],
+            TagRenderer::FIT_NONE => [\sprintf('image_too_small: at %dx%d px no legible label fits; only the text alternative in the markup applies.', $size[0], $size[1])],
+            default => [],
+        };
     }
 
     /**

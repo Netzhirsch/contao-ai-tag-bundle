@@ -7,6 +7,11 @@
         <target>KI-generiert</target>
         <note>Gesetzliche Standardformulierung fuer die Bildkennzeichnung. So kurz wie moeglich, damit sie auch in kleinen Bildgroessen lesbar bleibt.</note>
       </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.label_short">
+        <source>netzhirsch_ai_tag.label_short</source>
+        <target>KI</target>
+        <note>Kurzfassung, wenn der volle Wortlaut nicht ins Bild passt. "AI" bzw. "KI" ist die einzige Abkuerzung, die die EU-Kommission fuer Labels vorsieht.</note>
+      </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.log.flag_set">
         <source>netzhirsch_ai_tag.log.flag_set</source>
         <target>KI-Kennzeichnung gesetzt: %path%</target>
@@ -30,6 +35,10 @@
       <trans-unit id="netzhirsch_ai_tag.hint.font">
         <source>netzhirsch_ai_tag.hint.font</source>
         <target>Die Schrift für die Kennzeichnung ist nicht lesbar. Solange das so ist, wird nichts ins Bild gebrannt - auch nicht mit gültiger Lizenz. Ist netzhirsch_contao_ai_tag.font_path gesetzt, muss die Datei existieren und für PHP lesbar sein (bei open_basedir innerhalb des Projekts). Sonst fehlt die mitgelieferte Schrift: das Bundle neu installieren.</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.hint.short">
+        <source>netzhirsch_ai_tag.hint.short</source>
+        <target>"%file%" ist mit %width%×%height% Pixeln so klein, dass nur die Kurzform „%short%“ ins Bild passt. Der volle Wortlaut steht in der Textalternative im Markup.</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.hint.size">
         <source>netzhirsch_ai_tag.hint.size</source>
@@ -78,6 +87,10 @@
       <trans-unit id="netzhirsch_ai_tag.coverage.legible">
         <source>netzhirsch_ai_tag.coverage.legible</source>
         <target>lesbar</target>
+      </trans-unit>
+      <trans-unit id="netzhirsch_ai_tag.coverage.short">
+        <source>netzhirsch_ai_tag.coverage.short</source>
+        <target>nur Kurzform „%short%“</target>
       </trans-unit>
       <trans-unit id="netzhirsch_ai_tag.coverage.too_small">
         <source>netzhirsch_ai_tag.coverage.too_small</source>

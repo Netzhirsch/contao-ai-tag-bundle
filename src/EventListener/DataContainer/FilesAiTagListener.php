@@ -171,17 +171,21 @@ class FilesAiTagListener
         $text = $this->currentValue($path, 'netzhirschAiTagText');
         $text = '' !== $text ? $text : $this->resolver->defaultText();
 
-        if ('' === $text || $this->renderer->isLegible($size[0], $size[1], $text)) {
+        $short = $this->resolver->shortText();
+        $fit = '' === $text ? TagRenderer::FIT_FULL : $this->renderer->fit($size[0], $size[1], $text, $short);
+
+        if (TagRenderer::FIT_FULL === $fit) {
             return;
         }
 
         $this->addFlash(
             self::FLASH_INFO,
-            'netzhirsch_ai_tag.hint.size',
+            TagRenderer::FIT_SHORT === $fit ? 'netzhirsch_ai_tag.hint.short' : 'netzhirsch_ai_tag.hint.size',
             [
                 '%file%' => basename($path),
                 '%width%' => (string) $size[0],
                 '%height%' => (string) $size[1],
+                '%short%' => $short,
             ],
         );
     }

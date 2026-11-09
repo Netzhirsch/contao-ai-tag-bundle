@@ -31,6 +31,8 @@ final class AiTagResolver
 
     private const FALLBACK_TRANSLATION_KEY = 'netzhirsch_ai_tag.label';
 
+    private const SHORT_TRANSLATION_KEY = 'netzhirsch_ai_tag.label_short';
+
     private const TRANSLATION_DOMAIN = 'netzhirsch_ai_tag';
 
     /**
@@ -54,6 +56,11 @@ final class AiTagResolver
         private readonly string $uploadPath,
         private readonly array $excludedPaths = [],
         private readonly LoggerInterface|null $logger = null,
+        /**
+         * Ob bei zu kleinem Bild auf die Kurzform ("KI") zurueckgegriffen werden darf,
+         * statt das Label wegzulassen.
+         */
+        private readonly bool $shortTextFallback = true,
     ) {
     }
 
@@ -81,7 +88,7 @@ final class AiTagResolver
             ? $this->cornerSelector->select($image->getImportantPart())
             : $record['position'];
 
-        return new AiTagOptions($locale, $corner, $text, $quality, $this->style->fingerprint());
+        return new AiTagOptions($locale, $corner, $text, $quality, $this->style->fingerprint(), $this->shortText($locale));
     }
 
     public function isTaggableFormat(string $path): bool
@@ -99,6 +106,27 @@ final class AiTagResolver
         $fallback = $this->translator->trans(self::FALLBACK_TRANSLATION_KEY, [], self::TRANSLATION_DOMAIN, $locale);
 
         return self::FALLBACK_TRANSLATION_KEY === $fallback ? '' : trim($fallback);
+    }
+
+    /**
+     * Die Kurzform der Kennzeichnung ("KI" / "AI"), auf die zurueckgegriffen wird,
+     * wenn der volle Wortlaut auch in der kleinsten Schriftgroesse nicht ins Bild
+     * passt. Leer, wenn der Rueckgriff abgeschaltet ist (short_text_fallback) oder es
+     * fuer die Sprache keine Kurzform gibt.
+     *
+     * Die Kommission nennt "AI" ausdruecklich als einzige Abkuerzung, die ein Label
+     * verwenden soll; deshalb gibt es genau diese eine Kurzform und keine frei waehlbare.
+     */
+    public function shortText(string|null $locale = null): string
+    {
+        if (!$this->shortTextFallback) {
+            return '';
+        }
+
+        $locale ??= $this->resolveLocale();
+        $short = $this->translator->trans(self::SHORT_TRANSLATION_KEY, [], self::TRANSLATION_DOMAIN, $locale);
+
+        return self::SHORT_TRANSLATION_KEY === $short ? '' : trim($short);
     }
 
     /**

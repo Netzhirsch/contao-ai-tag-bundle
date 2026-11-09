@@ -25,7 +25,25 @@ class TagStyleTest extends TestCase
             TagStyle::STYLE_BOX, 'auto', 'auto', 60, 0.25, 0.45, 0.5, '0', 11, 0.03, 48, 0.65, 0.3, 0, 0,
         ])), 0, 8);
 
-        $this->assertNotSame($withoutRevision, (new TagStyle())->fingerprint());
+        // Mit dem frueheren Standard der Schriftgroesse verglichen, damit allein die
+        // Revision den Unterschied macht - der heutige Standard (0.022) wuerde ihn
+        // ohnehin erzeugen.
+        $this->assertNotSame($withoutRevision, (new TagStyle(relativeFontSize: 0.03))->fingerprint());
+    }
+
+    /**
+     * Der Standard: 2,2 % der Bildbreite. Bei 3 % belegte das Label mit dem
+     * Standardwortlaut gut ein Fuenftel der Bildbreite und wirkte auf Teasern und
+     * Artikelbildern zu gross; mit 2,2 % sind es etwa 15 %. Der Test haelt den Wert
+     * fest, damit er nicht unbemerkt wandert.
+     */
+    public function testTheDefaultFontSizeIsTwoPointTwoPercentOfTheWidth(): void
+    {
+        $style = new TagStyle();
+
+        $this->assertSame(0.022, $style->relativeFontSize);
+        $this->assertSame(29, $style->fontSize(1296));
+        $this->assertSame(12, $style->fontSize(552));
     }
 
     public function testCapsTheFontSizeOnLargeImages(): void
