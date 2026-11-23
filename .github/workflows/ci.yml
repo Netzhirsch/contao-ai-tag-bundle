@@ -74,9 +74,11 @@ jobs:
                   composer remove --dev --no-update netzhirsch/contao-mcp-bundle
                   composer config --unset repositories.netzhirsch-mcp
 
-            - name: Require Contao 6
-              if: matrix.contao == '6'
-              run: composer require --no-update contao/core-bundle:^6.0
+            # Die Hauptversion ausdruecklich festlegen: ohne das MCP-Bundle (kein Token, oder
+            # im Contao-6-Job) bindet nichts mehr an Contao 5, und auch der Job "Contao 5"
+            # auf PHP 8.4 loeste Contao 6 auf - 5.7 blieb dann ungeprueft.
+            - name: Pin the Contao major version
+              run: composer require --no-update "contao/core-bundle:${{ matrix.contao == '6' && '^6.0' || '^5.3' }}"
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
