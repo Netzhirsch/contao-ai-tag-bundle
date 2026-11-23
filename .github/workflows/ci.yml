@@ -12,7 +12,7 @@ permissions:
 
 jobs:
     quality:
-        name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }}${{ matrix.contao && format(' / Contao {0}', matrix.contao) || '' }}
+        name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }} / Contao ${{ matrix.contao }}
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -20,10 +20,15 @@ jobs:
                 # 8.1 ist der Boden (Contao 5.3 LTS), 8.4 die Spitze.
                 php: ['8.1', '8.4']
                 dependencies: ['highest']
+                # Eigene Dimension, nicht nur ein Schluessel im include: sonst legt GitHub
+                # den Contao-6-Eintrag mit dem Job PHP 8.4 / highest zusammen, und Contao 5
+                # auf PHP 8.4 faellt aus der Matrix.
+                contao: ['5']
                 include:
                     # Aelteste unterstuetzte Kombination: Contao 5.3 auf PHP 8.1.
                     - php: '8.1'
                       dependencies: 'lowest'
+                      contao: '5'
                     # Contao 6 (PHP ^8.4, Symfony 8). Eigener Job, weil das MCP-Bundle
                     # bisher nur Contao 5 erlaubt - mit ihm loest Composer nie 6 auf.
                     - php: '8.4'
