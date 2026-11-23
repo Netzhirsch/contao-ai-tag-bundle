@@ -24,10 +24,14 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -251,11 +255,54 @@ class FilesAiTagListenerTest extends TestCase
     }
 
     /**
+     * Die Dateiverwaltung rendert die Meldungen vor der Umleitung nach dem Speichern
+     * - der Hinweis war verbraucht, bevor die Redaktion ihn sehen konnte. Er muss
+     * nach der Umleitung wieder im Flash-Bag stehen.
+     */
+    public function testTheLicenceHintSurvivesTheRedirectAfterSaving(): void
+    {
+        $listener = $this->listener($this->closedGate(), __FILE__, '1');
+        $listener->onSaveFlag('1', $this->container());
+
+        // Was DC_Folder::edit() mit Message::generate() tut, bevor es umleitet.
+        $this->session->getFlashBag()->get(self::ERROR_BAG);
+
+        $listener->carryHintsOverRedirect($this->responseEvent(new RedirectResponse('/contao?do=files')));
+
+        $this->assertSame(['netzhirsch_ai_tag.license.hint.inactive'], $this->errors());
+    }
+
+    /**
+     * Steht der Hinweis noch da (nichts hat ihn gerendert), kommt er nicht doppelt.
+     * Und ohne Umleitung bleibt es bei dem, was die Seite schon gezeigt hat.
+     */
+    public function testTheHintIsNeitherDuplicatedNorRepeatedWithoutARedirect(): void
+    {
+        $listener = $this->listener($this->closedGate(), __FILE__, '1');
+        $listener->onSaveFlag('1', $this->container());
+        $listener->carryHintsOverRedirect($this->responseEvent(new RedirectResponse('/contao?do=files')));
+
+        $this->assertSame(['netzhirsch_ai_tag.license.hint.inactive'], $this->errors());
+
+        $this->session->getFlashBag()->get(self::ERROR_BAG);
+        $listener->onSaveFlag('1', $this->container());
+        $this->session->getFlashBag()->get(self::ERROR_BAG);
+        $listener->carryHintsOverRedirect($this->responseEvent(new Response('<html></html>')));
+
+        $this->assertSame([], $this->errors());
+    }
+
+    /**
      * @return list<string>
      */
     private function errors(): array
     {
         return array_values($this->session->getFlashBag()->peek(self::ERROR_BAG));
+    }
+
+    private function responseEvent(Response $response): ResponseEvent
+    {
+        return new ResponseEvent($this->createStub(HttpKernelInterface::class), new Request(), HttpKernelInterface::MAIN_REQUEST, $response);
     }
 
     private function container(): DataContainer

@@ -83,8 +83,8 @@ $GLOBALS['TL_DCA']['tl_files']['fields']['netzhirschAiTagCoverage'] = [
     'exclude' => false,
 ];
 
-$GLOBALS['TL_DCA']['tl_files']['palettes']['__selector__'][] = 'netzhirschAiGenerated';
-$GLOBALS['TL_DCA']['tl_files']['subpalettes']['netzhirschAiGenerated'] = 'netzhirschAiKind,netzhirschAiTagPosition,netzhirschAiTagText,netzhirschAiTagPreview,netzhirschAiTagCoverage';
+// Bewusst keine Unterpalette: die Dateiverwaltung wertet sie nicht aus. Die Felder
+// fuer Art, Position, Text, Vorschau und Abdeckung blendet FilesAiTagPaletteListener ein.
 
 PaletteManipulator::create()
     ->addField('netzhirschAiTagDetection', 'syncExclude', PaletteManipulator::POSITION_AFTER)

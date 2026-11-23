@@ -10,7 +10,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LicenseLabelsTest extends TestCase
 {
-    private const TEMPLATE = __DIR__.'/../../contao/templates/backend/be_netzhirsch_ai_tag_license.html5';
+    private const TEMPLATE = __DIR__.'/../../contao/templates/twig/be_netzhirsch_ai_tag_license.html.twig';
 
     /**
      * Der Fehler, der diese Klasse ausgeloest hat: der Vorlage wurde eine Closure
@@ -33,7 +33,10 @@ class LicenseLabelsTest extends TestCase
     {
         $template = (string) file_get_contents(self::TEMPLATE);
 
-        preg_match_all("/\\\$labels\\['([^']+)'\\]/", $template, $matches);
+        preg_match_all("/\\blabels\\['([^']+)'\\]/", $template, $matches);
+
+        // Ohne Treffer wuerde der Abgleich unten nichts pruefen und trotzdem bestehen.
+        $this->assertNotEmpty($matches[1]);
 
         $used = array_unique($matches[1]);
         $available = LicenseLabels::build($this->translator(), $this->state());

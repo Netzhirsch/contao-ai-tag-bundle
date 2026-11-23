@@ -6,7 +6,7 @@ namespace Netzhirsch\ContaoAiTagBundle\EventListener;
 
 use Contao\CoreBundle\Filesystem\Dbafs\DbafsChangeEvent;
 use Contao\CoreBundle\Filesystem\FilesystemItem;
-use Contao\CoreBundle\Filesystem\VirtualFilesystemInterface;
+use Contao\CoreBundle\Filesystem\VirtualFilesystem;
 use Netzhirsch\ContaoAiTagBundle\Detection\AiSourceInspector;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
@@ -25,7 +25,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 class DetectAiSourceListener
 {
     public function __construct(
-        private readonly VirtualFilesystemInterface $filesStorage,
+        private readonly VirtualFilesystem $filesStorage,
         private readonly AiSourceInspector $inspector,
         private readonly string $uploadPath,
     ) {

@@ -12,7 +12,7 @@ permissions:
 
 jobs:
     quality:
-        name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }}
+        name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }}${{ matrix.contao && format(' / Contao {0}', matrix.contao) || '' }}
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -24,6 +24,11 @@ jobs:
                     # Aelteste unterstuetzte Kombination: Contao 5.3 auf PHP 8.1.
                     - php: '8.1'
                       dependencies: 'lowest'
+                    # Contao 6 (PHP ^8.4, Symfony 8). Eigener Job, weil das MCP-Bundle
+                    # bisher nur Contao 5 erlaubt - mit ihm loest Composer nie 6 auf.
+                    - php: '8.4'
+                      dependencies: 'highest'
+                      contao: '6'
 
         steps:
             - name: Checkout
@@ -37,7 +42,11 @@ jobs:
               env:
                   COMPOSER_GITHUB_TOKEN: ${{ secrets.COMPOSER_GITHUB_TOKEN }}
               run: |
-                  if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
+                  if [ '${{ matrix.contao }}' = '6' ]; then
+                      # Das MCP-Bundle verlangt contao/core-bundle ^5.3 und muss hier weichen.
+                      echo 'available=no' >> "$GITHUB_OUTPUT"
+                      echo "::notice title=Contao 6 ohne MCP-Bundle::netzhirsch/contao-mcp-bundle unterstuetzt Contao 6 noch nicht. src/Mcp und tests/Mcp werden in diesem Job nicht geprueft."
+                  elif [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
                       echo 'available=yes' >> "$GITHUB_OUTPUT"
                       # Nur mit echtem Token setzen: mit leerem Wert versucht Composer
                       # sich anzumelden und GitHub weist JEDEN Download ab.
@@ -59,6 +68,10 @@ jobs:
               run: |
                   composer remove --dev --no-update netzhirsch/contao-mcp-bundle
                   composer config --unset repositories.netzhirsch-mcp
+
+            - name: Require Contao 6
+              if: matrix.contao == '6'
+              run: composer require --no-update contao/core-bundle:^6.0
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2

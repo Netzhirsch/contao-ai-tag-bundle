@@ -12,8 +12,11 @@ use Netzhirsch\ContaoAiTagBundle\Image\AiTagOptions;
 use Netzhirsch\ContaoAiTagBundle\Image\AiTagResolver;
 use Netzhirsch\ContaoAiTagBundle\Image\TagRenderer;
 use Netzhirsch\ContaoAiTagBundle\License\LicenseGate;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -34,6 +37,14 @@ class FilesAiTagListener
      * @var array<string, true>
      */
     private array $flagLogged = [];
+
+    /**
+     * Die Hinweise dieser Anfrage, um sie ueber die Umleitung nach dem Speichern zu
+     * tragen (siehe carryHintsOverRedirect()).
+     *
+     * @var list<array{string, string}>
+     */
+    private array $pendingHints = [];
 
     public function __construct(
         private readonly Connection $connection,
@@ -147,6 +158,44 @@ class FilesAiTagListener
     public function getPositionOptions(): array
     {
         return AiTagOptions::POSITIONS;
+    }
+
+    /**
+     * Traegt die Hinweise ueber die Umleitung nach dem Speichern.
+     *
+     * Die Dateiverwaltung (DC_Folder::edit()) rendert die Meldungen, BEVOR sie nach dem
+     * Speichern umleitet - auf allen Contao-Versionen. Was ein Speicher-Callback in den
+     * Flash-Bag legt, ist damit schon verbraucht, und die Seite nach der Umleitung zeigte
+     * nichts. Genau so kam der rote Lizenz-Hinweis nie an. Steht ein Hinweis bei der
+     * Umleitung nicht mehr im Flash-Bag, wird er hier erneut abgelegt.
+     */
+    #[AsEventListener(event: KernelEvents::RESPONSE)]
+    public function carryHintsOverRedirect(ResponseEvent $event): void
+    {
+        if (!$event->isMainRequest() || [] === $this->pendingHints) {
+            return;
+        }
+
+        $pending = $this->pendingHints;
+        $this->pendingHints = [];
+
+        if (!$event->getResponse()->isRedirection()) {
+            return;
+        }
+
+        $session = $this->requestStack->getSession();
+
+        if (!$session instanceof FlashBagAwareSessionInterface) {
+            return;
+        }
+
+        $flashBag = $session->getFlashBag();
+
+        foreach ($pending as [$level, $message]) {
+            if (!\in_array($message, $flashBag->peek($level), true)) {
+                $flashBag->add($level, $message);
+            }
+        }
     }
 
     /**
@@ -275,9 +324,9 @@ class FilesAiTagListener
             return;
         }
 
-        $session->getFlashBag()->add(
-            $level,
-            $this->translator->trans($key, $parameters, 'netzhirsch_ai_tag'),
-        );
+        $message = $this->translator->trans($key, $parameters, 'netzhirsch_ai_tag');
+
+        $session->getFlashBag()->add($level, $message);
+        $this->pendingHints[] = [$level, $message];
     }
 }

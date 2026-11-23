@@ -8,23 +8,24 @@ use Netzhirsch\ContaoAiTagBundle\Backend\LicenseLabels;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 /**
  * Fuehrt die Backend-Vorlage der Lizenz-Seite wirklich aus.
  *
  * Anlass: die Seite brach beim ersten Aufruf auf einer echten Installation ab,
- * weil ihr eine Closure uebergeben wurde (Contaos Template::__get() ruft
- * aufrufbare Objekte beim Lesen auf). Ein Test, der nur Klassen prueft, findet so
- * etwas nie - hier wird die Vorlage deshalb mit denselben Daten gerendert, die
- * das Modul setzt.
+ * weil ihr eine Closure uebergeben wurde. Ein Test, der nur Klassen prueft,
+ * findet so etwas nie - hier wird die Vorlage deshalb mit denselben Daten
+ * gerendert, die das Modul setzt.
  *
- * Statt einer echten BackendTemplate wird ein einfaches Objekt gebunden: die
- * Vorlage liest ausschliesslich eigene Eigenschaften, und genau das ist der
- * Vertrag, der halten muss.
+ * Die Vorlage ist Twig, weil Contao 6 keine .html5 mehr rendert. Gerendert wird
+ * mit strict_variables: ein Tippfehler in einem Variablennamen faellt so hier auf
+ * und nicht erst im Backend.
  */
 class LicenseTemplateTest extends TestCase
 {
-    private const TEMPLATE = __DIR__.'/../../contao/templates/backend/be_netzhirsch_ai_tag_license.html5';
+    private const TEMPLATE_DIR = __DIR__.'/../../contao/templates/twig';
 
     /**
      * @param array<string, mixed> $license
@@ -167,67 +168,29 @@ class LicenseTemplateTest extends TestCase
             ->willReturnArgument(0)
         ;
 
-        // Stellvertreter mit denselben Zugriffsregeln wie Contaos Template: __get()
-        // fuehrt jedes aufrufbare Objekt beim Lesen aus. Genau daran ist die Seite auf
-        // einer echten Installation gescheitert - hier wuerde derselbe Fehler auffallen.
-        // Bewusst eine eigene Klasse: an eine interne wie stdClass laesst PHP keine
-        // Closure binden (Warnung, Rueckgabe null).
-        $data = new class() {
-            /**
-             * @var array<string, mixed>
-             */
-            private array $values = [];
+        // Wie in Contao: Vorlagen aus contao/templates/twig liegen im Namensraum @Contao.
+        $loader = new FilesystemLoader();
+        $loader->addPath(self::TEMPLATE_DIR, 'Contao');
 
-            /**
-             * Gesetzt wird ueber eine Methode statt ueber __set: die statische Analyse meldet
-             * sonst jede Zuweisung als undefinierte Eigenschaft. Fuer die Vorlage zaehlt
-             * allein das Lesen.
-             */
-            public function set(string $key, mixed $value): void
-            {
-                $this->values[$key] = $value;
-            }
+        $twig = new Environment($loader, ['strict_variables' => true, 'autoescape' => 'html']);
 
-            public function __get(string $key): mixed
-            {
-                $value = $this->values[$key] ?? null;
-
-                return \is_object($value) && \is_callable($value) ? $value() : $value;
-            }
-        };
-
-        $data->set('labels', LicenseLabels::build($translator, ['reason' => (string) $license['reason'], 'days_left' => (int) $license['days_left']]));
-        $data->set('license', $license);
-        $data->set('licensePlan', $plan);
-        $data->set('licenseFile', '/var/www/var/netzhirsch-ai-tag/license.json');
-        $data->set('actionUrl', '/contao?do=netzhirsch_ai_tag_license&rt=token');
-        $data->set('referer', '/contao');
-        $data->set('backTitle', 'Zurueck');
-        $data->set('backLabel', 'Zurueck');
-        $data->set('messages', '');
-        $data->set('update', $update);
-
-        // Nicht static: eine statische Closure laesst sich nicht an ein Objekt binden,
-        // und die Vorlage liest ihre Werte ueber $this. Der Pfad kommt ueber use(), weil
-        // die Closure im Geltungsbereich des gebundenen Objekts laeuft und die Konstante
-        // dieser Testklasse dort nicht erreichbar waere.
-        $template = self::TEMPLATE;
-
-        $render = function () use ($template): string {
-            ob_start();
-
-            try {
-                include $template;
-
-                return (string) ob_get_contents();
-            } finally {
-                ob_end_clean();
-            }
-        };
+        // Derselbe Kontext, den ModuleAiTagLicense::compile() setzt.
+        $html = $twig->render('@Contao/be_netzhirsch_ai_tag_license.html.twig', [
+            'labels' => LicenseLabels::build($translator, ['reason' => (string) $license['reason'], 'days_left' => (int) $license['days_left']]),
+            'license' => $license,
+            'licensePlan' => $plan,
+            'licenseFile' => '/var/www/var/netzhirsch-ai-tag/license.json',
+            'actionUrl' => '/contao?do=netzhirsch_ai_tag_license&rt=token',
+            'referer' => '/contao',
+            'backTitle' => 'Zurueck',
+            'backLabel' => 'Zurueck',
+            'messages' => '',
+            'update' => $update,
+        ]);
 
         // Die Praefixe der Uebersetzungsschluessel stehen in der Ausgabe, weil die
         // Attrappe die Kennung zurueckgibt - genau daran laesst sich pruefen, welcher
         // Zweig gerendert wurde.
-        return str_replace('netzhirsch_ai_tag.license.', '', $render->call($data));
+        return str_replace('netzhirsch_ai_tag.license.', '', $html);
     }
 }

@@ -4,6 +4,37 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Hinzugefügt
+
+- **Contao 6.0.** Das Bundle läuft auf Contao 6 (PHP 8.4, Symfony 8) – geprüft mit Contao 6.0.6
+  in einer echten Installation: Migration, Dateiverwaltung, Protokoll, CSV-Export, Lizenzseite,
+  Alt-Text und Einbrennen über den Deferred-Pfad. Contao 5.3 und 5.7 bleiben unterstützt.
+  - Die Lizenzseite im Backend ist jetzt eine Twig-Vorlage (`be_netzhirsch_ai_tag_license.html.twig`);
+    Contao 6 rendert keine `.html5`-Vorlagen mehr, die Seite brach dort ab. Contao 5 nimmt die
+    Twig-Vorlage ebenso. Wer die alte `.html5` im eigenen `templates/` überschrieben hat, muss
+    die Anpassung nach Twig übertragen.
+  - Die Route des CSV-Exports nutzt `Symfony\Component\Routing\Attribute\Route` (die
+    `Annotation`-Klasse gibt es in Symfony 8 nicht mehr).
+  - CI: eigener Job PHP 8.4 / Contao 6.
+
+### Behoben
+
+- **Art, Position und Text der Kennzeichnung waren in der Dateiverwaltung nicht zu sehen.** Die
+  Felder hingen als Unterpalette am Häkchen *KI-generierter oder mit KI bearbeiteter Inhalt* –
+  aber die Dateiverwaltung (`DC_Folder`) wertet Unterpaletten auf keiner Contao-Version aus (5.3
+  gar nicht, ab 5.7 findet sie den Datensatz nicht, weil die ID ein Pfad ist). Sichtbar blieb nur
+  das Häkchen; Art, Position, Wortlaut, Vorschau und Abdeckungsampel ließen sich im Backend weder
+  sehen noch ändern. Jetzt blendet ein Palette-Callback die Felder ein, sobald der Eintrag
+  markiert ist; das Häkchen schickt das Formular dazu ab.
+- **Der rote Lizenz-Hinweis (und die übrigen Hinweise) kam nach dem Speichern nicht an.** Die
+  Dateiverwaltung rendert ihre Meldungen, bevor sie nach dem Speichern umleitet; was ein
+  Speicher-Callback ablegt, ist dann schon verbraucht. Die Hinweise des Bundles werden jetzt über
+  die Umleitung getragen.
+- Lizenzseite: die Erläuterungen am Seitenende wurden auf eine Zeile mit Auslassungspunkten
+  gekürzt; sie stehen jetzt vollständig da.
+
 ## [1.2.0] - 2026-11-09
 
 **Update:** nach `composer update` die Datenbank aktualisieren (`contao:migrate` bzw. im Contao

@@ -1,8 +1,9 @@
 # Contao AI Tag Bundle
 
-**Contao 5.3 (LTS) bis 5.7+, PHP 8.1+.** Alle genutzten Contao-APIs existieren
-unverändert in beiden Zweigen – es gibt keine Kompatibilitätsschicht und keine
-versionsabhängigen Codepfade.
+**Contao 5.3 (LTS) bis 5.7 und Contao 6, PHP 8.1+** (Contao 6 selbst verlangt PHP 8.4 und
+Symfony 7.4/8). Eine Kompatibilitätsschicht gibt es nicht: die Backend-Vorlagen sind Twig, das
+alle Zweige gleich rendern. Versionsabhängig ist allein die Erkennung beim Hochladen (siehe
+*Herkunftsangaben erkennen*).
 
 Kennzeichnet KI-generierte Bilder in Contao so, dass die Kennzeichnung **jede
 erzeugte Bildgröße überlebt**: Redaktion markiert eine Datei (oder einen ganzen
@@ -452,7 +453,9 @@ Verwendung neuerer Sprachfeatures hier auffällt und nicht erst auf der Zielinst
 Deshalb kein `readonly class` (8.2) und keine typisierten Klassenkonstanten (8.3) im
 Code – Rector ist entsprechend auf das PHP-8.1-Set gestellt.
 
-Die CI prüft PHP 8.1 (`lowest` und `highest`) sowie PHP 8.4.
+Die CI prüft PHP 8.1 (`lowest` und `highest`), PHP 8.4 mit Contao 5 und einen eigenen Job
+PHP 8.4 mit Contao 6 (Symfony 8). Im Contao-6-Job fehlt das MCP-Bundle, das bisher nur Contao 5
+erlaubt – `src/Mcp` wird dort mit der reduzierten Konfiguration übersprungen.
 
 ## Sicherheit
 
