@@ -139,6 +139,11 @@ final class TagRenderer
             return self::FIT_NONE;
         }
 
+        // Im Kreis steht immer dasselbe kurze "AI": entweder passt es, oder nichts.
+        if ($this->style->isCircle()) {
+            return null !== $this->fitFontSize($font, TagStyle::CIRCLE_LABEL, $width, $height) ? self::FIT_FULL : self::FIT_NONE;
+        }
+
         if (null !== $this->fitFontSize($font, $this->label($text), $width, $height)) {
             return self::FIT_FULL;
         }
@@ -188,12 +193,12 @@ final class TagRenderer
             return false;
         }
 
-        $text = $this->label($tag->text);
+        $text = $this->style->isCircle() ? TagStyle::CIRCLE_LABEL : $this->label($tag->text);
         $fontSize = $this->fitFontSize($font, $text, $width, $height);
 
         // Passt der volle Wortlaut auch in der kleinsten Schriftgroesse nicht, kommt vor dem
         // Weglassen noch die Kurzform ("KI"): ein kurzes Label ist besser als gar keines.
-        if (null === $fontSize && '' !== $tag->shortText) {
+        if (null === $fontSize && '' !== $tag->shortText && !$this->style->isCircle()) {
             $shortLabel = $this->label($tag->shortText);
             $fontSize = $this->fitFontSize($font, $shortLabel, $width, $height);
 
@@ -220,7 +225,8 @@ final class TagRenderer
         $palette = $image->palette();
         $isDarkBackground = $this->averageLuminance($image, $corner) < 128;
 
-        $textColor = $palette->color($this->style->textColor ?? ($isDarkBackground ? '#ffffff' : '#000000'), self::OPAQUE);
+        $textHex = $this->style->textColor ?? ($isDarkBackground ? '#ffffff' : '#000000');
+        $textColor = $palette->color($textHex, self::OPAQUE);
         $fontObject = $this->font($font, $fontSize, $textColor);
 
         // Imagines eigene Schnittstellen passen nicht zusammen: font() liefert ein
@@ -235,8 +241,7 @@ final class TagRenderer
         $textBox = $fontObject->box($text);
         $padding = $this->padding($fontSize);
 
-        $boxWidth = $textBox->getWidth() + 2 * $padding;
-        $boxHeight = $textBox->getHeight() + 2 * $padding;
+        [$boxWidth, $boxHeight] = $this->frame($textBox->getWidth(), $textBox->getHeight(), $fontSize);
         $margin = (int) round($fontSize * $this->style->marginRatio);
 
         [$x, $y] = match ($corner) {
@@ -248,6 +253,12 @@ final class TagRenderer
 
         $x = max(0, $x);
         $y = max(0, $y);
+
+        if ($this->style->isCircle()) {
+            $this->drawCircle($image, $fontObject, $text, $textBox->getWidth(), $textBox->getHeight(), $x, $y, $boxWidth, $fontSize, $textHex);
+
+            return true;
+        }
 
         if (TagStyle::STYLE_BOX === $this->style->style) {
             $boxColor = $palette->color(
@@ -363,10 +374,123 @@ final class TagRenderer
 
     private function fits(int $textWidth, int $textHeight, int $fontSize, int $imageWidth, int $imageHeight): bool
     {
+        [$frameWidth, $frameHeight] = $this->frame($textWidth, $textHeight, $fontSize);
+
+        return $frameWidth <= $imageWidth * $this->style->maxBoxWidth
+            && $frameHeight <= $imageHeight * $this->style->maxBoxHeight;
+    }
+
+    /**
+     * Aussenmass des Labels: der Text mit Innenabstand oder - beim Kreis - dessen
+     * Durchmesser. Der richtet sich nach der Textbreite, weil die bei beiden Treibern
+     * verlaesslich ist; die gemeldete Hoehe ist bei Imagick die ganze Zeilenhoehe,
+     * bei GD nur die der Glyphen.
+     *
+     * @return array{int, int}
+     */
+    private function frame(int $textWidth, int $textHeight, int $fontSize): array
+    {
+        if ($this->style->isCircle()) {
+            $diameter = (int) ceil($textWidth * TagStyle::CIRCLE_DIAMETER_RATIO);
+
+            return [$diameter, $diameter];
+        }
+
         $padding = $this->padding($fontSize);
 
-        return $textWidth + 2 * $padding <= $imageWidth * $this->style->maxBoxWidth
-            && $textHeight + 2 * $padding <= $imageHeight * $this->style->maxBoxHeight;
+        return [$textWidth + 2 * $padding, $textHeight + 2 * $padding];
+    }
+
+    /**
+     * "AI" in einem duennen Kreis ohne Flaeche.
+     *
+     * Der Ring wird Pixel fuer Pixel mit Kantenglaettung gesetzt statt ueber Imagines
+     * ellipse(): GD ignoriert dort die Strichstaerke und glaettet nur einpixelige
+     * Linien, ein duenner Ring saehe gezackt aus und je nach Treiber anders. Der Text
+     * wird auf die Mitte seiner tatsaechlichen Glyphen gesetzt, nicht auf die der
+     * gemeldeten Textbox - die liegt je nach Treiber unterschiedlich zur Grundlinie,
+     * und "AI" saesse sonst sichtbar zu hoch oder zu tief im Kreis.
+     */
+    private function drawCircle(ImagineImageInterface $image, AbstractFont $font, string $text, int $textWidth, int $textHeight, int $x, int $y, int $diameter, int $fontSize, string $colorHex): void
+    {
+        $centerX = $x + $diameter / 2;
+        $centerY = $y + $diameter / 2;
+
+        [$inkX, $inkY] = $this->inkCenter($font, $text, $textWidth, $textHeight, $fontSize);
+        $image->draw()->text($text, $font, new Point((int) round($centerX - $inkX), (int) round($centerY - $inkY)));
+
+        $outer = $diameter / 2;
+        $inner = $outer - max(1.0, $fontSize * TagStyle::CIRCLE_STROKE_RATIO);
+        $palette = $image->palette();
+        $drawer = $image->draw();
+        $colors = [];
+
+        $maxX = min($image->getSize()->getWidth(), $x + $diameter);
+        $maxY = min($image->getSize()->getHeight(), $y + $diameter);
+
+        for ($px = $x; $px < $maxX; ++$px) {
+            for ($py = $y; $py < $maxY; ++$py) {
+                $distance = hypot($px + 0.5 - $centerX, $py + 0.5 - $centerY);
+                $coverage = min(1.0, max(0.0, $outer - $distance + 0.5)) - min(1.0, max(0.0, $inner - $distance + 0.5));
+                $alpha = (int) round($coverage * self::OPAQUE);
+
+                if ($alpha < 1) {
+                    continue;
+                }
+
+                $colors[$alpha] ??= $palette->color($colorHex, $alpha);
+                $drawer->dot(new Point($px, $py), $colors[$alpha]);
+            }
+        }
+    }
+
+    /**
+     * Mitte der tatsaechlich gezeichneten Glyphen, relativ zum Zeichenpunkt. Gemessen
+     * auf einer kleinen transparenten Leinwand, damit es fuer GD und Imagick
+     * gleichermassen stimmt.
+     *
+     * @return array{float, float}
+     */
+    private function inkCenter(AbstractFont $font, string $text, int $textWidth, int $textHeight, int $fontSize): array
+    {
+        $fallback = [$textWidth / 2, $textHeight / 2];
+        $offset = $fontSize;
+
+        try {
+            $canvas = $this->imagine->create(
+                new Box($textWidth + 2 * $offset, $textHeight + 2 * $offset),
+                (new RGB())->color('#ffffff', 0),
+            );
+            $canvas->draw()->text($text, $font, new Point($offset, $offset));
+        } catch (\Throwable) {
+            return $fallback;
+        }
+
+        $width = $canvas->getSize()->getWidth();
+        $height = $canvas->getSize()->getHeight();
+        $minX = $width;
+        $minY = $height;
+        $maxX = -1;
+        $maxY = -1;
+
+        for ($px = 0; $px < $width; ++$px) {
+            for ($py = 0; $py < $height; ++$py) {
+                if ($canvas->getColorAt(new Point($px, $py))->getAlpha() < 50) {
+                    continue;
+                }
+
+                $minX = min($minX, $px);
+                $maxX = max($maxX, $px);
+                $minY = min($minY, $py);
+                $maxY = max($maxY, $py);
+            }
+        }
+
+        if ($maxX < 0) {
+            return $fallback;
+        }
+
+        return [($minX + $maxX + 1) / 2 - $offset, ($minY + $maxY + 1) / 2 - $offset];
     }
 
     /**

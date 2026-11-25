@@ -258,6 +258,115 @@ class TagRendererTest extends TestCase
         $this->assertFalse($renderer->isLegible(100, 80, 'KI-generiert'));
     }
 
+    /**
+     * Im Kreis steht immer "AI" - gleich, welcher Wortlaut, welche Sprache oder
+     * welche Kurzform anliegt. Der Kunde will auch auf deutschen Seiten "AI" sehen,
+     * nicht "KI".
+     */
+    public function testTheCircleShowsAiWhateverTheWording(): void
+    {
+        $renderer = $this->renderer($this->circleStyle());
+
+        $this->assertTrue($this->renderInto($renderer, 800, 450, 'KI-generiert', 'KI'));
+        $first = $this->pixelHash((string) $this->file);
+
+        $this->assertTrue($this->renderInto($renderer, 800, 450, 'Mit KI erzeugt und nachträglich bearbeitet', ''));
+        $this->assertSame($first, $this->pixelHash((string) $this->file), 'Der Wortlaut darf das Bild beim Kreis nicht veraendern.');
+    }
+
+    /**
+     * Duenner Ring ohne Flaeche, "AI" in seiner Mitte.
+     *
+     * Mit GD liegen Textbox und Glyphen bei "AI" nahezu deckungsgleich; dass der Renderer
+     * die Glyphen ausmisst statt der Textbox zu trauen, zahlt sich erst bei Imagick aus
+     * (dort ist die Box die ganze Zeilenhoehe). Hier ist nur GD verfuegbar.
+     */
+    public function testTheCircleIsAThinRingWithTheTextInItsMiddle(): void
+    {
+        $renderer = $this->renderer($this->circleStyle());
+
+        $this->assertTrue($this->renderInto($renderer, 800, 450));
+        $pixels = $this->darkPixels((string) $this->file);
+        $this->assertNotEmpty($pixels, 'Es wurde nichts gezeichnet.');
+
+        [$minX, $minY, $maxX, $maxY] = $this->bounds($pixels);
+        $diameter = $maxX - $minX + 1;
+
+        $this->assertEqualsWithDelta($diameter, $maxY - $minY + 1, 1, 'Der Rahmen muss rund sein, nicht oval.');
+        $this->assertLessThan(0.35 * $diameter ** 2, \count($pixels), 'Zu viele dunkle Pixel: der Kreis darf keine Flaeche haben.');
+
+        $centerX = ($minX + $maxX) / 2;
+        $centerY = ($minY + $maxY) / 2;
+        $text = array_filter(
+            $pixels,
+            static fn (array $pixel): bool => hypot($pixel[0] - $centerX, $pixel[1] - $centerY) < 0.4 * $diameter,
+        );
+
+        [$textMinX, $textMinY, $textMaxX, $textMaxY] = $this->bounds($text);
+
+        $this->assertEqualsWithDelta($centerX, ($textMinX + $textMaxX) / 2, 1.5, '"AI" sitzt waagerecht nicht in der Mitte.');
+        $this->assertEqualsWithDelta($centerY, ($textMinY + $textMaxY) / 2, 1.5, '"AI" sitzt senkrecht nicht in der Mitte.');
+    }
+
+    public function testFitForTheCircleIgnoresTheWording(): void
+    {
+        $renderer = $this->renderer($this->circleStyle());
+
+        $this->assertSame(TagRenderer::FIT_FULL, $renderer->fit(100, 80, 'Mit KI erzeugt und nachträglich bearbeitet', ''));
+        $this->assertSame(TagRenderer::FIT_NONE, $renderer->fit(20, 10, 'KI-generiert', 'KI'));
+    }
+
+    private function circleStyle(): TagStyle
+    {
+        return new TagStyle(style: TagStyle::STYLE_CIRCLE, textColor: '#000000');
+    }
+
+    /**
+     * @return list<array{int, int}>
+     */
+    private function darkPixels(string $file): array
+    {
+        $image = imagecreatefrompng($file);
+        $pixels = [];
+
+        for ($x = 0; $x < imagesx($image); ++$x) {
+            for ($y = 0; $y < imagesy($image); ++$y) {
+                if ((imagecolorat($image, $x, $y) >> 16 & 0xFF) < 128) {
+                    $pixels[] = [$x, $y];
+                }
+            }
+        }
+
+        return $pixels;
+    }
+
+    /**
+     * @param array<array{int, int}> $pixels
+     *
+     * @return array{int, int, int, int}
+     */
+    private function bounds(array $pixels): array
+    {
+        $xs = array_column($pixels, 0);
+        $ys = array_column($pixels, 1);
+
+        return [min($xs), min($ys), max($xs), max($ys)];
+    }
+
+    private function pixelHash(string $file): string
+    {
+        $image = imagecreatefrompng($file);
+        $data = '';
+
+        for ($y = 0; $y < imagesy($image); ++$y) {
+            for ($x = 0; $x < imagesx($image); ++$x) {
+                $data .= pack('N', imagecolorat($image, $x, $y));
+            }
+        }
+
+        return sha1($data);
+    }
+
     private function solidStyle(): TagStyle
     {
         return new TagStyle(

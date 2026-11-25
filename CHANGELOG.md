@@ -4,6 +4,16 @@ Alle nennenswerten Änderungen an diesem Bundle. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.4.0] - 2026-11-25
+
+### Hinzugefügt
+
+- **Kreis-Kennzeichnung (`style: circle`).** Im Bild steht nur „AI“ in einem dünnen Kreis ohne
+  Fläche, in jeder Sprache. Kreis und Schrift haben die Textfarbe (`text_color` oder automatisch
+  hell/dunkel). Art und eigener Wortlaut wirken sich auf das Bild nicht aus, der volle Wortlaut
+  bleibt im Alt-Text. Der Ring wird geglättet gezeichnet und „AI“ auf die Mitte der Glyphen
+  gesetzt, bei GD wie bei Imagick.
+
 ## [1.3.0] - 2026-11-23
 
 ### Hinzugefügt

@@ -59,7 +59,7 @@ class NetzhirschContaoAiTagBundle extends AbstractBundle
             ->end()
             // --- Gestaltung ---
             ->enumNode('style')
-            ->info('box = Text auf halbtransparenter Flaeche, outline = Text mit Kontur, plain = nur Text.')
+            ->info('box = Text auf halbtransparenter Flaeche, outline = Text mit Kontur, plain = nur Text, circle = "AI" in einem duennen Kreis ohne Flaeche (in jeder Sprache, Rahmen in der Textfarbe; der volle Wortlaut bleibt im Alt-Text).')
             ->values(TagStyle::STYLES)
             ->defaultValue(TagStyle::STYLE_BOX)
             ->end()

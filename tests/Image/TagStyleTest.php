@@ -81,6 +81,7 @@ class TagStyleTest extends TestCase
     public static function changedStyleProvider(): iterable
     {
         yield 'Stil' => [new TagStyle(style: TagStyle::STYLE_OUTLINE)];
+        yield 'Kreis' => [new TagStyle(style: TagStyle::STYLE_CIRCLE)];
         yield 'Textfarbe' => [new TagStyle(textColor: '#ff0000')];
         yield 'Flaechenfarbe' => [new TagStyle(boxColor: '#ff0000')];
         yield 'Deckkraft' => [new TagStyle(boxOpacity: 80)];

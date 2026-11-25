@@ -20,7 +20,26 @@ final class TagStyle
 
     public const STYLE_PLAIN = 'plain';
 
-    public const STYLES = [self::STYLE_BOX, self::STYLE_OUTLINE, self::STYLE_PLAIN];
+    /**
+     * "AI" in einem duennen Kreis ohne Flaeche - unabhaengig von Sprache, Art und
+     * eigenem Wortlaut. Die ausfuehrliche Fassung steht weiterhin im Alt-Text.
+     */
+    public const STYLE_CIRCLE = 'circle';
+
+    public const STYLES = [self::STYLE_BOX, self::STYLE_OUTLINE, self::STYLE_PLAIN, self::STYLE_CIRCLE];
+
+    /**
+     * Inschrift des Kreises. "AI" ist die Abkuerzung, die die EU-Kommission fuer
+     * Kennzeichnungen vorsieht - auch auf deutschsprachigen Seiten.
+     */
+    public const CIRCLE_LABEL = 'AI';
+
+    /**
+     * Kreisdurchmesser relativ zur Textbreite und Strichstaerke relativ zur Schriftgroesse.
+     */
+    public const CIRCLE_DIAMETER_RATIO = 1.55;
+
+    public const CIRCLE_STROKE_RATIO = 0.06;
 
     /**
      * Fassung des Zeichnens selbst. Geht in den Fingerabdruck und damit in den
@@ -66,6 +85,11 @@ final class TagStyle
     public function fontSize(int $imageWidth): int
     {
         return max($this->minFontSize, min($this->maxFontSize, (int) round($imageWidth * $this->relativeFontSize)));
+    }
+
+    public function isCircle(): bool
+    {
+        return self::STYLE_CIRCLE === $this->style;
     }
 
     public function isTooSmall(int $width, int $height): bool

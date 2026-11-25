@@ -95,7 +95,7 @@ Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 
 | Schlüssel | Standard | Bedeutung |
 |---|---|---|
-| `style` | `box` | `box` = Text auf halbtransparenter Fläche, `outline` = Text mit Kontur, `plain` = nur Text. |
+| `style` | `box` | `box` = Text auf halbtransparenter Fläche, `outline` = Text mit Kontur, `plain` = nur Text, `circle` = „AI“ in einem dünnen Kreis ohne Fläche (siehe unten). |
 | `text_color` | `null` | Hex-Farbe des Textes. Ohne Angabe automatisch hell oder dunkel, je nach Untergrund. |
 | `box_color` | `null` | Hex-Farbe der Fläche bzw. der Kontur. Ohne Angabe die Gegenfarbe zum Text. |
 | `box_opacity` | `60` | Deckkraft der Fläche in Prozent. |
@@ -103,6 +103,27 @@ Zeile *Schrift* in `netzhirsch:ai-tag:license`.
 | `padding_ratio` | `0.45` | Innenabstand der Fläche, relativ zur Schriftgröße. |
 | `margin_ratio` | `0.5` | Abstand zum Bildrand, relativ zur Schriftgröße. |
 | `uppercase` | `false` | Kennzeichnung in Großbuchstaben. |
+
+**Kreis-Kennzeichnung (`style: circle`)**: Im Bild steht nur „AI“ in einem dünnen Kreis ohne
+Hintergrund, auch auf deutschsprachigen Seiten. „AI“ ist die Abkürzung, die die EU-Kommission
+für Kennzeichnungen vorsieht. Kreis und Schrift haben dieselbe Farbe: `text_color` oder,
+ohne Angabe, automatisch hell oder dunkel je nach Untergrund. Die Größe richtet sich wie bei
+den anderen Stilen nach `relative_font_size`, `min_font_size` und `max_font_size`.
+
+Was beim Kreis keine Rolle spielt:
+
+- `box_color`, `box_opacity`, `corner_radius`, `padding_ratio`, `uppercase` und
+  `short_text_fallback`
+- die Art (generiert oder bearbeitet) und ein eigener Wortlaut je Datei oder Startpunkt
+
+Der volle Wortlaut in der jeweiligen Sprache steht weiterhin im Alt-Text bzw. in der
+Bildunterschrift (`hint_placement`).
+
+```yaml
+# config/config.yaml
+netzhirsch_contao_ai_tag:
+    style: circle
+```
 
 **Reichweite**
 
